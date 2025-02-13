@@ -1,4 +1,4 @@
-// Utility function to format date
+// Function to format date
 function formatDate(dateString) {
     const date = new Date(dateString);
     return date.toLocaleString();
@@ -25,9 +25,11 @@ function createTopicCard(topic) {
         <div class="test-card">
             <div class="test-info">
                 <h3>${topic.title}</h3>
-                <p>Range: ${topic.range}</p>
+                <p>Questions: ${topic.range}</p>
             </div>
-            <button class="btn-primary" onclick="startTest('${topic.id}')">Start</button>
+            <button class="btn-primary" onclick="startTest('${topic.id}')">
+                <i class="fas fa-play"></i> Start
+            </button>
         </div>
     `;
 }
@@ -63,40 +65,16 @@ async function initializeDashboard() {
     document.getElementById('upcomingDiscussions').textContent = upcomingSlots.length;
 
     // Populate verbal reasoning topics
-    const verbalContainer = document.getElementById('aptitudeTests');
-    verbalContainer.innerHTML = `
-        <h2>Logical Reasoning (Verbal)</h2>
-        <div class="test-list">
-            ${topics.verbal.map(createTopicCard).join('')}
-        </div>
-    `;
+    const verbalContainer = document.getElementById('verbalTests');
+    verbalContainer.innerHTML = topics.verbal.map(createTopicCard).join('');
 
     // Populate non-verbal reasoning topics
-    const nonVerbalContainer = document.getElementById('technicalTests');
-    nonVerbalContainer.innerHTML = `
-        <h2>Logical Reasoning (Non-Verbal)</h2>
-        <div class="test-list">
-            ${topics.nonVerbal.map(createTopicCard).join('')}
-        </div>
-    `;
+    const nonVerbalContainer = document.getElementById('nonVerbalTests');
+    nonVerbalContainer.innerHTML = topics.nonVerbal.map(createTopicCard).join('');
 
     // Populate mathematical topics
-    const mathContainer = document.getElementById('psychometricTests');
-    mathContainer.innerHTML = `
-        <h2>Mathematical Aptitude</h2>
-        <div class="test-list">
-            ${topics.mathematical.map(createTopicCard).join('')}
-        </div>
-        <h2 class="mt-6">Practice Tests</h2>
-        <div class="test-list">
-            ${topics.practiceTests.map(section => `
-                <div class="test-category mb-4">
-                    <h3 class="mb-2">${section.title}</h3>
-                    ${section.subtests ? section.subtests.map(createTopicCard).join('') : createTopicCard(section)}
-                </div>
-            `).join('')}
-        </div>
-    `;
+    const mathematicalContainer = document.getElementById('mathematicalTests');
+    mathematicalContainer.innerHTML = topics.mathematical.map(createTopicCard).join('');
 
     // Populate discussion slots
     const slotsContainer = document.getElementById('discussionSlots');
@@ -104,13 +82,15 @@ async function initializeDashboard() {
         .map(slot => `
             <div class="discussion-card">
                 <div class="discussion-info">
-                    <h3>${slot.topic}</h3>
-                    <p>Time: ${formatDate(slot.startTime)} - ${new Date(slot.endTime).toLocaleTimeString()}</p>
-                    <p>Mentor: ${slot.mentor?.username || 'TBA'}</p>
-                    <p>Available Spots: ${slot.maxParticipants}</p>
+                    <h3><i class="fas fa-comments"></i> ${slot.topic}</h3>
+                    <p><i class="far fa-clock"></i> ${formatDate(slot.startTime)} - ${new Date(slot.endTime).toLocaleTimeString()}</p>
+                    <p><i class="fas fa-chalkboard-teacher"></i> Mentor: ${slot.mentor?.username || 'TBA'}</p>
+                    <p><i class="fas fa-users"></i> Available Spots: ${slot.maxParticipants}</p>
                 </div>
                 ${user.role === 'student' 
-                    ? `<button class="btn-primary" onclick="bookSlot(${slot.id})">Book Slot</button>`
+                    ? `<button class="btn-primary" onclick="bookSlot(${slot.id})">
+                         <i class="fas fa-bookmark"></i> Book Slot
+                       </button>`
                     : ''}
             </div>
         `).join('');
@@ -124,7 +104,7 @@ async function initializeDashboard() {
                 <div class="history-card">
                     <div class="history-info">
                         <h3>${test?.title || 'Unknown Test'}</h3>
-                        <p>Completed: ${formatDate(result.completedAt)}</p>
+                        <p><i class="far fa-calendar-alt"></i> ${formatDate(result.completedAt)}</p>
                     </div>
                     <div class="score">${result.score}%</div>
                 </div>
