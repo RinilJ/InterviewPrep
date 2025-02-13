@@ -23,7 +23,9 @@ registerForm.addEventListener('submit', async (e) => {
         });
 
         if (response.ok) {
-            window.location.href = '/dashboard.html';
+            const user = await response.json();
+            // Redirect based on role
+            window.location.href = user.role === 'teacher' ? '/teacher-dashboard.html' : '/dashboard.html';
         } else {
             const error = await response.text();
             alert(error || 'Registration failed');
@@ -52,7 +54,9 @@ loginForm.addEventListener('submit', async (e) => {
         });
 
         if (response.ok) {
-            window.location.href = '/dashboard.html';
+            const user = await response.json();
+            // Redirect based on role
+            window.location.href = user.role === 'teacher' ? '/teacher-dashboard.html' : '/dashboard.html';
         } else {
             const error = await response.text();
             alert(error || 'Login failed');

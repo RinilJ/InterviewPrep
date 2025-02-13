@@ -5,6 +5,62 @@ import { storage } from "./storage";
 import { insertTestSchema, insertTestResultSchema, insertDiscussionSlotSchema, insertSlotBookingSchema } from "@shared/schema";
 import { z } from "zod";
 
+// Sample discussion slots with some slots having no specific topic (open discussion)
+const sampleDiscussionSlots = [
+  {
+    id: 1,
+    topic: null, // Open discussion slot
+    startTime: new Date("2025-02-14T10:00:00"),
+    endTime: new Date("2025-02-14T11:30:00"),
+    maxParticipants: 8,
+    mentorId: 1,
+    mentor: { username: "Dr. Sarah Johnson" }
+  },
+  {
+    id: 2,
+    topic: "Data Structures Problem Solving",
+    startTime: new Date("2025-02-14T14:00:00"),
+    endTime: new Date("2025-02-14T15:30:00"),
+    maxParticipants: 6,
+    mentorId: 2,
+    mentor: { username: "Prof. Michael Chen" }
+  },
+  {
+    id: 3,
+    topic: null, // Open discussion slot
+    startTime: new Date("2025-02-15T11:00:00"),
+    endTime: new Date("2025-02-15T12:30:00"),
+    maxParticipants: 10,
+    mentorId: 3,
+    mentor: { username: "Ms. Emily Brown" }
+  }
+];
+
+// Sample teacher statistics
+const teacherStats = {
+  totalStudents: 45,
+  activeSessions: 3,
+  totalSlots: sampleDiscussionSlots.length
+};
+
+// Sample student progress data
+const studentProgress = [
+  {
+    id: 1,
+    username: "john_doe",
+    lastActive: new Date("2025-02-13T08:30:00"),
+    testsCompleted: 15,
+    averageScore: 85
+  },
+  {
+    id: 2,
+    username: "jane_smith",
+    lastActive: new Date("2025-02-13T09:45:00"),
+    testsCompleted: 12,
+    averageScore: 78
+  }
+];
+
 const aptitudeTopics = {
   verbal: [
     { id: "L01", title: "Direction Sense", range: "1.01 - 1.10" },
@@ -65,56 +121,23 @@ const aptitudeTopics = {
   ]
 };
 
-const sampleDiscussionSlots = [
-  {
-    id: 1,
-    topic: "System Design Interview Preparation",
-    startTime: new Date("2025-02-14T10:00:00"),
-    endTime: new Date("2025-02-14T11:30:00"),
-    maxParticipants: 8,
-    mentorId: 1,
-    mentor: { username: "Dr. Sarah Johnson" }
-  },
-  {
-    id: 2,
-    topic: "Data Structures Problem Solving",
-    startTime: new Date("2025-02-14T14:00:00"),
-    endTime: new Date("2025-02-14T15:30:00"),
-    maxParticipants: 6,
-    mentorId: 2,
-    mentor: { username: "Prof. Michael Chen" }
-  },
-  {
-    id: 3,
-    topic: "Behavioral Interview Strategies",
-    startTime: new Date("2025-02-15T11:00:00"),
-    endTime: new Date("2025-02-15T12:30:00"),
-    maxParticipants: 10,
-    mentorId: 3,
-    mentor: { username: "Ms. Emily Brown" }
-  },
-  {
-    id: 4,
-    topic: "Software Architecture Principles",
-    startTime: new Date("2025-02-20T15:00:00"),
-    endTime: new Date("2025-02-20T16:30:00"),
-    maxParticipants: 8,
-    mentorId: 1,
-    mentor: { username: "Dr. Sarah Johnson" }
-  },
-  {
-    id: 5,
-    topic: "Database Design and Optimization",
-    startTime: new Date("2025-02-21T13:00:00"),
-    endTime: new Date("2025-02-21T14:30:00"),
-    maxParticipants: 6,
-    mentorId: 2,
-    mentor: { username: "Prof. Michael Chen" }
-  }
-];
-
 export function registerRoutes(app: Express): Server {
   setupAuth(app);
+
+  // Teacher-specific routes
+  app.get("/api/teacher/stats", async (req, res) => {
+    if (!req.isAuthenticated() || req.user.role !== "teacher") {
+      return res.sendStatus(401);
+    }
+    res.json(teacherStats);
+  });
+
+  app.get("/api/teacher/students", async (req, res) => {
+    if (!req.isAuthenticated() || req.user.role !== "teacher") {
+      return res.sendStatus(401);
+    }
+    res.json(studentProgress);
+  });
 
   // Get aptitude topics
   app.get("/api/aptitude-topics", (req, res) => {
@@ -142,7 +165,6 @@ export function registerRoutes(app: Express): Server {
   // Test Results
   app.get("/api/test-results", async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
-
     const results = await storage.getTestResults(req.user.id);
     res.json(results);
   });
@@ -160,6 +182,11 @@ export function registerRoutes(app: Express): Server {
   });
 
   // Discussion Slots
+  app.get("/api/discussion-slots", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    res.json(sampleDiscussionSlots);
+  });
+
   app.post("/api/discussion-slots", async (req, res) => {
     if (!req.isAuthenticated() || req.user.role !== "teacher") {
       return res.sendStatus(401);
@@ -172,11 +199,6 @@ export function registerRoutes(app: Express): Server {
       maxParticipants: parsed.maxParticipants || 10
     });
     res.status(201).json(slot);
-  });
-
-  app.get("/api/discussion-slots", async (req, res) => {
-    if (!req.isAuthenticated()) return res.sendStatus(401);
-    res.json(sampleDiscussionSlots);
   });
 
   // Slot Bookings
