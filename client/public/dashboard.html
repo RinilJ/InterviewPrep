@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Interview Preparation Platform</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="dashboard">
+        <header class="dashboard-header">
+            <div class="container">
+                <div class="header-content">
+                    <h1>Dashboard</h1>
+                    <div class="user-info">
+                        <span id="userName">Loading...</span>
+                        <button id="logoutBtn" class="btn-secondary">Logout</button>
+                    </div>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3>Average Score</h3>
+                        <p id="averageScore">--%</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Tests Completed</h3>
+                        <p id="testsCompleted">--</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Upcoming Discussions</h3>
+                        <p id="upcomingDiscussions">--</p>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main class="dashboard-content">
+            <div class="container">
+                <div class="tabs">
+                    <button class="tab active" data-tab="tests">Test Modules</button>
+                    <button class="tab" data-tab="discussions">Group Discussions</button>
+                    <button class="tab" data-tab="progress">Progress</button>
+                </div>
+
+                <div id="testsTab" class="tab-content">
+                    <div class="test-grid">
+                        <div class="test-category">
+                            <h2>Aptitude Tests</h2>
+                            <div id="aptitudeTests" class="test-list"></div>
+                        </div>
+                        <div class="test-category">
+                            <h2>Technical Tests</h2>
+                            <div id="technicalTests" class="test-list"></div>
+                        </div>
+                        <div class="test-category">
+                            <h2>Psychometric Tests</h2>
+                            <div id="psychometricTests" class="test-list"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="discussionsTab" class="tab-content hidden">
+                    <h2>Upcoming Group Discussions</h2>
+                    <div id="discussionSlots" class="discussion-list"></div>
+                </div>
+
+                <div id="progressTab" class="tab-content hidden">
+                    <h2>Test History</h2>
+                    <div id="testHistory" class="history-list"></div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="/js/dashboard.js"></script>
+</body>
+</html>

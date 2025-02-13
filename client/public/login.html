@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Interview Preparation Platform</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="auth-page">
+        <div class="auth-container">
+            <div class="auth-form-container">
+                <div class="tabs">
+                    <button class="tab active" data-tab="login">Login</button>
+                    <button class="tab" data-tab="register">Register</button>
+                </div>
+
+                <form id="loginForm" class="auth-form">
+                    <h2>Welcome Back</h2>
+                    <div class="form-group">
+                        <label for="loginUsername">Username</label>
+                        <input type="text" id="loginUsername" name="username" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="loginPassword">Password</label>
+                        <input type="password" id="loginPassword" name="password" required>
+                    </div>
+                    <button type="submit" class="btn-primary">Login</button>
+                </form>
+
+                <form id="registerForm" class="auth-form hidden">
+                    <h2>Create Account</h2>
+                    <div class="form-group">
+                        <label for="registerUsername">Username</label>
+                        <input type="text" id="registerUsername" name="username" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="registerPassword">Password</label>
+                        <input type="password" id="registerPassword" name="password" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="confirmPassword">Confirm Password</label>
+                        <input type="password" id="confirmPassword" name="confirmPassword" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="role">Role</label>
+                        <select id="role" name="role" required>
+                            <option value="student">Student</option>
+                            <option value="teacher">Teacher</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn-primary">Register</button>
+                </form>
+            </div>
+
+            <div class="auth-info">
+                <h1>Prepare for Your Dream Job</h1>
+                <p>Join our comprehensive interview preparation platform featuring test modules, group discussions, and progress tracking.</p>
+                <div class="feature-list">
+                    <div class="feature">
+                        <h3>Test Modules</h3>
+                        <p>Practice with aptitude, technical, and psychometric assessments</p>
+                    </div>
+                    <div class="feature">
+                        <h3>Group Discussions</h3>
+                        <p>Participate in mentor-guided group discussions</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="/js/auth.js"></script>
+</body>
+</html>
