@@ -1,5 +1,5 @@
 import { useAuth } from "@/hooks/use-auth";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -19,9 +19,12 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import { Test, TestResult, DiscussionSlot } from "@shared/schema";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 
 export default function DashboardPage() {
   const { user } = useAuth();
+  const { toast } = useToast();
 
   const { data: tests, isLoading: testsLoading } = useQuery<Test[]>({
     queryKey: ["/api/tests"],
@@ -31,8 +34,31 @@ export default function DashboardPage() {
     queryKey: ["/api/test-results"],
   });
 
-  const { data: slots, isLoading: slotsLoading } = useQuery<DiscussionSlot[]>({
+  const { data: slots, isLoading: slotsLoading } = useQuery<
+    (DiscussionSlot & { mentor?: { username: string } })[]
+  >({
     queryKey: ["/api/discussion-slots"],
+  });
+
+  const bookSlotMutation = useMutation({
+    mutationFn: async (slotId: number) => {
+      const res = await apiRequest("POST", "/api/slot-bookings", { slotId });
+      return await res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/discussion-slots"] });
+      toast({
+        title: "Success",
+        description: "Successfully booked the discussion slot",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
   });
 
   if (testsLoading || resultsLoading || slotsLoading) {
@@ -51,6 +77,10 @@ export default function DashboardPage() {
     return acc;
   }, {} as Record<string, Test[]>);
 
+  const upcomingSlots = slots?.filter(
+    (slot) => new Date(slot.startTime) > new Date()
+  );
+
   return (
     <div className="min-h-screen bg-slate-50 pb-8">
       <div className="bg-white border-b mb-6">
@@ -63,10 +93,6 @@ export default function DashboardPage() {
                   Welcome back, {user?.username}
                 </p>
               </div>
-              <Button variant="outline" className="gap-2">
-                <Calendar className="h-4 w-4" />
-                Schedule Discussion
-              </Button>
             </div>
 
             <div className="grid gap-4 md:grid-cols-3">
@@ -111,9 +137,7 @@ export default function DashboardPage() {
                         Upcoming Discussions
                       </p>
                       <p className="text-2xl font-bold">
-                        {slots?.filter(
-                          (s) => new Date(s.startTime) > new Date()
-                        ).length || 0}
+                        {upcomingSlots?.length || 0}
                       </p>
                     </div>
                   </div>
@@ -218,25 +242,37 @@ export default function DashboardPage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {slots
-                    ?.filter((s) => new Date(s.startTime) > new Date())
-                    .map((slot) => (
-                      <div
-                        key={slot.id}
-                        className="flex items-center justify-between p-4 bg-slate-50 rounded-lg"
-                      >
-                        <div>
-                          <p className="font-medium">{slot.topic}</p>
-                          <p className="text-sm text-slate-600">
+                  {upcomingSlots?.map((slot) => (
+                    <div
+                      key={slot.id}
+                      className="flex items-center justify-between p-4 bg-slate-50 rounded-lg"
+                    >
+                      <div>
+                        <p className="font-medium">{slot.topic}</p>
+                        <div className="text-sm text-slate-600 space-y-1">
+                          <p>
                             {format(new Date(slot.startTime), "PPp")} -{" "}
                             {format(new Date(slot.endTime), "p")}
                           </p>
+                          <p>Mentor: {slot.mentor?.username || "TBA"}</p>
+                          <p>Available Spots: {slot.maxParticipants}</p>
                         </div>
-                        <Button variant="outline" size="sm">
-                          Join
-                        </Button>
                       </div>
-                    ))}
+                      {user?.role === "student" && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => bookSlotMutation.mutate(slot.id)}
+                          disabled={bookSlotMutation.isPending}
+                        >
+                          {bookSlotMutation.isPending && (
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          )}
+                          Book Slot
+                        </Button>
+                      )}
+                    </div>
+                  ))}
                 </div>
               </CardContent>
             </Card>
@@ -259,8 +295,7 @@ export default function DashboardPage() {
                         <div>
                           <p className="font-medium">{test?.title}</p>
                           <p className="text-sm text-slate-600">
-                            Completed on{" "}
-                            {format(new Date(result.completedAt), "PPp")}
+                            {format(result.completedAt ? new Date(result.completedAt) : new Date(), "PPp")}
                           </p>
                         </div>
                         <div className="text-right">
@@ -269,7 +304,8 @@ export default function DashboardPage() {
                           </p>
                         </div>
                       </div>
-                    ))}
+                    );
+                  })}
                 </div>
               </CardContent>
             </Card>

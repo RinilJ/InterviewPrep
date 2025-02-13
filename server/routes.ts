@@ -19,29 +19,29 @@ export function registerRoutes(app: Express): Server {
     if (!req.isAuthenticated() || req.user.role !== "teacher") {
       return res.sendStatus(401);
     }
-    
+
     const parsed = insertTestSchema.parse(req.body);
     const test = await storage.createTest({ ...parsed, createdBy: req.user.id });
     res.status(201).json(test);
   });
 
   // Test Results
+  app.get("/api/test-results", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+
+    const results = await storage.getTestResults(req.user.id);
+    res.json(results);
+  });
+
   app.post("/api/test-results", async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
-    
+
     const parsed = insertTestResultSchema.parse(req.body);
     const result = await storage.createTestResult({
       ...parsed,
       userId: req.user.id
     });
     res.status(201).json(result);
-  });
-
-  app.get("/api/test-results", async (req, res) => {
-    if (!req.isAuthenticated()) return res.sendStatus(401);
-    
-    const results = await storage.getTestResults(req.user.id);
-    res.json(results);
   });
 
   // Discussion Slots
@@ -61,7 +61,19 @@ export function registerRoutes(app: Express): Server {
   app.get("/api/discussion-slots", async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
     const slots = await storage.getDiscussionSlots();
-    res.json(slots);
+
+    // Fetch mentor info for each slot
+    const slotsWithMentors = await Promise.all(
+      slots.map(async (slot) => {
+        const mentor = slot.mentorId ? await storage.getUser(slot.mentorId) : undefined;
+        return {
+          ...slot,
+          mentor: mentor ? { username: mentor.username } : undefined,
+        };
+      })
+    );
+
+    res.json(slotsWithMentors);
   });
 
   // Slot Bookings
