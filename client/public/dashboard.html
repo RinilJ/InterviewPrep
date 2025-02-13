@@ -50,6 +50,12 @@
                     <button class="tab active" data-tab="aptitude">
                         <i class="fas fa-brain"></i> Aptitude Tests
                     </button>
+                    <button class="tab" data-tab="technical">
+                        <i class="fas fa-laptop-code"></i> Technical Tests
+                    </button>
+                    <button class="tab" data-tab="psychometric">
+                        <i class="fas fa-user-check"></i> Psychometric Tests
+                    </button>
                     <button class="tab" data-tab="discussions">
                         <i class="fas fa-comments"></i> Group Discussions
                     </button>
@@ -84,10 +90,31 @@
                     </div>
                 </div>
 
+                <div id="technicalTab" class="tab-content hidden">
+                    <div class="category-header">
+                        <i class="fas fa-laptop-code"></i>
+                        <h2>Technical Assessment</h2>
+                    </div>
+                    <div id="technicalTests" class="test-list"></div>
+                </div>
+
+                <div id="psychometricTab" class="tab-content hidden">
+                    <div class="category-header">
+                        <i class="fas fa-user-check"></i>
+                        <h2>Psychometric Assessment</h2>
+                    </div>
+                    <div id="psychometricTests" class="test-list"></div>
+                </div>
+
                 <div id="discussionsTab" class="tab-content hidden">
                     <div class="category-header">
                         <i class="fas fa-users"></i>
                         <h2>Upcoming Group Discussions</h2>
+                    </div>
+                    <div class="discussion-filters">
+                        <button class="btn-filter active" data-filter="all">All Slots</button>
+                        <button class="btn-filter" data-filter="today">Today</button>
+                        <button class="btn-filter" data-filter="week">This Week</button>
                     </div>
                     <div id="discussionSlots" class="discussion-list"></div>
                 </div>

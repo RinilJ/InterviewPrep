@@ -41,19 +41,27 @@ const aptitudeTopics = {
     { id: "Q11", title: "Permutations, Combinations and Probability", range: "3.84 - 3.90" },
     { id: "Q12", title: "Data Interpretation", range: "4.01 - 4.02" }
   ],
-  practiceTests: [
-    { id: "T01", title: "Section Tests", subtests: [
-      { id: "T01.1", title: "Section Test 1", range: "4.03 - 4.04" },
-      { id: "T01.2", title: "Section Test 2", range: "4.05 - 4.06" },
-      { id: "T01.3", title: "Section Test 3", range: "4.07 - 4.08" },
-      { id: "T01.4", title: "Section Test 4", range: "4.09 - 4.10" }
-    ]},
-    { id: "T02", title: "Model Tests", subtests: [
-      { id: "T02.1", title: "Model Test 1", range: "4.11 - 4.12" },
-      { id: "T02.2", title: "Model Test 2", range: "4.13 - 4.15" },
-      { id: "T02.3", title: "Model Test 3", range: "4.15 - 4.17" },
-      { id: "T02.4", title: "Model Test 4", range: "4.17 - 4.19" }
-    ]}
+  technical: [
+    { id: "T01", title: "Data Structures", range: "5.01 - 5.15" },
+    { id: "T02", title: "Algorithms", range: "5.16 - 5.30" },
+    { id: "T03", title: "Database Management", range: "5.31 - 5.45" },
+    { id: "T04", title: "Operating Systems", range: "5.46 - 5.60" },
+    { id: "T05", title: "Computer Networks", range: "5.61 - 5.75" },
+    { id: "T06", title: "Object-Oriented Programming", range: "5.76 - 5.90" },
+    { id: "T07", title: "Web Technologies", range: "5.91 - 6.05" },
+    { id: "T08", title: "Software Engineering", range: "6.06 - 6.20" },
+    { id: "T09", title: "Cloud Computing", range: "6.21 - 6.35" },
+    { id: "T10", title: "Cybersecurity", range: "6.36 - 6.50" }
+  ],
+  psychometric: [
+    { id: "P01", title: "Personality Assessment", range: "7.01 - 7.15" },
+    { id: "P02", title: "Emotional Intelligence", range: "7.16 - 7.30" },
+    { id: "P03", title: "Leadership Potential", range: "7.31 - 7.45" },
+    { id: "P04", title: "Team Dynamics", range: "7.46 - 7.60" },
+    { id: "P05", title: "Problem-Solving Style", range: "7.61 - 7.75" },
+    { id: "P06", title: "Work Ethics", range: "7.76 - 7.90" },
+    { id: "P07", title: "Stress Management", range: "7.91 - 8.05" },
+    { id: "P08", title: "Communication Style", range: "8.06 - 8.20" }
   ]
 };
 
@@ -113,7 +121,7 @@ export function registerRoutes(app: Express): Server {
     const slot = await storage.createDiscussionSlot({
       ...parsed,
       mentorId: req.user.id,
-      maxParticipants: parsed.maxParticipants || 10 
+      maxParticipants: parsed.maxParticipants || 10
     });
     res.status(201).json(slot);
   });
