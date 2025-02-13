@@ -16,8 +16,8 @@ registerForm.addEventListener('submit', async (e) => {
             },
             body: JSON.stringify({
                 username: registerForm.username.value,
+                email: registerForm.email.value,
                 password: registerForm.password.value,
-                confirmPassword: registerForm.confirmPassword.value,
                 role: registerForm.role.value
             })
         });
@@ -85,4 +85,11 @@ document.querySelectorAll('.tab').forEach(tab => {
             }
         });
     });
+});
+
+// Handle hash-based navigation
+window.addEventListener('load', () => {
+    if (window.location.hash === '#register') {
+        document.querySelector('[data-tab="register"]').click();
+    }
 });
