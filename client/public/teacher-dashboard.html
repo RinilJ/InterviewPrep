@@ -121,26 +121,47 @@
                     <h2><i class="fas fa-plus-circle"></i> Create Discussion Slot</h2>
                     <button class="close-modal">&times;</button>
                 </div>
-                <form id="createSlotForm">
-                    <div class="form-group">
-                        <label for="slotTopic">Topic</label>
-                        <input type="text" id="slotTopic" placeholder="Enter discussion topic">
+                <form id="createSlotForm" class="organized-form">
+                    <div class="form-section">
+                        <h3><i class="fas fa-info-circle"></i> Basic Information</h3>
+                        <div class="form-group">
+                            <label for="slotTopic">Topic</label>
+                            <input type="text" id="slotTopic" placeholder="Enter discussion topic (optional)">
+                            <small>Leave empty for open discussion</small>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label for="slotDateTime">Date & Time</label>
-                        <input type="datetime-local" id="slotDateTime" required>
+                    
+                    <div class="form-section">
+                        <h3><i class="fas fa-clock"></i> Timing Details</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="slotDateTime">Date & Time</label>
+                                <input type="datetime-local" id="slotDateTime" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="slotDuration">Duration (minutes)</label>
+                                <input type="number" id="slotDuration" min="30" step="30" value="60" required>
+                            </div>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label for="slotDuration">Duration (minutes)</label>
-                        <input type="number" id="slotDuration" min="30" step="30" value="60" required>
+
+                    <div class="form-section">
+                        <h3><i class="fas fa-users"></i> Participation</h3>
+                        <div class="form-group">
+                            <label for="maxParticipants">Maximum Participants</label>
+                            <input type="number" id="maxParticipants" min="1" value="8" required>
+                            <small>Recommended: 6-12 participants for optimal discussion</small>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label for="maxParticipants">Max Participants</label>
-                        <input type="number" id="maxParticipants" min="1" value="8" required>
+
+                    <div class="form-actions">
+                        <button type="button" class="btn-secondary" onclick="closeModal()">
+                            <i class="fas fa-times"></i> Cancel
+                        </button>
+                        <button type="submit" class="btn-primary">
+                            <i class="fas fa-check"></i> Create Slot
+                        </button>
                     </div>
-                    <button type="submit" class="btn-primary">
-                        <i class="fas fa-check"></i> Create Slot
-                    </button>
                 </form>
             </div>
         </div>
