@@ -65,6 +65,54 @@ const aptitudeTopics = {
   ]
 };
 
+const sampleDiscussionSlots = [
+  {
+    id: 1,
+    topic: "System Design Interview Preparation",
+    startTime: new Date("2025-02-14T10:00:00"),
+    endTime: new Date("2025-02-14T11:30:00"),
+    maxParticipants: 8,
+    mentorId: 1,
+    mentor: { username: "Dr. Sarah Johnson" }
+  },
+  {
+    id: 2,
+    topic: "Data Structures Problem Solving",
+    startTime: new Date("2025-02-14T14:00:00"),
+    endTime: new Date("2025-02-14T15:30:00"),
+    maxParticipants: 6,
+    mentorId: 2,
+    mentor: { username: "Prof. Michael Chen" }
+  },
+  {
+    id: 3,
+    topic: "Behavioral Interview Strategies",
+    startTime: new Date("2025-02-15T11:00:00"),
+    endTime: new Date("2025-02-15T12:30:00"),
+    maxParticipants: 10,
+    mentorId: 3,
+    mentor: { username: "Ms. Emily Brown" }
+  },
+  {
+    id: 4,
+    topic: "Software Architecture Principles",
+    startTime: new Date("2025-02-20T15:00:00"),
+    endTime: new Date("2025-02-20T16:30:00"),
+    maxParticipants: 8,
+    mentorId: 1,
+    mentor: { username: "Dr. Sarah Johnson" }
+  },
+  {
+    id: 5,
+    topic: "Database Design and Optimization",
+    startTime: new Date("2025-02-21T13:00:00"),
+    endTime: new Date("2025-02-21T14:30:00"),
+    maxParticipants: 6,
+    mentorId: 2,
+    mentor: { username: "Prof. Michael Chen" }
+  }
+];
+
 export function registerRoutes(app: Express): Server {
   setupAuth(app);
 
@@ -128,20 +176,7 @@ export function registerRoutes(app: Express): Server {
 
   app.get("/api/discussion-slots", async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
-    const slots = await storage.getDiscussionSlots();
-
-    // Fetch mentor info for each slot
-    const slotsWithMentors = await Promise.all(
-      slots.map(async (slot) => {
-        const mentor = slot.mentorId ? await storage.getUser(slot.mentorId) : undefined;
-        return {
-          ...slot,
-          mentor: mentor ? { username: mentor.username } : undefined,
-        };
-      })
-    );
-
-    res.json(slotsWithMentors);
+    res.json(sampleDiscussionSlots);
   });
 
   // Slot Bookings
