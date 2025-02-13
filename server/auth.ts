@@ -63,8 +63,8 @@ export function setupAuth(app: Express) {
   });
 
   const extendedInsertUserSchema = insertUserSchema.extend({
-    confirmPassword: z.string(),
-  }).refine((data) => data.password === data.confirmPassword, {
+    confirmPassword: z.string().optional(),
+  }).refine((data) => !data.confirmPassword || data.password === data.confirmPassword, {
     message: "Passwords don't match",
     path: ["confirmPassword"],
   });
