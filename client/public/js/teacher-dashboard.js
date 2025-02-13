@@ -137,9 +137,46 @@ function openModal() {
     document.getElementById('createSlotModal').classList.remove('hidden');
 }
 
-function closeModal() {
+function openModal() {
     document.getElementById('createSlotModal').classList.remove('hidden');
+}
+
+function closeModal() {
+    document.getElementById('createSlotModal').classList.add('hidden');
     document.getElementById('createSlotForm').reset();
+}
+
+async function createSlot(e) {
+    e.preventDefault();
+    const form = e.target;
+    
+    try {
+        const startTime = new Date(form.slotDateTime.value);
+        const endTime = new Date(startTime.getTime() + parseInt(form.slotDuration.value) * 60000);
+        
+        const response = await fetch('/api/discussion-slots', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                topic: form.slotTopic.value || null,
+                startTime,
+                endTime,
+                maxParticipants: parseInt(form.maxParticipants.value)
+            })
+        });
+
+        if (response.ok) {
+            closeModal();
+            loadDiscussionSlots();
+            alert('Slot created successfully!');
+        } else {
+            const error = await response.text();
+            alert(error || 'Failed to create slot');
+        }
+    } catch (error) {
+        console.error('Create slot error:', error);
+        alert('Failed to create slot');
+    }
 }
 
 // Tab switching
