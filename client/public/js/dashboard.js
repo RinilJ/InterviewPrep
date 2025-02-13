@@ -19,6 +19,19 @@ async function checkAuth() {
     }
 }
 
+// Function to create topic card
+function createTopicCard(topic) {
+    return `
+        <div class="test-card">
+            <div class="test-info">
+                <h3>${topic.title}</h3>
+                <p>Range: ${topic.range}</p>
+            </div>
+            <button class="btn-primary" onclick="startTest('${topic.id}')">Start</button>
+        </div>
+    `;
+}
+
 // Load user data and initialize dashboard
 async function initializeDashboard() {
     const user = await checkAuth();
@@ -29,12 +42,15 @@ async function initializeDashboard() {
 
     // Load tests
     const tests = await fetch('/api/tests').then(res => res.json());
-    
+
     // Load test results
     const results = await fetch('/api/test-results').then(res => res.json());
-    
+
     // Load discussion slots
     const slots = await fetch('/api/discussion-slots').then(res => res.json());
+
+    // Load aptitude topics
+    const topics = await fetch('/api/aptitude-topics').then(res => res.json());
 
     // Update statistics
     const averageScore = results.length 
@@ -42,30 +58,45 @@ async function initializeDashboard() {
         : 0;
     document.getElementById('averageScore').textContent = `${averageScore}%`;
     document.getElementById('testsCompleted').textContent = results.length;
-    
+
     const upcomingSlots = slots.filter(slot => new Date(slot.startTime) > new Date());
     document.getElementById('upcomingDiscussions').textContent = upcomingSlots.length;
 
-    // Populate test modules
-    const testsByType = tests.reduce((acc, test) => {
-        if (!acc[test.type]) acc[test.type] = [];
-        acc[test.type].push(test);
-        return acc;
-    }, {});
+    // Populate verbal reasoning topics
+    const verbalContainer = document.getElementById('aptitudeTests');
+    verbalContainer.innerHTML = `
+        <h2>Logical Reasoning (Verbal)</h2>
+        <div class="test-list">
+            ${topics.verbal.map(createTopicCard).join('')}
+        </div>
+    `;
 
-    ['aptitude', 'technical', 'psychometric'].forEach(type => {
-        const container = document.getElementById(`${type}Tests`);
-        container.innerHTML = (testsByType[type] || [])
-            .map(test => `
-                <div class="test-card">
-                    <div class="test-info">
-                        <h3>${test.title}</h3>
-                        <p>${test.questions.length} questions</p>
-                    </div>
-                    <button class="btn-primary" onclick="startTest(${test.id})">Start</button>
+    // Populate non-verbal reasoning topics
+    const nonVerbalContainer = document.getElementById('technicalTests');
+    nonVerbalContainer.innerHTML = `
+        <h2>Logical Reasoning (Non-Verbal)</h2>
+        <div class="test-list">
+            ${topics.nonVerbal.map(createTopicCard).join('')}
+        </div>
+    `;
+
+    // Populate mathematical topics
+    const mathContainer = document.getElementById('psychometricTests');
+    mathContainer.innerHTML = `
+        <h2>Mathematical Aptitude</h2>
+        <div class="test-list">
+            ${topics.mathematical.map(createTopicCard).join('')}
+        </div>
+        <h2 class="mt-6">Practice Tests</h2>
+        <div class="test-list">
+            ${topics.practiceTests.map(section => `
+                <div class="test-category mb-4">
+                    <h3 class="mb-2">${section.title}</h3>
+                    ${section.subtests ? section.subtests.map(createTopicCard).join('') : createTopicCard(section)}
                 </div>
-            `).join('');
-    });
+            `).join('')}
+        </div>
+    `;
 
     // Populate discussion slots
     const slotsContainer = document.getElementById('discussionSlots');
@@ -102,6 +133,34 @@ async function initializeDashboard() {
         .join('');
 }
 
+// Book discussion slot
+async function bookSlot(slotId) {
+    try {
+        const response = await fetch('/api/slot-bookings', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ slotId })
+        });
+
+        if (response.ok) {
+            alert('Slot booked successfully!');
+            initializeDashboard(); // Refresh the dashboard
+        } else {
+            const error = await response.text();
+            alert(error || 'Failed to book slot');
+        }
+    } catch (error) {
+        console.error('Booking error:', error);
+        alert('Failed to book slot');
+    }
+}
+
+// Start a test
+async function startTest(topicId) {
+    // TODO: Implement test starting functionality
+    alert('Starting test for topic: ' + topicId);
+}
+
 // Tab switching functionality
 document.querySelectorAll('.tab').forEach(tab => {
     tab.addEventListener('click', () => {
@@ -127,28 +186,6 @@ document.getElementById('logoutBtn').addEventListener('click', async () => {
         alert('Failed to logout');
     }
 });
-
-// Book discussion slot
-async function bookSlot(slotId) {
-    try {
-        const response = await fetch('/api/slot-bookings', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ slotId })
-        });
-
-        if (response.ok) {
-            alert('Slot booked successfully!');
-            initializeDashboard(); // Refresh the dashboard
-        } else {
-            const error = await response.text();
-            alert(error || 'Failed to book slot');
-        }
-    } catch (error) {
-        console.error('Booking error:', error);
-        alert('Failed to book slot');
-    }
-}
 
 // Initialize dashboard when page loads
 document.addEventListener('DOMContentLoaded', initializeDashboard);
