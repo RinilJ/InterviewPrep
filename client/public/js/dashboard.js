@@ -9,12 +9,12 @@ async function checkAuth() {
     try {
         const response = await fetch('/api/user');
         if (!response.ok) {
-            window.location.href = '/login.html';
+            window.location.href = '/index.html';
             return null;
         }
         return await response.json();
     } catch (error) {
-        window.location.href = '/login.html';
+        window.location.href = '/index.html';
         return null;
     }
 }
