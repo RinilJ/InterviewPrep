@@ -26,6 +26,21 @@
                         <input type="password" id="loginPassword" name="password" required>
                     </div>
                     <button type="submit" class="btn-primary">Login</button>
+                    <div class="form-links">
+                        <a href="#" id="forgotPasswordLink">Forgot Password?</a>
+                    </div>
+                </form>
+
+                <form id="forgotPasswordForm" class="auth-form hidden">
+                    <h2>Reset Password</h2>
+                    <div class="form-group">
+                        <label for="resetEmail">Email</label>
+                        <input type="email" id="resetEmail" name="email" required>
+                    </div>
+                    <button type="submit" class="btn-primary">Reset Password</button>
+                    <div class="form-links">
+                        <a href="#" id="backToLoginLink">Back to Login</a>
+                    </div>
                 </form>
 
                 <form id="registerForm" class="auth-form hidden">

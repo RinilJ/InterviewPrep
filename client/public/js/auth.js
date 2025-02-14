@@ -67,6 +67,49 @@ loginForm.addEventListener('submit', async (e) => {
     }
 });
 
+// Forgot password form submission
+const forgotPasswordForm = document.getElementById('forgotPasswordForm');
+forgotPasswordForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    try {
+        const response = await fetch('/api/forgot-password', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                email: forgotPasswordForm.email.value
+            })
+        });
+
+        if (response.ok) {
+            alert('Password reset instructions sent to your email');
+            document.querySelector('[data-tab="login"]').click();
+        } else {
+            const error = await response.text();
+            alert(error || 'Failed to reset password');
+        }
+    } catch (error) {
+        alert('An error occurred during password reset');
+        console.error('Password reset error:', error);
+    }
+});
+
+// Forgot password link handling
+document.getElementById('forgotPasswordLink').addEventListener('click', (e) => {
+    e.preventDefault();
+    document.querySelectorAll('.auth-form').forEach(form => form.classList.add('hidden'));
+    forgotPasswordForm.classList.remove('hidden');
+});
+
+// Back to login link handling
+document.getElementById('backToLoginLink').addEventListener('click', (e) => {
+    e.preventDefault();
+    document.querySelectorAll('.auth-form').forEach(form => form.classList.add('hidden'));
+    document.getElementById('loginForm').classList.remove('hidden');
+});
+
 // Tab switching
 document.querySelectorAll('.tab').forEach(tab => {
     tab.addEventListener('click', () => {

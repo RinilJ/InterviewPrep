@@ -216,6 +216,30 @@ export function registerRoutes(app: Express): Server {
     res.status(201).json(booking);
   });
 
+  app.post("/api/logout", (req, res, next) => {
+    req.logout((err) => {
+      if (err) return next(err);
+      res.sendStatus(200);
+    });
+  });
+
+  app.post("/api/forgot-password", async (req, res) => {
+    const { email } = req.body;
+    const user = await storage.getUserByEmail(email);
+
+    if (!user) {
+      return res.status(404).send("No account found with this email");
+    }
+
+    // In a real application, you would:
+    // 1. Generate a password reset token
+    // 2. Save it to the database with an expiration
+    // 3. Send an email with a reset link
+    // For demo purposes, we'll just send a success response
+
+    res.status(200).send("Password reset instructions sent");
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
