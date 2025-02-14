@@ -65,7 +65,7 @@ async function initializeDashboard() {
 async function loadDiscussionSlots(filter = 'all') {
     const slots = await fetch('/api/discussion-slots').then(res => res.json());
     const now = new Date();
-    
+
     const filteredSlots = slots.filter(slot => {
         const slotDate = new Date(slot.startTime);
         switch(filter) {
@@ -102,15 +102,16 @@ async function loadDiscussionSlots(filter = 'all') {
 async function createSlot(e) {
     e.preventDefault();
     const form = e.target;
-    
+
     try {
         const startTime = new Date(form.slotDateTime.value);
-        const endTime = new Date(startTime.getTime() + form.slotDuration.value * 60000);
-        
+        const endTime = new Date(startTime.getTime() + parseInt(form.slotDuration.value) * 60000);
+
         const response = await fetch('/api/discussion-slots', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
+                mentorName: form.mentorName.value,
                 topic: form.slotTopic.value || null,
                 startTime,
                 endTime,
@@ -149,15 +150,16 @@ function closeModal() {
 async function createSlot(e) {
     e.preventDefault();
     const form = e.target;
-    
+
     try {
         const startTime = new Date(form.slotDateTime.value);
         const endTime = new Date(startTime.getTime() + parseInt(form.slotDuration.value) * 60000);
-        
+
         const response = await fetch('/api/discussion-slots', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
+                mentorName: form.mentorName.value,
                 topic: form.slotTopic.value || null,
                 startTime,
                 endTime,
