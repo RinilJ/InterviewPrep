@@ -18,7 +18,8 @@ registerForm.addEventListener('submit', async (e) => {
                 username: registerForm.username.value,
                 email: registerForm.email.value,
                 password: registerForm.password.value,
-                role: registerForm.role.value
+                role: registerForm.role.value,
+                department: registerForm.department.value
             })
         });
 
