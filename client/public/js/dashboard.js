@@ -175,8 +175,30 @@ async function bookSlot(slotId) {
 
 // Start a test
 async function startTest(topicId) {
-    // TODO: Implement test starting functionality
-    alert('Starting test for topic: ' + topicId);
+    try {
+        // Fetch questions for this topic
+        const response = await fetch(`/api/generate-test?topicId=${topicId}`);
+        if (!response.ok) {
+            throw new Error('Failed to generate test');
+        }
+        
+        const test = await response.json();
+        
+        // Store the current test in session storage
+        sessionStorage.setItem('currentTest', JSON.stringify({
+            topicId,
+            questions: test.questions,
+            currentQuestionIndex: 0,
+            answers: [],
+            startTime: new Date().toISOString()
+        }));
+        
+        // Redirect to the test page
+        window.location.href = '/test.html';
+    } catch (error) {
+        console.error('Error starting test:', error);
+        alert('Failed to start test. Please try again.');
+    }
 }
 
 // Tab switching functionality

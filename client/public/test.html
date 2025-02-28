@@ -1,0 +1,340 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test - Interview Preparation Platform</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .question-card {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .options-list {
+            list-style: none;
+            padding: 0;
+        }
+        .option-item {
+            padding: 12px 15px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .option-item:hover {
+            background-color: #f5f5f5;
+        }
+        .option-item.selected {
+            background-color: #e3f2fd;
+            border-color: #2196f3;
+        }
+        .test-controls {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        .progress-bar {
+            height: 8px;
+            background-color: #e0e0e0;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background-color: #4caf50;
+            transition: width 0.3s ease;
+        }
+        .timer {
+            font-size: 1.2rem;
+            text-align: right;
+            margin-bottom: 15px;
+        }
+        .psychometric-note {
+            font-style: italic;
+            color: #666;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <header>
+            <h1 id="testTitle">Loading Test...</h1>
+            <div class="timer" id="timer">Time: 00:00</div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+            </div>
+        </header>
+
+        <div id="questionContainer" class="question-card">
+            <h2 id="questionText">Loading question...</h2>
+            <ul id="optionsList" class="options-list"></ul>
+            <div id="psychometricNote" class="psychometric-note hidden">
+                Note: There are no right or wrong answers for psychometric questions.
+            </div>
+        </div>
+
+        <div class="test-controls">
+            <button id="prevBtn" class="btn-secondary">
+                <i class="fas fa-arrow-left"></i> Previous
+            </button>
+            <button id="nextBtn" class="btn-primary">
+                Next <i class="fas fa-arrow-right"></i>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Variables to track test state
+        let currentTest = null;
+        let timer = null;
+        let startTime = null;
+        let secondsElapsed = 0;
+
+        // Initialize test
+        function initializeTest() {
+            // Get test data from session storage
+            const testData = sessionStorage.getItem('currentTest');
+            if (!testData) {
+                // No test in progress, redirect to dashboard
+                window.location.href = '/dashboard.html';
+                return;
+            }
+
+            currentTest = JSON.parse(testData);
+            startTime = new Date(currentTest.startTime);
+            secondsElapsed = Math.floor((new Date() - startTime) / 1000);
+
+            // Start timer
+            startTimer();
+
+            // Set test title
+            document.getElementById('testTitle').textContent = `Topic: ${getTopicName(currentTest.topicId)}`;
+
+            // Load the first question
+            loadQuestion(currentTest.currentQuestionIndex);
+
+            // Set up button event handlers
+            document.getElementById('prevBtn').addEventListener('click', previousQuestion);
+            document.getElementById('nextBtn').addEventListener('click', nextQuestion);
+            
+            // Show/hide previous button based on current question
+            updateNavigationButtons();
+        }
+
+        // Start timer
+        function startTimer() {
+            timer = setInterval(() => {
+                secondsElapsed++;
+                const minutes = Math.floor(secondsElapsed / 60).toString().padStart(2, '0');
+                const seconds = (secondsElapsed % 60).toString().padStart(2, '0');
+                document.getElementById('timer').textContent = `Time: ${minutes}:${seconds}`;
+            }, 1000);
+        }
+
+        // Get topic name based on ID (placeholder function)
+        function getTopicName(topicId) {
+            // This is a simplified mapping for demo
+            const topicMap = {
+                'L01': 'Direction Sense',
+                'L02': 'Blood Relations',
+                'N01': 'Logical Venn Diagrams',
+                'Q01': 'Percentages',
+                'Q02': 'Profit and Loss',
+                'T01': 'Data Structures',
+                'P01': 'Personality Assessment'
+            };
+            return topicMap[topicId] || 'Unknown Topic';
+        }
+
+        // Load a question
+        function loadQuestion(index) {
+            if (!currentTest || !currentTest.questions || index >= currentTest.questions.length) {
+                return;
+            }
+
+            const question = currentTest.questions[index];
+            document.getElementById('questionText').textContent = `${index + 1}. ${question.question}`;
+            
+            // Update progress bar
+            const progress = ((index + 1) / currentTest.questions.length) * 100;
+            document.getElementById('progressFill').style.width = `${progress}%`;
+            
+            // Populate options
+            const optionsList = document.getElementById('optionsList');
+            optionsList.innerHTML = '';
+            
+            question.options.forEach((option, i) => {
+                const li = document.createElement('li');
+                li.className = 'option-item';
+                li.dataset.index = i.toString();
+                li.textContent = option;
+                
+                // Check if this option was previously selected
+                if (currentTest.answers[index] === i) {
+                    li.classList.add('selected');
+                }
+                
+                li.addEventListener('click', () => selectOption(li, i));
+                optionsList.appendChild(li);
+            });
+            
+            // Show note for psychometric questions
+            const isPsychometric = currentTest.topicId.startsWith('P');
+            document.getElementById('psychometricNote').classList.toggle('hidden', !isPsychometric);
+            
+            // Update current question index
+            currentTest.currentQuestionIndex = index;
+            
+            // Save current state
+            saveTestState();
+            
+            // Update navigation buttons
+            updateNavigationButtons();
+        }
+
+        // Select an option
+        function selectOption(optionElement, optionIndex) {
+            // Remove selected class from all options
+            const options = document.querySelectorAll('.option-item');
+            options.forEach(opt => opt.classList.remove('selected'));
+            
+            // Add selected class to chosen option
+            optionElement.classList.add('selected');
+            
+            // Save the answer
+            currentTest.answers[currentTest.currentQuestionIndex] = optionIndex;
+            saveTestState();
+        }
+
+        // Go to previous question
+        function previousQuestion() {
+            if (currentTest.currentQuestionIndex > 0) {
+                loadQuestion(currentTest.currentQuestionIndex - 1);
+            }
+        }
+
+        // Go to next question
+        function nextQuestion() {
+            if (currentTest.currentQuestionIndex < currentTest.questions.length - 1) {
+                // Go to next question
+                loadQuestion(currentTest.currentQuestionIndex + 1);
+            } else {
+                // This was the last question, submit the test
+                submitTest();
+            }
+        }
+
+        // Update navigation buttons
+        function updateNavigationButtons() {
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            
+            // Hide previous button on first question
+            prevBtn.disabled = currentTest.currentQuestionIndex === 0;
+            
+            // Change next button text on last question
+            if (currentTest.currentQuestionIndex === currentTest.questions.length - 1) {
+                nextBtn.innerHTML = 'Submit <i class="fas fa-check"></i>';
+            } else {
+                nextBtn.innerHTML = 'Next <i class="fas fa-arrow-right"></i>';
+            }
+        }
+
+        // Save current test state
+        function saveTestState() {
+            sessionStorage.setItem('currentTest', JSON.stringify(currentTest));
+        }
+
+        // Submit the test
+        async function submitTest() {
+            clearInterval(timer);
+            
+            // Calculate score for non-psychometric tests
+            let score = 0;
+            let totalQuestions = currentTest.questions.length;
+            
+            if (!currentTest.topicId.startsWith('P')) {
+                // For non-psychometric tests, calculate score
+                currentTest.questions.forEach((question, index) => {
+                    if (currentTest.answers[index] === question.correctAnswer) {
+                        score++;
+                    }
+                });
+            } else {
+                // For psychometric tests, there's no scoring
+                score = null;
+            }
+            
+            // Calculate percentage if applicable
+            const scorePercentage = score !== null ? Math.round((score / totalQuestions) * 100) : null;
+            
+            try {
+                // Submit test result to server
+                const response = await fetch('/api/test-results', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        testId: 1, // Placeholder ID for demo
+                        score: scorePercentage || 0, // Use 0 for psychometric tests in this demo
+                        answers: currentTest.answers
+                    })
+                });
+                
+                if (response.ok) {
+                    // Test submitted successfully
+                    alert(`Test completed! ${scorePercentage !== null ? `Your score: ${scorePercentage}%` : 'Your responses have been recorded.'}`);
+                    
+                    // Clear test data
+                    sessionStorage.removeItem('currentTest');
+                    
+                    // Redirect to dashboard
+                    window.location.href = '/dashboard.html';
+                } else {
+                    throw new Error('Failed to submit test results');
+                }
+            } catch (error) {
+                console.error('Error submitting test:', error);
+                alert('There was an error submitting your test. Your progress has been saved, and you can try submitting again.');
+            }
+        }
+
+        // Check authentication
+        async function checkAuth() {
+            try {
+                const response = await fetch('/api/user');
+                if (!response.ok) {
+                    window.location.href = '/index.html';
+                    return false;
+                }
+                return true;
+            } catch (error) {
+                window.location.href = '/index.html';
+                return false;
+            }
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', async () => {
+            const isAuthenticated = await checkAuth();
+            if (isAuthenticated) {
+                initializeTest();
+            }
+        });
+    </script>
+</body>
+</html>
