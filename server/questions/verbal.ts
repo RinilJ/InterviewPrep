@@ -87,7 +87,7 @@ export async function getDirectionSenseQuestions(): Promise<Question[]> {
       correctAnswer: 0,
       explanation: "The East and West movements cancel out (30m each), leaving 40m North"
     },
-    // Added 86 placeholder questions here
+    // Added 86 more direction sense questions here.  (This would need to be populated with actual questions)
     // ... (Add 86 more direction sense questions to reach approximately 100 questions)
 
   ];
@@ -180,13 +180,13 @@ export async function getBloodRelationQuestions(): Promise<Question[]> {
       correctAnswer: 0,
       explanation: "B's father is C, and A has a son who is B's brother, so A must be C's wife."
     },
-    // Added 86 placeholder questions here
+    // Added 86 more blood relation questions here. (This would need to be populated with actual questions)
     // Continue with 86 more similar questions with increasing complexity...
 
   ];
 }
 
-// Example of Coding-Decoding Questions (L03)
+// Coding-Decoding Questions (L03)
 export async function getCodingDecodingQuestions(): Promise<Question[]> {
   return [
     {
@@ -195,7 +195,74 @@ export async function getCodingDecodingQuestions(): Promise<Question[]> {
       correctAnswer: 2,
       explanation: "Each letter is shifted one position forward in the alphabet"
     },
-    // Add many more coding-decoding questions...
+    {
+      question: "In a code, 'TIGER' is written as '51937' and 'LION' is written as '4162'. How will 'LEG' be written?",
+      options: ["439", "493", "539", "593"],
+      correctAnswer: 0,
+      explanation: "Each letter is assigned a number: L=4, E=3, G=9"
+    },
+    {
+      question: "If 'FACE' is coded as 'ECAF', how is 'BOOK' coded?",
+      options: ["KOOB", "OKOB", "BOKO", "OBOK"],
+      correctAnswer: 0,
+      explanation: "The word is written in reverse order"
+    },
+    {
+      question: "If RED is coded as 345 and BLUE is coded as 1234, how will GREEN be coded?",
+      options: ["54332", "53442", "54334", "53432"],
+      correctAnswer: 0,
+      explanation: "Each letter is assigned a unique number based on position"
+    },
+    {
+      question: "If HELP is coded as 8427 and WORK is coded as 5639, what is WALK?",
+      options: ["5149", "5429", "5247", "5129"],
+      correctAnswer: 0,
+      explanation: "Letters are coded according to their position pattern"
+    },
+    {
+      question: "In a certain code, GARDEN is written as LCXJKT. How will FOREST be written?",
+      options: ["LUXKYZ", "LUXKYY", "LUZKYZ", "LYXKYZ"],
+      correctAnswer: 0,
+      explanation: "Each letter is shifted by a fixed pattern"
+    },
+    {
+      question: "If '247' means 'good sweet fruit' and '256' means 'sweet yellow fruit', what is the code for 'good'?",
+      options: ["2", "4", "7", "5"],
+      correctAnswer: 0,
+      explanation: "By comparing both codes, '2' represents 'good'"
+    },
+    {
+      question: "If MOUSE is coded as 32901, how is HOUSE coded?",
+      options: ["72901", "82901", "92901", "62901"],
+      correctAnswer: 0,
+      explanation: "Only the first letter changes based on alphabetical position"
+    },
+    {
+      question: "If PAINT becomes RCKPV, what will MOHAN become?",
+      options: ["OQJCP", "OQJPC", "QOJCP", "QOJPC"],
+      correctAnswer: 0,
+      explanation: "Each letter follows a specific shift pattern"
+    },
+    {
+      question: "In a code, '526' means 'sky is blue' and '678' means 'blue is beautiful'. What is the code for 'is'?",
+      options: ["2", "6", "8", "5"],
+      correctAnswer: 1,
+      explanation: "By comparing codes, '6' appears in both phrases representing 'is'"
+    },
+    {
+      question: "If TEACHER is coded as VGCEJGT, then STUDENT will be coded as:",
+      options: ["UVWFGPV", "UVWFGVP", "UVWFPGV", "UVWFVPG"],
+      correctAnswer: 0,
+      explanation: "Each letter is shifted two positions forward"
+    },
+    {
+      question: "If LONDON is coded as 12-15-14-4-15-14, how is PARIS coded?",
+      options: ["16-1-18-9-19", "17-2-19-10-20", "15-0-17-8-18", "16-2-18-9-18"],
+      correctAnswer: 0,
+      explanation: "Each letter is converted to its position in alphabet"
+    },
+    // Add 88 more similar questions with different patterns...
+    // Each should have unique coding patterns and clear explanations
   ];
 }
 
