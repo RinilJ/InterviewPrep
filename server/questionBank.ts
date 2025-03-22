@@ -310,9 +310,167 @@ export const questionBank = {
         };
       })
     },
-    "L10": { title: "Verbal Reasoning", questions: Array.from({ length: 100 }, () => ({ question: "Verbal Reasoning Question", options: ["A", "B", "C", "D"], correctAnswer: 0, explanation: "Verbal Reasoning Explanation" })) },
-    "L11": { title: "Word Order", questions: Array.from({ length: 100 }, () => ({ question: "Word Order Question", options: ["A", "B", "C", "D"], correctAnswer: 0, explanation: "Word Order Explanation" })) },
-    "L12": { title: "Logical Sequence", questions: Array.from({ length: 100 }, () => ({ question: "Logical Sequence Question", options: ["A", "B", "C", "D"], correctAnswer: 0, explanation: "Logical Sequence Explanation" })) },
+    "L10": {
+      title: "Verbal Reasoning",
+      questions: Array.from({ length: 100 }, (_, i) => {
+        const scenarios = [
+          {
+            premise: "All cats are animals. All animals need food.",
+            question: "Which conclusion is valid?",
+            options: [
+              "All cats need food",
+              "Some animals are cats",
+              "All animals are cats",
+              "Some cats don't need food"
+            ],
+            correct: 0,
+            explain: "Since all cats are animals and all animals need food, it logically follows that all cats need food."
+          },
+          {
+            premise: "Some birds can fly. All pigeons are birds.",
+            question: "What can we conclude?",
+            options: [
+              "All birds can fly",
+              "Some pigeons can fly",
+              "All pigeons can fly",
+              "No pigeons can fly"
+            ],
+            correct: 1,
+            explain: "Since some birds can fly and all pigeons are birds, some pigeons might be among those birds that can fly."
+          },
+          {
+            premise: "All students in the class passed. John is in the class.",
+            question: "What can we conclude?",
+            options: [
+              "John passed",
+              "John failed",
+              "John might have passed",
+              "We can't determine John's result"
+            ],
+            correct: 0,
+            explain: "Since all students passed and John is in the class, John must have passed."
+          }
+        ];
+
+        const selectedScenario = scenarios[i % scenarios.length];
+        return {
+          question: `${selectedScenario.premise}\n${selectedScenario.question}`,
+          options: selectedScenario.options,
+          correctAnswer: selectedScenario.correct,
+          explanation: selectedScenario.explain
+        };
+      })
+    },
+    "L11": {
+      title: "Word Order",
+      questions: Array.from({ length: 100 }, (_, i) => {
+        const wordSets = [
+          {
+            words: ["book", "page", "chapter", "paragraph", "sentence"],
+            correct: ["sentence", "paragraph", "page", "chapter", "book"],
+            explain: "Arrange from smallest to largest unit in written text"
+          },
+          {
+            words: ["year", "century", "decade", "month", "day"],
+            correct: ["day", "month", "year", "decade", "century"],
+            explain: "Arrange from shortest to longest time period"
+          },
+          {
+            words: ["ocean", "pond", "lake", "sea", "stream"],
+            correct: ["pond", "stream", "lake", "sea", "ocean"],
+            explain: "Arrange from smallest to largest body of water"
+          }
+        ];
+
+        const set = wordSets[i % wordSets.length];
+        const shuffled = shuffleArray([...set.words]);
+
+        return {
+          question: `Arrange these words in logical order: ${shuffled.join(", ")}`,
+          options: [
+            set.correct.join(" → "),
+            shuffled.join(" → "),
+            shuffleArray([...set.words]).join(" → "),
+            shuffleArray([...set.words]).join(" → ")
+          ],
+          correctAnswer: 0,
+          explanation: set.explain
+        };
+      })
+    },
+    "L12": {
+      title: "Logical Sequence",
+      questions: Array.from({ length: 100 }, (_, i) => {
+        const sequences = [
+          {
+            events: [
+              "1. Wake up in the morning",
+              "2. Brush teeth",
+              "3. Take a shower",
+              "4. Get dressed",
+              "5. Eat breakfast"
+            ],
+            scrambled: [
+              "Take a shower",
+              "Eat breakfast",
+              "Wake up in the morning",
+              "Get dressed",
+              "Brush teeth"
+            ],
+            explain: "Logical sequence of morning routine activities"
+          },
+          {
+            events: [
+              "1. Plant seed",
+              "2. Water soil",
+              "3. Seedling appears",
+              "4. Plant grows",
+              "5. Flowers bloom"
+            ],
+            scrambled: [
+              "Flowers bloom",
+              "Plant seed",
+              "Seedling appears",
+              "Water soil",
+              "Plant grows"
+            ],
+            explain: "Natural sequence of plant growth"
+          },
+          {
+            events: [
+              "1. Mix ingredients",
+              "2. Knead dough",
+              "3. Let dough rise",
+              "4. Shape bread",
+              "5. Bake bread"
+            ],
+            scrambled: [
+              "Bake bread",
+              "Mix ingredients",
+              "Let dough rise",
+              "Shape bread",
+              "Knead dough"
+            ],
+            explain: "Correct sequence of bread making process"
+          }
+        ];
+
+        const sequence = sequences[i % sequences.length];
+        const correctOrder = sequence.events.join(" → ");
+
+        return {
+          question: `Arrange these events in the correct sequence: ${sequence.scrambled.join(" | ")}`,
+          options: [
+            correctOrder,
+            shuffleArray([...sequence.events]).join(" → "),
+            shuffleArray([...sequence.events]).join(" → "),
+            shuffleArray([...sequence.events]).join(" → ")
+          ],
+          correctAnswer: 0,
+          explanation: sequence.explain
+        };
+      })
+    },
   },
   nonVerbal: {
     "N01": {
@@ -361,59 +519,76 @@ export const questionBank = {
     "N03": {
       title: "Figure Series",
       questions: Array.from({ length: 100 }, (_, i) => {
-        const seriesTypes = [
+        const patterns = [
           {
-            type: 'Rotation',
-            pattern: 'The figure rotates by 45 degrees clockwise in each step',
-            options: ['90° clockwise', '45° clockwise', '45° counterclockwise', '90° counterclockwise']
+            series: "Triangle → Square → Pentagon → Hexagon → ?",
+            pattern: "Each shape has one more side than the previous shape",
+            options: ["Circle", "Heptagon", "Rectangle", "Triangle"],
+            correct: 1,
+            explain: "The pattern shows shapes with increasing number of sides (3→4→5→6→7)"
           },
           {
-            type: 'Reflection',
-            pattern: 'The figure is reflected alternatively on vertical and horizontal axis',
-            options: ['Vertical reflection', 'Horizontal reflection', 'Diagonal reflection', 'No reflection']
+            series: "Small circle → Medium circle → Large circle → Medium circle → ?",
+            pattern: "Alternating size pattern",
+            options: ["Extra large circle", "Small circle", "Medium circle", "Large circle"],
+            correct: 1,
+            explain: "The pattern follows: small→medium→large→medium→small"
           },
           {
-            type: 'Addition',
-            pattern: 'A new element is added in each step following a specific rule',
-            options: ['Circle added', 'Square added', 'Triangle added', 'Line added']
+            series: "Empty square → Square with dot → Square with cross → Square with star → ?",
+            pattern: "Increasing complexity of internal symbol",
+            options: [
+              "Square with circle",
+              "Empty square",
+              "Square with multiple stars",
+              "Square with dot"
+            ],
+            correct: 2,
+            explain: "Each step adds more complex internal symbols"
           }
-          // Add more pattern types...
         ];
 
-        const selectedType = seriesTypes[i % seriesTypes.length];
+        const selectedPattern = patterns[i % patterns.length];
 
         return {
-          question: `If the figures in the series follow the pattern: ${selectedType.pattern}, what would be the next figure?`,
-          options: selectedType.options,
-          correctAnswer: i % 4,
-          explanation: `This is a ${selectedType.type} pattern where ${selectedType.pattern}.`
+          question: `What comes next in the series: ${selectedPattern.series}`,
+          options: selectedPattern.options,
+          correctAnswer: selectedPattern.correct,
+          explanation: selectedPattern.explain
         };
       })
     },
     "N04": {
       title: "Non-Verbal Analogy",
       questions: Array.from({ length: 100 }, (_, i) => {
-        const analogyTypes = [
+        const analogies = [
           {
-            type: 'Shape Transformation',
-            pattern: 'Circle transforms to square',
-            options: ['Triangle transforms to rectangle', 'Pentagon transforms to hexagon', 'Line transforms to curve', 'Point transforms to line']
+            premise: "Square is to Cube as Circle is to ?",
+            options: ["Cylinder", "Sphere", "Cone", "Rectangle"],
+            correct: 1,
+            explain: "As a cube is a 3D extension of a square, a sphere is a 3D extension of a circle"
           },
           {
-            type: 'Pattern Completion',
-            pattern: 'Simple pattern becomes complex',
-            options: ['Basic shape becomes detailed', 'Solid becomes dotted', 'Small becomes large', 'Light becomes dark']
+            premise: "Single dot is to Multiple dots as Single line is to ?",
+            options: ["Circle", "Triangle", "Multiple lines", "Square"],
+            correct: 2,
+            explain: "The relationship is single to multiple of the same shape"
           },
-          // Add more analogy types...
+          {
+            premise: "Black shape is to White shape as Solid line is to ?",
+            options: ["Thick line", "Colored line", "Dotted line", "No line"],
+            correct: 2,
+            explain: "The relationship shows contrast in representation"
+          }
         ];
 
-        const selectedType = analogyTypes[i % analogyTypes.length];
+        const selectedAnalogy = analogies[i % analogies.length];
 
         return {
-          question: `If the first pair shows: ${selectedType.pattern}, which of the following would complete the second pair?`,
-          options: selectedType.options,
-          correctAnswer: i % 4,
-          explanation: `This is a ${selectedType.type} analogy where the same transformation rule applies to both pairs.`
+          question: selectedAnalogy.premise,
+          options: selectedAnalogy.options,
+          correctAnswer: selectedAnalogy.correct,
+          explanation: selectedAnalogy.explain
         };
       })
     },
@@ -486,7 +661,7 @@ export const questionBank = {
         const principal = Math.floor(Math.random() * 10000) + 1000;
         const rate = (Math.floor(Math.random() * 10) + 5);
         const time = Math.floor(Math.random() * 3) + 1;
-        const CI = principal * Math.pow((1 + rate/100), time) - principal;
+        const CI = principal * Math.pow((1 + rate / 100), time) - principal;
 
         return {
           question: `What is the Compound Interest on Rs. ${principal} at ${rate}% per annum for ${time} years?`,
@@ -568,21 +743,21 @@ export const questionBank = {
     "Q08": {
       title: "Average",
       questions: Array.from({ length: 100 }, (_, i) => {
-          const numbers = Array.from({length: 5}, () => Math.floor(Math.random() * 100));
-          const sum = numbers.reduce((a, b) => a + b, 0);
-          const average = sum / numbers.length;
+        const numbers = Array.from({ length: 5 }, () => Math.floor(Math.random() * 100));
+        const sum = numbers.reduce((a, b) => a + b, 0);
+        const average = sum / numbers.length;
 
-          return {
-              question: `What is the average of the following numbers: ${numbers.join(', ')}?`,
-              options: [
-                  `${average}`,
-                  `${average + 5}`,
-                  `${average - 5}`,
-                  `${average * 2}`
-              ],
-              correctAnswer: 0,
-              explanation: `Average = Sum of numbers / Number of numbers = ${sum} / 5 = ${average}`
-          };
+        return {
+          question: `What is the average of the following numbers: ${numbers.join(', ')}?`,
+          options: [
+            `${average}`,
+            `${average + 5}`,
+            `${average - 5}`,
+            `${average * 2}`
+          ],
+          correctAnswer: 0,
+          explanation: `Average = Sum of numbers / Number of numbers = ${sum} /5 = ${average}`
+        };
       })
     },
     "Q09": {
@@ -687,6 +862,16 @@ function generateExpandedQuestions(baseQuestion: string, count: number) {
   }));
 }
 
+//Fisher-Yates shuffle algorithm
+function shuffleArray(array: any[]) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
+}
+
+
 // Export the expanded question bank separately
 export const questionBankExpanded = {
   verbal: {},
@@ -700,7 +885,7 @@ export const questionBankExpanded = {
 Object.keys(questionBank).forEach(category => {
   Object.keys(questionBank[category]).forEach(topicId => {
     if (!questionBankExpanded[category][topicId]) {
-            questionBankExpanded[category][topicId] = generateExpandedQuestions(
+      questionBankExpanded[category][topicId] = generateExpandedQuestions(
         `Sample ${category} question for topic ${topicId}`,
         50
       );

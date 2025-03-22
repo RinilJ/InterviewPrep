@@ -8,12 +8,16 @@ import { questionBank } from "./questionBank";
 
 // Helper function to shuffle array
 function shuffleArray<T>(array: T[]): T[] {
-  for (let i = array.length - 1; i > 0; i--) {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
-    [array[i], array[j]] = [array[j], array[i]];
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
   }
-  return array;
+  return shuffled;
 }
+
+// Track used questions per user
+const usedQuestions = new Map<number, Set<string>>();
 
 export function registerRoutes(app: Express): Server {
   setupAuth(app);
@@ -86,7 +90,7 @@ export function registerRoutes(app: Express): Server {
     res.status(201).json(result);
   });
 
-  // Generate test with questions from question bank
+  // Generate test with unique questions from question bank
   app.get("/api/generate-test", (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
 
@@ -94,6 +98,12 @@ export function registerRoutes(app: Express): Server {
     if (!topicId) return res.status(400).send("Topic ID is required");
 
     try {
+      // Initialize user's used questions set if not exists
+      if (!usedQuestions.has(req.user.id)) {
+        usedQuestions.set(req.user.id, new Set());
+      }
+      const userUsedQuestions = usedQuestions.get(req.user.id)!;
+
       // Determine category from topic ID
       let category: 'verbal' | 'nonVerbal' | 'mathematical';
       if (topicId.startsWith('L')) {
@@ -112,15 +122,36 @@ export function registerRoutes(app: Express): Server {
         return res.status(404).send("No questions available for this topic");
       }
 
+      // Filter out previously used questions
+      const availableQuestions = topicData.questions.filter(q => 
+        !userUsedQuestions.has(`${topicId}-${q.question}`)
+      );
+
+      if (availableQuestions.length < 10) {
+        // Reset used questions for this topic if not enough unique questions remain
+        const topicQuestions = Array.from(userUsedQuestions)
+          .filter(q => q.startsWith(topicId));
+        topicQuestions.forEach(q => userUsedQuestions.delete(q));
+      }
+
       // Randomly select 10 unique questions
-      const selectedQuestions = shuffleArray([...topicData.questions])
+      const selectedQuestions = shuffleArray(availableQuestions)
         .slice(0, 10)
-        .map(q => ({
-          question: q.question,
-          options: q.options,
-          correctAnswer: q.correctAnswer,
-          explanation: q.explanation
-        }));
+        .map(q => {
+          // Mark question as used
+          userUsedQuestions.add(`${topicId}-${q.question}`);
+          return {
+            question: q.question,
+            options: q.options,
+            correctAnswer: q.correctAnswer,
+            explanation: q.explanation
+          };
+        });
+
+      // Clear old questions if set gets too large
+      if (userUsedQuestions.size > 1000) {
+        usedQuestions.set(req.user.id, new Set());
+      }
 
       res.json({
         topicId,
