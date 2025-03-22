@@ -1,4 +1,3 @@
-
 // Question bank for aptitude tests
 export const questionBank = {
   verbal: {
@@ -529,31 +528,140 @@ export const questionBank = {
         correctAnswer: 1
       }
     ],
-    "Q02": [ // Profit and Loss
+    "Q05": [ // Age Problems
       {
-        question: "A shopkeeper bought an item for $800 and sold it for $1000. What is the profit percentage?",
-        options: ["20%", "25%", "15%", "22.5%"],
+        question: "The sum of ages of 5 children born at intervals of 3 years is 50 years. What is the age of the youngest child?",
+        options: ["4 years", "8 years", "10 years", "6 years"],
         correctAnswer: 0
       },
       {
-        question: "If a shopkeeper sells an article at 10% loss instead of 10% profit, he would lose $60 more. What is the cost price of the article?",
-        options: ["$300", "$320", "$350", "$400"],
-        correctAnswer: 0
-      },
-      {
-        question: "A trader bought goods worth $2400 and sold half of them at 20% profit and the remaining at 10% loss. The overall profit/loss percentage is:",
-        options: ["5% profit", "5% loss", "10% profit", "No profit, no loss"],
-        correctAnswer: 0
-      },
-      {
-        question: "An article is sold at 20% profit. If both the cost price and selling price are reduced by $50, the profit would be 25%. Find the original cost price.",
-        options: ["$350", "$400", "$450", "$500"],
+        question: "A father is 30 years older than his son. In 5 years, the father will be three times as old as his son. Find the present age of son.",
+        options: ["10 years", "12 years", "15 years", "18 years"],
         correctAnswer: 1
       },
       {
-        question: "A shopkeeper marks his goods 40% above cost price and allows a 25% discount. His profit percentage is:",
-        options: ["5%", "10%", "15%", "7.5%"],
+        question: "Present ages of Sam and Smith are in the ratio 5:4. Three years from now, the ratio of their ages will be 11:9. What is Smith's present age?",
+        options: ["24 years", "36 years", "48 years", "40 years"],
         correctAnswer: 0
+      }
+    ],
+    "Q06": [ // Time and Work
+      {
+        question: "A can do a piece of work in 20 days and B in 30 days. In how many days can they do it together?",
+        options: ["10 days", "12 days", "15 days", "18 days"],
+        correctAnswer: 1
+      },
+      {
+        question: "Three pipes A, B and C can fill a tank in 6 hours, 8 hours, and 12 hours respectively. If all pipes are opened together, in how many hours will the tank be filled?",
+        options: ["2.9 hours", "3.2 hours", "2.7 hours", "3.4 hours"],
+        correctAnswer: 2
+      },
+      {
+        question: "If 6 men can do a piece of work in 12 days, in how many days will 8 men do the same work?",
+        options: ["9 days", "10 days", "8 days", "15 days"],
+        correctAnswer: 0
+      }
+    ],
+    "Q07": [ // Time and Distance
+      {
+        question: "A train running at 90 kmph crosses a platform of length 100 meters in 10 seconds. What is the length of the train?",
+        options: ["150 meters", "200 meters", "250 meters", "300 meters"],
+        correctAnswer: 0
+      },
+      {
+        question: "Two trains are moving in opposite directions at 60 kmph and 90 kmph. If they take 10 seconds to cross each other, what is the total length of trains?",
+        options: ["375 meters", "400 meters", "425 meters", "450 meters"],
+        correctAnswer: 1
+      },
+      {
+        question: "A boat covers 32 km upstream and the same distance downstream in 6 hours. If the speed of the stream is 4 kmph, what is the speed of the boat in still water?",
+        options: ["12 kmph", "14 kmph", "16 kmph", "18 kmph"],
+        correctAnswer: 2
+      }
+    ],
+    "Q08": [ // Averages
+      {
+        question: "The average of first 50 natural numbers is:",
+        options: ["25.5", "25", "24.5", "26"],
+        correctAnswer: 0
+      },
+      {
+        question: "The average weight of 8 people increases by 2.5 kg when one person weighing 65 kg is replaced by another person. The weight of the new person is:",
+        options: ["75 kg", "80 kg", "85 kg", "90 kg"],
+        correctAnswer: 2
+      },
+      {
+        question: "The average of 20 numbers is zero. Of them, how many numbers can be greater than zero?",
+        options: ["0", "10", "19", "20"],
+        correctAnswer: 2
+      }
+    ],
+    "Q09": [ // Geometry
+      {
+        question: "The perimeter of a circle is equal to that of a square. If the area of the square is 484 sq cm, what is the area of the circle?",
+        options: ["346 sq cm", "366 sq cm", "386 sq cm", "616 sq cm"],
+        correctAnswer: 2
+      },
+      {
+        question: "The ratio of the radii of two circles is 3:2. What is the ratio of their areas?",
+        options: ["9:4", "6:4", "3:2", "4:9"],
+        correctAnswer: 0
+      },
+      {
+        question: "If the length of a rectangle is doubled and breadth is halved, its area will:",
+        options: ["Be doubled", "Be halved", "Remain same", "Be quadrupled"],
+        correctAnswer: 2
+      }
+    ],
+    "Q10": [ // Numbers
+      {
+        question: "The least number which when divided by 5, 6, 7 and 8 leaves a remainder 3 in each case is:",
+        options: ["158", "163", "168", "173"],
+        correctAnswer: 1
+      },
+      {
+        question: "The sum of first 45 natural numbers is:",
+        options: ["1035", "1040", "1045", "1050"],
+        correctAnswer: 0
+      },
+      {
+        question: "How many three digit numbers are divisible by 6?",
+        options: ["149", "150", "151", "152"],
+        correctAnswer: 1
+      }
+    ],
+    "Q11": [ // Probability
+      {
+        question: "A bag contains 3 red and 2 blue marbles. If two marbles are drawn at random, what is the probability that both are red?",
+        options: ["3/10", "2/5", "1/5", "3/5"],
+        correctAnswer: 0
+      },
+      {
+        question: "Two dice are thrown together. What is the probability of getting a sum of 8?",
+        options: ["5/36", "7/36", "11/36", "13/36"],
+        correctAnswer: 0
+      },
+      {
+        question: "In a class of 25 students, 15 are boys and 10 are girls. If 3 students are selected at random, what is the probability that 2 are boys and 1 is a girl?",
+        options: ["21/46", "25/46", "27/46", "30/46"],
+        correctAnswer: 1
+      }
+    ],
+    "Q12": [ // Data Interpretation
+      {
+        question: "If the profit earned by selling an article for Rs.432 is equal to the loss incurred when the same article is sold for Rs.348, what is the cost price of the article?",
+        options: ["Rs.390", "Rs.400", "Rs.410", "Rs.420"],
+        correctAnswer: 0
+      },
+      {
+        question: "A shopkeeper bought 30 kg of wheat at the rate of Rs.25 per kg. He sold 40% of the total quantity at the rate of Rs.28 per kg and the remaining at the rate of Rs.30 per kg. What was his total profit?",
+        options: ["Rs.120", "Rs.130", "Rs.140", "Rs.150"],
+        correctAnswer: 2
+      },
+      {
+        question: "The ratio of the present ages of A and B is 3:4. If after 4 years, the ratio becomes 4:5, what is the present age of A?",
+        options: ["12 years", "24 years", "36 years", "48 years"],
+        correctAnswer: 1
       }
     ]
   },
@@ -567,7 +675,7 @@ export const questionBank = {
       {
         question: "What is the worst-case time complexity of binary search?",
         options: ["O(1)", "O(log n)", "O(n)", "O(n²)"],
-        correctAnswer: 1
+        correctAnswer: 2
       },
       {
         question: "Which of the following is not a linear data structure?",
