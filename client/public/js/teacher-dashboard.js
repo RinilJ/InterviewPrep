@@ -30,7 +30,7 @@ async function initializeDashboard() {
     if (!user) return;
 
     // Update user info
-    document.getElementById('userName').textContent = `${user.username} (Teacher)`;
+    document.getElementById('userName').textContent = `${user.username} (${user.department} - Batch ${user.batch}, Year ${user.year})`;
 
     // Fetch statistics
     const stats = await fetch('/api/teacher/stats').then(res => res.json());

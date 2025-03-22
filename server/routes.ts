@@ -44,11 +44,14 @@ const teacherStats = {
   totalSlots: sampleDiscussionSlots.length
 };
 
-// Sample student progress data
+// Update the studentProgress sample data to include batch and year
 const studentProgress = [
   {
     id: 1,
     username: "john_doe",
+    department: "CS",
+    batch: "A",
+    year: "3",
     lastActive: new Date("2025-02-13T08:30:00"),
     testsCompleted: 15,
     averageScore: 85
@@ -56,9 +59,22 @@ const studentProgress = [
   {
     id: 2,
     username: "jane_smith",
+    department: "CS",
+    batch: "A",
+    year: "3",
     lastActive: new Date("2025-02-13T09:45:00"),
     testsCompleted: 12,
     averageScore: 78
+  },
+  {
+    id: 3,
+    username: "mike_wilson",
+    department: "IT",
+    batch: "B",
+    year: "4",
+    lastActive: new Date("2025-02-13T10:15:00"),
+    testsCompleted: 18,
+    averageScore: 92
   }
 ];
 
@@ -133,11 +149,20 @@ export function registerRoutes(app: Express): Server {
     res.json(teacherStats);
   });
 
+  // Update the teacher stats route to filter students by batch and year
   app.get("/api/teacher/students", async (req, res) => {
     if (!req.isAuthenticated() || req.user.role !== "teacher") {
       return res.sendStatus(401);
     }
-    res.json(studentProgress);
+
+    // Filter students based on teacher's batch and year
+    const filteredStudents = studentProgress.filter(student =>
+      student.batch === req.user.batch &&
+      student.year === req.user.year &&
+      student.department === req.user.department
+    );
+
+    res.json(filteredStudents);
   });
 
   // Get aptitude topics
@@ -220,14 +245,14 @@ export function registerRoutes(app: Express): Server {
   // Generate test with random questions
   app.get("/api/generate-test", (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
-    
+
     const topicId = req.query.topicId as string;
     if (!topicId) return res.status(400).send("Topic ID is required");
-    
+
     // Determine the category from the topic ID
     let category: string;
     let questions: any[] = [];
-    
+
     if (topicId.startsWith('L')) {
       category = 'verbal';
     } else if (topicId.startsWith('N')) {
@@ -241,30 +266,30 @@ export function registerRoutes(app: Express): Server {
     } else {
       return res.status(400).send("Invalid topic ID");
     }
-    
+
     // Check if we have questions for this topic
     if (questionBank[category] && questionBank[category][topicId]) {
       const availableQuestions = questionBank[category][topicId];
-      
+
       // Randomly select 5 questions (or fewer if not enough available)
       const numQuestions = Math.min(5, availableQuestions.length);
       const selectedIndices = new Set<number>();
-      
+
       // Ensure we get unique questions
       while (selectedIndices.size < numQuestions) {
         const randomIndex = Math.floor(Math.random() * availableQuestions.length);
         selectedIndices.add(randomIndex);
       }
-      
+
       // Get the selected questions
       questions = Array.from(selectedIndices).map(index => availableQuestions[index]);
     }
-    
+
     // If no questions available for this topic, return an empty array
     if (questions.length === 0) {
       return res.status(404).send("No questions available for this topic");
     }
-    
+
     // Return the generated test
     res.json({
       topicId,
@@ -279,7 +304,7 @@ export function registerRoutes(app: Express): Server {
       res.sendStatus(200);
     });
   });
-  
+
   // Helper function to get topic title
   function getTopicTitle(topicId: string): string {
     // Find the topic across all categories
