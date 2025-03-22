@@ -278,12 +278,9 @@ export function registerRoutes(app: Express): Server {
     if (!topicId) return res.status(400).send("Topic ID is required");
 
     try {
-        // Determine the category and topic from the topic ID
-        let category: 'aptitude' | 'technical' | 'psychometric';
-        let topic = getTopicTitle(topicId);
-
+        let category: string;
         if (topicId.startsWith('L') || topicId.startsWith('N') || topicId.startsWith('Q')) {
-            category = 'aptitude';
+            category = 'verbal';
         } else if (topicId.startsWith('T')) {
             category = 'technical';
         } else if (topicId.startsWith('P')) {
@@ -292,41 +289,19 @@ export function registerRoutes(app: Express): Server {
             return res.status(400).send("Invalid topic ID");
         }
 
-        try {
-            let questions = [];
-            
-            // Try getting questions from question bank first
-            if (questionBank[category]?.[topicId]) {
-                console.log('Using static question bank');
-                questions = questionBank[category][topicId];
-            } else {
-                // Only try API if question bank doesn't have the questions
-                try {
-                    questions = await generateQuestions(category, topic, topicId);
-                } catch (error) {
-                    console.log('API generation failed, using fallback questions');
-                    questions = questionBank[category] || [];
-                }
-            }
-            
-            questions = questions.slice(0, 10); // Limit to 10 questions
-
-            if (!questions.length) {
-                return res.status(500).send("No questions available for this topic");
-            }
-
-            res.json({
-                topicId,
-                title: topic,
-                questions
-            });
-        } catch (error) {
-            console.error('Error generating test:', error);
-            res.status(500).send("Failed to generate test questions");
+        const questions = questionBank[category]?.[topicId] || [];
+        if (!questions.length) {
+            return res.status(404).send("No questions available for this topic");
         }
+
+        res.json({
+            topicId,
+            title: getTopicTitle(topicId),
+            questions: questions.slice(0, 10) // Limit to 10 questions
+        });
     } catch (error) {
-        console.error('Error generating test:', error);
-        res.status(500).send("Failed to generate test questions");
+        console.error('Error fetching questions:', error);
+        res.status(500).send("Failed to fetch questions");
     }
 });
 
