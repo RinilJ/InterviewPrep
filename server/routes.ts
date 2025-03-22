@@ -5,6 +5,7 @@ import { storage } from "./storage";
 import { insertTestSchema, insertTestResultSchema, insertDiscussionSlotSchema, insertSlotBookingSchema } from "@shared/schema";
 import { z } from "zod";
 import { questionBank } from "./questionBank";
+import { generateQuestions } from "./openaiService";
 
 // Sample discussion slots with some slots having no specific topic (open discussion)
 const sampleDiscussionSlots = [
@@ -269,61 +270,42 @@ export function registerRoutes(app: Express): Server {
     res.status(201).json(booking);
   });
 
-  // Generate test with random questions
-  app.get("/api/generate-test", (req, res) => {
+  // Generate test with questions from OpenAI
+  app.get("/api/generate-test", async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
 
     const topicId = req.query.topicId as string;
     if (!topicId) return res.status(400).send("Topic ID is required");
 
-    // Determine the category from the topic ID
-    let category: string;
-    let questions: any[] = [];
+    try {
+        // Determine the category and topic from the topic ID
+        let category: 'aptitude' | 'technical' | 'psychometric';
+        let topic = getTopicTitle(topicId);
 
-    if (topicId.startsWith('L')) {
-      category = 'verbal';
-    } else if (topicId.startsWith('N')) {
-      category = 'nonVerbal';
-    } else if (topicId.startsWith('Q')) {
-      category = 'mathematical';
-    } else if (topicId.startsWith('T')) {
-      category = 'technical';
-    } else if (topicId.startsWith('P')) {
-      category = 'psychometric';
-    } else {
-      return res.status(400).send("Invalid topic ID");
+        if (topicId.startsWith('L') || topicId.startsWith('N') || topicId.startsWith('Q')) {
+            category = 'aptitude';
+        } else if (topicId.startsWith('T')) {
+            category = 'technical';
+        } else if (topicId.startsWith('P')) {
+            category = 'psychometric';
+        } else {
+            return res.status(400).send("Invalid topic ID");
+        }
+
+        // Generate questions using OpenAI
+        const questions = await generateQuestions(category, topic);
+
+        // Return the generated test
+        res.json({
+            topicId,
+            title: topic,
+            questions
+        });
+    } catch (error) {
+        console.error('Error generating test:', error);
+        res.status(500).send("Failed to generate test questions");
     }
-
-    // Check if we have questions for this topic
-    if (questionBank[category] && questionBank[category][topicId]) {
-      const availableQuestions = questionBank[category][topicId];
-
-      // Randomly select 5 questions (or fewer if not enough available)
-      const numQuestions = Math.min(5, availableQuestions.length);
-      const selectedIndices = new Set<number>();
-
-      // Ensure we get unique questions
-      while (selectedIndices.size < numQuestions) {
-        const randomIndex = Math.floor(Math.random() * availableQuestions.length);
-        selectedIndices.add(randomIndex);
-      }
-
-      // Get the selected questions
-      questions = Array.from(selectedIndices).map(index => availableQuestions[index]);
-    }
-
-    // If no questions available for this topic, return an empty array
-    if (questions.length === 0) {
-      return res.status(404).send("No questions available for this topic");
-    }
-
-    // Return the generated test
-    res.json({
-      topicId,
-      title: getTopicTitle(topicId),
-      questions
-    });
-  });
+});
 
   app.post("/api/logout", (req, res, next) => {
     req.logout((err) => {
