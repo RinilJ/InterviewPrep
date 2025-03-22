@@ -293,18 +293,23 @@ export function registerRoutes(app: Express): Server {
         }
 
         try {
-            // Try generating questions using OpenAI
-            let questions = await generateQuestions(category, topic, topicId);
+            let questions = [];
             
-            if (!questions || questions.length === 0) {
-                // Fallback to static question bank
-                console.log('Falling back to static question bank');
-                questions = questionBank[category]?.[topicId] || [];
-                if (!questions.length) {
+            // Try getting questions from question bank first
+            if (questionBank[category]?.[topicId]) {
+                console.log('Using static question bank');
+                questions = questionBank[category][topicId];
+            } else {
+                // Only try API if question bank doesn't have the questions
+                try {
+                    questions = await generateQuestions(category, topic, topicId);
+                } catch (error) {
+                    console.log('API generation failed, using fallback questions');
                     questions = questionBank[category] || [];
                 }
-                questions = questions.slice(0, 10); // Limit to 10 questions
             }
+            
+            questions = questions.slice(0, 10); // Limit to 10 questions
 
             if (!questions.length) {
                 return res.status(500).send("No questions available for this topic");
