@@ -39,54 +39,15 @@ export class MemStorage implements IStorage {
   private currentId: number;
 
   constructor() {
-    try {
-      console.log("Initializing MemStorage...");
-      this.users = new Map();
-      this.tests = new Map();
-      this.testResults = new Map();
-      this.discussionSlots = new Map();
-      this.slotBookings = new Map();
-      this.currentId = 1;
-
-      // Initialize session store with error handling
-      try {
-        this.sessionStore = new MemoryStore({
-          checkPeriod: 86400000 // 24 hours
-        });
-        console.log("Session store initialized successfully");
-      } catch (error) {
-        console.error("Failed to initialize session store:", error);
-        // Fallback to a new basic MemoryStore instance
-        this.sessionStore = new MemoryStore();
-        console.log("Using fallback session store");
-      }
-
-      // Initialize an admin user for testing if needed
-      this.createInitialUser();
-      console.log("MemStorage initialization complete");
-    } catch (error) {
-      console.error("Error during MemStorage initialization:", error);
-      throw new Error("Failed to initialize storage system");
-    }
-  }
-
-  private async createInitialUser() {
-    // Only create if no users exist
-    if (this.users.size === 0) {
-      try {
-        await this.createUser({
-          username: "admin",
-          password: "admin123", // This is just for development
-          role: "teacher",
-          department: "CS",
-          batch: null,
-          year: null
-        });
-        console.log("Initial admin user created");
-      } catch (error) {
-        console.error("Failed to create initial user:", error);
-      }
-    }
+    this.users = new Map();
+    this.tests = new Map();
+    this.testResults = new Map();
+    this.discussionSlots = new Map();
+    this.slotBookings = new Map();
+    this.currentId = 1;
+    this.sessionStore = new MemoryStore({
+      checkPeriod: 86400000 // 24 hours
+    });
   }
 
   async getUser(id: number): Promise<User | undefined> {
@@ -146,6 +107,24 @@ export class MemStorage implements IStorage {
     const newBooking = { ...booking, id, bookedAt: new Date() };
     this.slotBookings.set(id, newBooking);
     return newBooking;
+  }
+  private async createInitialUser() {
+    // Only create if no users exist
+    if (this.users.size === 0) {
+      try {
+        await this.createUser({
+          username: "admin",
+          password: "admin123", // This is just for development
+          role: "teacher",
+          department: "CS",
+          batch: null,
+          year: null
+        });
+        console.log("Initial admin user created");
+      } catch (error) {
+        console.error("Failed to create initial user:", error);
+      }
+    }
   }
 }
 
