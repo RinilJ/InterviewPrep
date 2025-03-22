@@ -1,4 +1,5 @@
 import axios from 'axios';
+import Anthropic from '@anthropic-ai/sdk';
 
 interface GeneratedQuestion {
   question: string;
@@ -54,8 +55,6 @@ const MODULE_PROMPTS = {
   "P04": "Generate a team dynamics situation",
   "P05": "Create a problem-solving style assessment"
 };
-
-const DEEPSEEK_API_URL = 'https://api.deepseek.com/v1/chat/completions';
 
 const PROMPTS = {
   aptitude: (topic: string, moduleId: string) => `Generate a unique ${topic} question.
@@ -116,9 +115,13 @@ export async function generateQuestions(
   count: number = 10
 ): Promise<GeneratedQuestion[]> {
   try {
-    if (!process.env.DEEPSEEK_API_KEY) {
-      throw new Error('DEEPSEEK_API_KEY not configured');
+    if (!process.env.CLAUDE_API_KEY) {
+      throw new Error('CLAUDE_API_KEY not configured');
     }
+
+    const anthropic = new Anthropic({
+      apiKey: process.env.CLAUDE_API_KEY,
+    });
 
     const questions: GeneratedQuestion[] = [];
     let attempts = 0;
@@ -126,31 +129,17 @@ export async function generateQuestions(
 
     while (questions.length < count && attempts < maxAttempts) {
       try {
-        const response = await axios.post(
-          DEEPSEEK_API_URL,
-          {
-            model: "deepseek-chat",
-            messages: [
-              {
-                role: "system",
-                content: `You are an expert question generator for ${category} tests, specifically focusing on ${topic}.`
-              },
-              {
-                role: "user",
-                content: PROMPTS[category](topic, moduleId)
-              }
-            ],
-            temperature: 0.8
-          },
-          {
-            headers: {
-              'Authorization': `Bearer ${process.env.DEEPSEEK_API_KEY}`,
-              'Content-Type': 'application/json'
-            }
-          }
-        );
+        const response = await anthropic.messages.create({
+          model: "claude-3-sonnet-20240229",
+          max_tokens: 1000,
+          messages: [{
+            role: "user",
+            content: `You are an expert question generator for ${category} tests, specifically focusing on ${topic}. ${MODULE_PROMPTS[moduleId] || ''}`
+          }],
+          temperature: 0.8
+        });
 
-        const generatedContent = response.data.choices[0]?.message?.content;
+        const generatedContent = response.content[0].text;
         if (generatedContent) {
           try {
             const questionData = JSON.parse(generatedContent);
