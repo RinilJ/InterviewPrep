@@ -5,14 +5,8 @@ import session from "express-session";
 import { scrypt, randomBytes, timingSafeEqual } from "crypto";
 import { promisify } from "util";
 import { storage } from "./storage";
-import { User as SelectUser, insertUserSchema } from "@shared/schema";
+import { insertUserSchema } from "@shared/schema";
 import { z } from "zod";
-
-declare global {
-  namespace Express {
-    interface User extends SelectUser {}
-  }
-}
 
 const scryptAsync = promisify(scrypt);
 
@@ -47,46 +41,105 @@ export function setupAuth(app: Express) {
 
   passport.use(
     new LocalStrategy(async (username, password, done) => {
-      const user = await storage.getUserByUsername(username);
-      if (!user || !(await comparePasswords(password, user.password))) {
-        return done(null, false);
-      } else {
+      try {
+        const user = await storage.getUserByUsername(username);
+        if (!user || !(await comparePasswords(password, user.password))) {
+          return done(null, false);
+        }
         return done(null, user);
+      } catch (error) {
+        console.error('Login error:', error);
+        return done(error);
       }
     }),
   );
 
-  passport.serializeUser((user, done) => done(null, user.id));
-  passport.deserializeUser(async (id: number, done) => {
-    const user = await storage.getUser(id);
-    done(null, user);
+  passport.serializeUser((user, done) => {
+    try {
+      done(null, user.id);
+    } catch (error) {
+      console.error('Serialize error:', error);
+      done(error);
+    }
   });
 
-  const extendedInsertUserSchema = insertUserSchema.extend({
-    confirmPassword: z.string().optional(),
-  }).refine((data) => !data.confirmPassword || data.password === data.confirmPassword, {
+  passport.deserializeUser(async (id: number, done) => {
+    try {
+      const user = await storage.getUser(id);
+      done(null, user);
+    } catch (error) {
+      console.error('Deserialize error:', error);
+      done(error);
+    }
+  });
+
+  // Registration schema with proper type handling
+  const registerSchema = z.object({
+    username: z.string().min(1, "Username is required"),
+    password: z.string().min(6, "Password must be at least 6 characters"),
+    confirmPassword: z.string(),
+    role: z.enum(["student", "teacher"]),
+    department: z.enum(["CS", "IT", "MCA"]).nullable(),
+    batch: z.string().nullable(),
+    year: z.string().nullable()
+  }).refine((data) => data.password === data.confirmPassword, {
     message: "Passwords don't match",
     path: ["confirmPassword"],
   });
 
   app.post("/api/register", async (req, res, next) => {
-    const parsed = extendedInsertUserSchema.parse(req.body);
-    
-    const existingUser = await storage.getUserByUsername(parsed.username);
-    if (existingUser) {
-      return res.status(400).send("Username already exists");
+    try {
+      console.log("Registration request received:", {
+        ...req.body,
+        password: '[REDACTED]'
+      });
+
+      // Parse and validate request data
+      const parsed = registerSchema.parse(req.body);
+
+      // Check for existing user
+      const existingUser = await storage.getUserByUsername(parsed.username);
+      if (existingUser) {
+        return res.status(400).send("Username already exists");
+      }
+
+      try {
+        // Create user with null fallbacks for optional fields
+        const hashedPassword = await hashPassword(parsed.password);
+        const user = await storage.createUser({
+          username: parsed.username,
+          password: hashedPassword,
+          role: parsed.role,
+          department: parsed.department || null,
+          batch: parsed.batch || null,
+          year: parsed.year || null
+        });
+
+        console.log("User created successfully:", {
+          id: user.id,
+          username: user.username,
+          role: user.role
+        });
+
+        // Log user in after registration
+        req.login(user, (err) => {
+          if (err) {
+            console.error("Login after registration failed:", err);
+            return next(err);
+          }
+          res.status(201).json(user);
+        });
+      } catch (error) {
+        console.error("User creation error:", error);
+        return res.status(500).send("Failed to create user");
+      }
+    } catch (error) {
+      console.error("Registration error:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json(error.issues);
+      }
+      next(error);
     }
-
-    const user = await storage.createUser({
-      username: parsed.username,
-      password: await hashPassword(parsed.password),
-      role: parsed.role,
-    });
-
-    req.login(user, (err) => {
-      if (err) return next(err);
-      res.status(201).json(user);
-    });
   });
 
   app.post("/api/login", passport.authenticate("local"), (req, res) => {
