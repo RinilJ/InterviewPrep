@@ -172,13 +172,7 @@ const generateSampleQuestions = (numQuestions: number) => {
     }));
 };
 
-const questionBankExpanded = {
-    verbal: {},
-    nonVerbal: {},
-    mathematical: {},
-    technical: {},
-    psychometric: {}
-};
+import { questionBank, questionBankExpanded } from './questionBank';
 
 for (const category in aptitudeTopics) {
     for (const topic of aptitudeTopics[category]) {
