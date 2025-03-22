@@ -279,8 +279,12 @@ export function registerRoutes(app: Express): Server {
 
     try {
         let category: string;
-        if (topicId.startsWith('L') || topicId.startsWith('N') || topicId.startsWith('Q')) {
+        if (topicId.startsWith('L')) {
             category = 'verbal';
+        } else if (topicId.startsWith('N')) {
+            category = 'nonVerbal';
+        } else if (topicId.startsWith('Q')) {
+            category = 'mathematical';
         } else if (topicId.startsWith('T')) {
             category = 'technical';
         } else if (topicId.startsWith('P')) {
