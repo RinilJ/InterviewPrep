@@ -156,13 +156,10 @@ export async function generateQuestions(
       attempts++;
     }
 
-    if (questions.length === 0) {
-      throw new Error(`Failed to generate questions for module ${moduleId}`);
-    }
-
+    // Even if no questions were generated, we'll let the caller handle the fallback
     return questions;
   } catch (error) {
     console.error('Question generation error:', error);
-    throw new Error('Failed to generate questions');
+    return []; // Return empty array to trigger fallback
   }
 }

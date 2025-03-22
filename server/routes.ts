@@ -294,21 +294,30 @@ export function registerRoutes(app: Express): Server {
 
         try {
             // Try generating questions using OpenAI
-            const questions = await generateQuestions(category, topic);
+            let questions = await generateQuestions(category, topic, topicId);
+            
+            if (!questions || questions.length === 0) {
+                // Fallback to static question bank
+                console.log('Falling back to static question bank');
+                questions = questionBank[category]?.[topicId] || [];
+                if (!questions.length) {
+                    questions = questionBank[category] || [];
+                }
+                questions = questions.slice(0, 10); // Limit to 10 questions
+            }
+
+            if (!questions.length) {
+                return res.status(500).send("No questions available for this topic");
+            }
+
             res.json({
                 topicId,
                 title: topic,
                 questions
             });
         } catch (error) {
-            // Fallback to static question bank
-            console.log('Falling back to static question bank');
-            const staticQuestions = questionBank[category] || [];
-            res.json({
-                topicId,
-                title: topic,
-                questions: staticQuestions.slice(0, 10) // Return first 10 questions
-            });
+            console.error('Error generating test:', error);
+            res.status(500).send("Failed to generate test questions");
         }
     } catch (error) {
         console.error('Error generating test:', error);
