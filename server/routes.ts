@@ -163,10 +163,12 @@ const aptitudeTopics = {
 
 
 const generateSampleQuestions = (numQuestions: number) => {
-    return Array.from({ length: numQuestions }, (_, i) => ({
-        questionText: `Sample Question ${i + 1}`,
-        options: ['A', 'B', 'C', 'D'],
-        answer: 'A'
+    const questions = questionBank[category]?.[topicId] || [];
+    const shuffled = [...questions].sort(() => Math.random() - 0.5);
+    return shuffled.slice(0, numQuestions).map(q => ({
+        questionText: q.question || q.questionText,
+        options: q.options,
+        answer: q.correctAnswer || q.answer
     }));
 };
 
