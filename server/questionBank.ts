@@ -130,7 +130,6 @@ export const questionBank: QuestionBank = {
 
 // Helper function to shuffle array
 function shuffleArray<T>(array: T[]): T[] {
-  console.log(`Shuffling array of length ${array.length}`);
   const shuffled = [...array];
   for (let i = shuffled.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -145,7 +144,6 @@ export async function getUniqueQuestionsForUser(
   topicId: string,
   count: number = 10
 ): Promise<Question[]> {
-  console.time(`getUniqueQuestionsForUser-${topicId}`);
   console.log(`Getting ${count} questions for user ${userId}, topic ${topicId}`);
 
   try {
@@ -168,9 +166,7 @@ export async function getUniqueQuestionsForUser(
     const sessionUsedQuestions = sessionQuestions.get(sessionKey)!;
 
     // Load questions for this topic
-    console.time(`loadQuestions-${topicId}`);
     const questions = await topic.getQuestions();
-    console.timeEnd(`loadQuestions-${topicId}`);
 
     if (!questions || questions.length < count) {
       throw new Error(`Not enough questions available for topic ${topicId}. Need ${count}, have ${questions?.length || 0}`);
@@ -186,7 +182,6 @@ export async function getUniqueQuestionsForUser(
     // Mark questions as used
     selected.forEach(q => sessionUsedQuestions.add(q.question));
 
-    console.timeEnd(`getUniqueQuestionsForUser-${topicId}`);
     return selected;
 
   } catch (error) {
@@ -198,10 +193,10 @@ export async function getUniqueQuestionsForUser(
 // Clean up old sessions periodically
 setInterval(() => {
   const oneHourAgo = Date.now() - 3600000;
-  [...sessionQuestions.keys()].forEach(key => {
+  for (const [key] of sessionQuestions) {
     const timestamp = parseInt(key.split('-')[2]);
     if (timestamp < oneHourAgo) {
       sessionQuestions.delete(key);
     }
-  });
+  }
 }, 3600000);

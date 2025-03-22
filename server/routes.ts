@@ -39,7 +39,7 @@ export function registerRoutes(app: Express): Server {
   });
 
   // Generate test with unique questions
-  app.get("/api/generate-test", (req, res) => {
+  app.get("/api/generate-test", async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
 
     const topicId = req.query.topicId as string;
@@ -59,8 +59,9 @@ export function registerRoutes(app: Express): Server {
       }
 
       console.time('generateTest');
+
       // Get unique questions for this user and topic
-      const questions = getUniqueQuestionsForUser(req.user.id, topicId);
+      const questions = await getUniqueQuestionsForUser(req.user.id, topicId);
 
       // Log question generation for debugging
       console.log(`Generated ${questions.length} questions for user ${req.user.id}, topic ${topicId}`);
@@ -78,7 +79,7 @@ export function registerRoutes(app: Express): Server {
       });
     } catch (error) {
       console.error('Error generating test:', error);
-      res.status(500).send("Failed to generate test questions");
+      res.status(500).send("Failed to generate test questions: " + error.message);
     }
   });
 
