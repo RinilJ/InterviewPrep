@@ -9,7 +9,7 @@ async function checkAuth() {
     try {
         const response = await fetch('/api/user');
         if (!response.ok) {
-            window.location.href = '/index.html';
+            window.location.href = '/login.html';
             return null;
         }
         const user = await response.json();
@@ -19,7 +19,7 @@ async function checkAuth() {
         }
         return user;
     } catch (error) {
-        window.location.href = '/index.html';
+        window.location.href = '/login.html';
         return null;
     }
 }
@@ -30,13 +30,14 @@ async function initializeDashboard() {
     if (!user) return;
 
     // Update user info
-    document.getElementById('userName').textContent = `${user.username} (${user.department} - Batch ${user.batch}, Year ${user.year})`;
+    document.getElementById('userName').textContent = 
+        `${user.username} (${user.department} - Batch ${user.batch}, Year ${user.year})`;
 
     // Fetch statistics
     const stats = await fetch('/api/teacher/stats').then(res => res.json());
     document.getElementById('totalStudents').textContent = stats.totalStudents;
     document.getElementById('activeSessions').textContent = stats.activeSessions;
-    document.getElementById('discussionSlots').textContent = stats.totalSlots;
+    document.getElementById('discussionSlots').textContent = stats.discussionSlots;
 
     // Fetch and display student progress
     const students = await fetch('/api/teacher/students').then(res => res.json());
@@ -44,7 +45,7 @@ async function initializeDashboard() {
     studentsList.innerHTML = students.map(student => `
         <div class="student-card">
             <div class="student-info">
-                <h3>${student.username}</h3>
+                <h3><i class="fas fa-user-graduate"></i> ${student.username}</h3>
                 <p><i class="fas fa-clock"></i> Last Active: ${formatDate(student.lastActive)}</p>
                 <p><i class="fas fa-tasks"></i> Tests Completed: ${student.testsCompleted}</p>
                 <p><i class="fas fa-chart-line"></i> Average Score: ${student.averageScore}%</p>
@@ -138,48 +139,11 @@ function openModal() {
     document.getElementById('createSlotModal').classList.remove('hidden');
 }
 
-function openModal() {
-    document.getElementById('createSlotModal').classList.remove('hidden');
-}
-
 function closeModal() {
     document.getElementById('createSlotModal').classList.add('hidden');
     document.getElementById('createSlotForm').reset();
 }
 
-async function createSlot(e) {
-    e.preventDefault();
-    const form = e.target;
-
-    try {
-        const startTime = new Date(form.slotDateTime.value);
-        const endTime = new Date(startTime.getTime() + parseInt(form.slotDuration.value) * 60000);
-
-        const response = await fetch('/api/discussion-slots', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                mentorName: form.mentorName.value,
-                topic: form.slotTopic.value || null,
-                startTime,
-                endTime,
-                maxParticipants: parseInt(form.maxParticipants.value)
-            })
-        });
-
-        if (response.ok) {
-            closeModal();
-            loadDiscussionSlots();
-            alert('Slot created successfully!');
-        } else {
-            const error = await response.text();
-            alert(error || 'Failed to create slot');
-        }
-    } catch (error) {
-        console.error('Create slot error:', error);
-        alert('Failed to create slot');
-    }
-}
 
 // Tab switching
 document.querySelectorAll('.tab').forEach(tab => {
