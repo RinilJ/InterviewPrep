@@ -87,7 +87,6 @@ export async function getDirectionSenseQuestions(): Promise<Question[]> {
       correctAnswer: 0,
       explanation: "The East and West movements cancel out (30m each), leaving 40m North"
     },
-    // Added 86 more direction sense questions here.  (This would need to be populated with actual questions)
     // ... (Add 86 more direction sense questions to reach approximately 100 questions)
 
   ];
@@ -180,8 +179,7 @@ export async function getBloodRelationQuestions(): Promise<Question[]> {
       correctAnswer: 0,
       explanation: "B's father is C, and A has a son who is B's brother, so A must be C's wife."
     },
-    // Added 86 more blood relation questions here. (This would need to be populated with actual questions)
-    // Continue with 86 more similar questions with increasing complexity...
+    // ... (Continue with 86 more similar questions with increasing complexity...)
 
   ];
 }
@@ -250,7 +248,7 @@ export async function getCodingDecodingQuestions(): Promise<Question[]> {
       explanation: "By comparing codes, '6' appears in both phrases representing 'is'"
     },
     {
-      question: "If TEACHER is coded as VGCEJGT, then STUDENT will be coded as:",
+      question: "If 'TEACHER' is coded as 'VGCEJGT', then 'STUDENT' will be coded as:",
       options: ["UVWFGPV", "UVWFGVP", "UVWFPGV", "UVWFVPG"],
       correctAnswer: 0,
       explanation: "Each letter is shifted two positions forward"
@@ -261,8 +259,8 @@ export async function getCodingDecodingQuestions(): Promise<Question[]> {
       correctAnswer: 0,
       explanation: "Each letter is converted to its position in alphabet"
     },
-    // Add 88 more similar questions with different patterns...
-    // Each should have unique coding patterns and clear explanations
+    // ... (Add 88 more similar questions with different patterns...)
+
   ];
 }
 
@@ -353,16 +351,436 @@ export async function getNumberSeriesQuestions(): Promise<Question[]> {
       correctAnswer: 0,
       explanation: "Multiply by 3 each time"
     },
-    // Add 86 more questions here with similar patterns but different numbers and complexity...
-    // Each question should test different mathematical sequences and patterns
+    // ... (Add 86 more questions here with similar patterns but different numbers and complexity...)
+
+  ];
+}
+
+// Analogy Questions (L05)
+export async function getAnalogyQuestions(): Promise<Question[]> {
+  return [
     {
-      question: "What comes next: 1, 4, 10, 22, 46, __?",
-      options: ["94", "88", "92", "96"],
+      question: "Book is to Reading as Food is to:",
+      options: ["Eating", "Cooking", "Tasting", "Serving"],
       correctAnswer: 0,
-      explanation: "Multiply by 2 and add 2 each time (1×2+2=4, 4×2+2=10, etc.)"
+      explanation: "As Book is used for Reading, Food is used for Eating"
+    },
+    {
+      question: "Bird is to Sky as Fish is to:",
+      options: ["Water", "Ocean", "Sea", "River"],
+      correctAnswer: 0,
+      explanation: "As Birds live in Sky, Fish live in Water"
+    },
+    {
+      question: "Doctor is to Patient as Teacher is to:",
+      options: ["Student", "Class", "School", "Book"],
+      correctAnswer: 0,
+      explanation: "As Doctor treats Patient, Teacher teaches Student"
+    },
+    {
+      question: "Clock is to Time as Thermometer is to:",
+      options: ["Temperature", "Heat", "Weather", "Mercury"],
+      correctAnswer: 0,
+      explanation: "As Clock measures Time, Thermometer measures Temperature"
+    },
+    {
+      question: "Pencil is to Write as Scissors is to:",
+      options: ["Cut", "Sharp", "Paper", "Tool"],
+      correctAnswer: 0,
+      explanation: "As Pencil is used to Write, Scissors are used to Cut"
+    },
+    {
+      question: "Tree is to Forest as Brick is to:",
+      options: ["Building", "Wall", "House", "Construction"],
+      correctAnswer: 0,
+      explanation: "As Tree is part of Forest, Brick is part of Building"
+    },
+    {
+      question: "Painter is to Brush as Writer is to:",
+      options: ["Pen", "Paper", "Book", "Story"],
+      correctAnswer: 0,
+      explanation: "As Painter uses Brush, Writer uses Pen"
+    },
+    {
+      question: "Car is to Garage as Ship is to:",
+      options: ["Harbor", "Ocean", "Dock", "Sea"],
+      correctAnswer: 0,
+      explanation: "As Car is kept in Garage, Ship is kept in Harbor"
+    },
+    {
+      question: "Light is to Dark as Day is to:",
+      options: ["Night", "Evening", "Dusk", "Sunset"],
+      correctAnswer: 0,
+      explanation: "As Light is opposite to Dark, Day is opposite to Night"
+    },
+    {
+      question: "Triangle is to Three as Square is to:",
+      options: ["Four", "Box", "Rectangle", "Shape"],
+      correctAnswer: 0,
+      explanation: "As Triangle has Three sides, Square has Four sides"
+    },
+    {
+      question: "Water is to Thirst as Food is to:",
+      options: ["Hunger", "Eat", "Cook", "Meal"],
+      correctAnswer: 0,
+      explanation: "As Water satisfies Thirst, Food satisfies Hunger"
+    },
+    {
+      question: "Shoe is to Foot as Hat is to:",
+      options: ["Head", "Hair", "Cap", "Cover"],
+      correctAnswer: 0,
+      explanation: "As Shoe protects Foot, Hat protects Head"
+    },
+    {
+      question: "Piano is to Musician as Brush is to:",
+      options: ["Artist", "Paint", "Canvas", "Color"],
+      correctAnswer: 0,
+      explanation: "As Piano is used by Musician, Brush is used by Artist"
+    },
+    {
+      question: "Bee is to Honey as Cow is to:",
+      options: ["Milk", "Grass", "Farm", "Cattle"],
+      correctAnswer: 0,
+      explanation: "As Bee produces Honey, Cow produces Milk"
+    },
+    // ... (Add 86 more analogy questions with increasing complexity...)
+
+  ];
+}
+
+// Synonyms Questions (L06)
+export async function getSynonymQuestions(): Promise<Question[]> {
+  return [
+    {
+      question: "Select the word most similar in meaning to 'Benevolent':",
+      options: ["Kind", "Cruel", "Strict", "Harsh"],
+      correctAnswer: 0,
+      explanation: "Benevolent means kind or generous in nature"
+    },
+    {
+      question: "Choose the synonym for 'Eloquent':",
+      options: ["Articulate", "Silent", "Quiet", "Reserved"],
+      correctAnswer: 0,
+      explanation: "Eloquent means fluent or persuasive in speaking"
+    },
+    {
+      question: "Which word means the same as 'Diligent'?",
+      options: ["Hardworking", "Lazy", "Careless", "Idle"],
+      correctAnswer: 0,
+      explanation: "Diligent means showing persistent effort and care"
+    },
+    {
+      question: "Find the synonym of 'Abundant':",
+      options: ["Plentiful", "Scarce", "Limited", "Rare"],
+      correctAnswer: 0,
+      explanation: "Abundant means existing in large quantities"
+    },
+    {
+      question: "Which word is closest in meaning to 'Courageous'?",
+      options: ["Brave", "Fearful", "Timid", "Weak"],
+      correctAnswer: 0,
+      explanation: "Courageous means showing bravery"
+    },
+    {
+      question: "Select the synonym for 'Magnificent':",
+      options: ["Splendid", "Ordinary", "Plain", "Simple"],
+      correctAnswer: 0,
+      explanation: "Magnificent means impressive or beautiful"
+    },
+    {
+      question: "Which word means the same as 'Prudent'?",
+      options: ["Wise", "Foolish", "Reckless", "Hasty"],
+      correctAnswer: 0,
+      explanation: "Prudent means acting with care and thought"
+    },
+    {
+      question: "Find the synonym of 'Authentic':",
+      options: ["Genuine", "Fake", "False", "Artificial"],
+      correctAnswer: 0,
+      explanation: "Authentic means genuine or real"
+    },
+    {
+      question: "Select the word most similar to 'Tranquil':",
+      options: ["Peaceful", "Agitated", "Disturbed", "Chaotic"],
+      correctAnswer: 0,
+      explanation: "Tranquil means calm and peaceful"
+    },
+    {
+      question: "Choose the synonym for 'Jubilant':",
+      options: ["Joyful", "Sad", "Gloomy", "Depressed"],
+      correctAnswer: 0,
+      explanation: "Jubilant means feeling or expressing great happiness"
+    },
+    // ... (Add 90 more synonym questions here...)
+
+  ];
+}
+
+// Antonyms Questions (L07)
+export async function getAntonymQuestions(): Promise<Question[]> {
+  return [
+    {
+      question: "Choose the word most opposite in meaning to 'Ancient':",
+      options: ["Modern", "Old", "Archaic", "Traditional"],
+      correctAnswer: 0,
+      explanation: "Ancient means very old, so its opposite is Modern"
+    },
+    {
+      question: "Select the antonym for 'Brave':",
+      options: ["Cowardly", "Bold", "Daring", "Heroic"],
+      correctAnswer: 0,
+      explanation: "Brave means courageous, its opposite is Cowardly"
+    },
+    {
+      question: "Find the opposite of 'Generous':",
+      options: ["Stingy", "Kind", "Giving", "Charitable"],
+      correctAnswer: 0,
+      explanation: "Generous means giving freely, its opposite is Stingy"
+    },
+    {
+      question: "Which word is the antonym of 'Victory'?",
+      options: ["Defeat", "Success", "Triumph", "Achievement"],
+      correctAnswer: 0,
+      explanation: "Victory means winning, its opposite is Defeat"
+    },
+    {
+      question: "Select the word opposite to 'Transparent':",
+      options: ["Opaque", "Clear", "Visible", "Obvious"],
+      correctAnswer: 0,
+      explanation: "Transparent means clear, its opposite is Opaque"
+    },
+    {
+      question: "Choose the antonym for 'Temporary':",
+      options: ["Permanent", "Brief", "Short", "Fleeting"],
+      correctAnswer: 0,
+      explanation: "Temporary means lasting for a short time, its opposite is Permanent"
+    },
+    {
+      question: "Find the opposite of 'Abundant':",
+      options: ["Scarce", "Plenty", "Much", "Numerous"],
+      correctAnswer: 0,
+      explanation: "Abundant means plentiful, its opposite is Scarce"
+    },
+    {
+      question: "Which word is the antonym of 'Artificial'?",
+      options: ["Natural", "Synthetic", "Fake", "Man-made"],
+      correctAnswer: 0,
+      explanation: "Artificial means made by humans, its opposite is Natural"
+    },
+    {
+      question: "Select the word opposite to 'Dangerous':",
+      options: ["Safe", "Risky", "Hazardous", "Perilous"],
+      correctAnswer: 0,
+      explanation: "Dangerous means unsafe, its opposite is Safe"
+    },
+    {
+      question: "Choose the antonym for 'Maximum':",
+      options: ["Minimum", "Highest", "Greatest", "Most"],
+      correctAnswer: 0,
+      explanation: "Maximum means the highest amount, its opposite is Minimum"
+    },
+    // Add 90 more antonym questions with increasing complexity...
+    {
+      question: "Find the opposite of 'Zealous':",
+      options: ["Apathetic", "Eager", "Passionate", "Enthusiastic"],
+      correctAnswer: 0,
+      explanation: "Zealous means showing great enthusiasm, its opposite is Apathetic"
     }
   ];
 }
 
-// Add similar extensive question sets for other verbal sections...
-// Each section should have around 100 unique, high-quality questions
+// Sentence Completion Questions (L08)
+export async function getSentenceCompletionQuestions(): Promise<Question[]> {
+  return [
+    {
+      question: "Despite the heavy rain, the team decided to _____ with the outdoor practice session.",
+      options: ["proceed", "cancel", "postpone", "delay"],
+      correctAnswer: 0,
+      explanation: "Context suggests determination to continue despite obstacles"
+    },
+    {
+      question: "The scientist's new theory was so _____ that even experts in the field had difficulty understanding it.",
+      options: ["complex", "simple", "obvious", "clear"],
+      correctAnswer: 0,
+      explanation: "Context suggests the theory was difficult to understand"
+    },
+    {
+      question: "The mountain climbers were _____ by the sudden snowstorm and had to return to base camp.",
+      options: ["forced", "encouraged", "motivated", "inspired"],
+      correctAnswer: 0,
+      explanation: "Context indicates they had to stop due to weather"
+    },
+    {
+      question: "The old manuscript was so _____ that historians could barely read its contents.",
+      options: ["faded", "bright", "colorful", "fresh"],
+      correctAnswer: 0,
+      explanation: "Context suggests difficulty in reading due to age"
+    },
+    {
+      question: "The company's new policies were designed to _____ employee productivity and job satisfaction.",
+      options: ["enhance", "reduce", "limit", "restrict"],
+      correctAnswer: 0,
+      explanation: "Context implies positive improvement"
+    },
+    {
+      question: "After hours of negotiation, the two parties finally reached a _____ agreement.",
+      options: ["mutual", "disputed", "conflicting", "divided"],
+      correctAnswer: 0,
+      explanation: "Context indicates both parties came to terms"
+    },
+    {
+      question: "The music was so _____ that everyone at the concert was dancing.",
+      options: ["infectious", "boring", "dull", "monotonous"],
+      correctAnswer: 0,
+      explanation: "Context shows the music had a positive effect on people"
+    },
+    {
+      question: "The detective's investigation was _____ by the lack of physical evidence.",
+      options: ["hampered", "helped", "assisted", "supported"],
+      correctAnswer: 0,
+      explanation: "Context suggests difficulty due to missing evidence"
+    },
+    {
+      question: "The new restaurant's cuisine was so _____ that it quickly became popular in the neighborhood.",
+      options: ["delicious", "tasteless", "bland", "ordinary"],
+      correctAnswer: 0,
+      explanation: "Context indicates positive reception"
+    },
+    {
+      question: "The students were _____ to learn that their favorite teacher was retiring.",
+      options: ["saddened", "delighted", "excited","pleased"],
+      correctAnswer: 0,
+explanation: "Context suggests emotional loss"
+    },
+    // Add 90 more sentence completion questions...
+    {
+      question: "The archaeologist's discovery was _____ as it provided new insights into ancient civilizations.",
+      options: ["groundbreaking", "ordinary", "common", "typical"],
+      correctAnswer: 0,
+      explanation: "Context suggests a significant discovery"
+    }
+  ];
+}
+
+// Reading Comprehension Questions (L09)
+export async function getReadingComprehensionQuestions(): Promise<Question[]> {
+  return [
+    {
+      question: `Read the following passage:
+Plants are essential for life on Earth as they produce oxygen through photosynthesis. During this process, they use sunlight, water, and carbon dioxide to produce glucose and oxygen. The oxygen is released into the atmosphere, while the glucose is used by the plant for energy. This process is crucial for maintaining the Earth's atmosphere and providing food for other organisms.
+
+What do plants produce through photosynthesis?`,
+      options: [
+        "Glucose and oxygen",
+        "Carbon dioxide and water",
+        "Sunlight and oxygen",
+        "Water and glucose"
+      ],
+      correctAnswer: 0,
+      explanation: "The passage clearly states that plants produce glucose and oxygen through photosynthesis"
+    },
+    {
+      question: `Read the passage:
+The Industrial Revolution was a period of major industrialization and innovation during the late 18th and early 19th centuries. The Industrial Revolution began in Great Britain and quickly spread throughout Western Europe and North America. This period saw the mechanization of agriculture and textile manufacturing and a revolution in power, including steam ships and railroads.
+
+When did the Industrial Revolution begin?`,
+      options: [
+        "Late 18th and early 19th centuries",
+        "Early 17th century",
+        "Mid 19th century",
+        "20th century"
+      ],
+      correctAnswer: 0,
+      explanation: "The passage states that the Industrial Revolution occurred during the late 18th and early 19th centuries"
+    },
+    // Add more reading comprehension questions with varied passages and multiple questions per passage...
+    // Each passage should have 3-4 questions to test different aspects of comprehension
+    // Continue until reaching approximately 100 questions total
+  ];
+}
+
+// Verbal Reasoning Questions (L10)
+export async function getVerbalReasoningQuestions(): Promise<Question[]> {
+  return [
+    {
+      question: "If all cats are animals, and some animals are pets, which statement is definitely true?",
+      options: [
+        "Some cats may be pets",
+        "All cats are pets",
+        "No cats are pets",
+        "All pets are cats"
+      ],
+      correctAnswer: 0,
+      explanation: "Since all cats are animals and some animals are pets, it follows that some cats may be pets"
+    },
+    {
+      question: "If no heroes are cowards, and John is a hero, what can we conclude?",
+      options: [
+        "John is not a coward",
+        "John is brave",
+        "All heroes are brave",
+        "Cowards can't be heroes"
+      ],
+      correctAnswer: 0,
+      explanation: "Given that no heroes are cowards and John is a hero, we can definitively conclude that John is not a coward"
+    },
+    // Add more verbal reasoning questions testing logical deduction, syllogisms, and critical thinking...
+    // Continue until reaching approximately 100 questions
+  ];
+}
+
+// Word Order Questions (L11)
+export async function getWordOrderQuestions(): Promise<Question[]> {
+  return [
+    {
+      question: "Arrange the words in a meaningful sequence: 1. Water 2. Crop 3. Seed 4. Plant 5. Harvest",
+      options: ["3,4,1,2,5", "3,1,4,2,5", "2,3,4,1,5", "4,3,1,2,5"],
+      correctAnswer: 1,
+      explanation: "Logical sequence: Seed → Water → Plant → Crop → Harvest"
+    },
+    {
+      question: "Arrange in order: 1. Infant 2. Adult 3. Child 4. Teenager",
+      options: ["1,3,4,2", "1,2,3,4", "1,4,3,2", "2,1,3,4"],
+      correctAnswer: 0,
+      explanation: "Life stages sequence: Infant → Child → Teenager → Adult"
+    },
+    // Add more word order questions with different contexts and complexities...
+    // Continue until reaching approximately 100 questions
+  ];
+}
+
+// Logical Sequence Questions (L12)
+export async function getLogicalSequenceQuestions(): Promise<Question[]> {
+  return [
+    {
+      question: "Complete the sequence: XY15, WX13, UV11, ?",
+      options: ["ST9", "TS9", "ST8", "TS10"],
+      correctAnswer: 0,
+      explanation: "Pattern: Letters shift 2 positions back, numbers decrease by 2"
+    },
+    {
+      question: "Next in the series: 1, 4, 9, 16, ?",
+      options: ["25", "20", "22", "28"],
+      correctAnswer: 0,
+      explanation: "Squares: 1², 2², 3², 4², 5²"
+    },
+    // Add more logical sequence questions with various patterns...
+    // Continue until reaching approximately 100 questions
+  ];
+}
+
+// Export all question generators
+export {
+  getDirectionSenseQuestions,
+  getBloodRelationQuestions,
+  getCodingDecodingQuestions,
+  getNumberSeriesQuestions,
+  getAnalogyQuestions,
+  getSynonymQuestions,
+  getAntonymQuestions,
+  getSentenceCompletionQuestions,
+  getReadingComprehensionQuestions,
+  getVerbalReasoningQuestions,
+  getWordOrderQuestions,
+  getLogicalSequenceQuestions
+};

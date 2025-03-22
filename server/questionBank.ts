@@ -159,30 +159,38 @@ export async function getUniqueQuestionsForUser(
       throw new Error(`Topic not found: ${topicId}`);
     }
 
-    // Initialize session tracking
+    // Initialize session tracking with timestamp
     const sessionKey = `${userId}-${topicId}-${Date.now()}`;
     if (!sessionQuestions.has(sessionKey)) {
+      console.log(`Initializing new session for user ${userId}, topic ${topicId}`);
       sessionQuestions.set(sessionKey, new Set());
     }
     const sessionUsedQuestions = sessionQuestions.get(sessionKey)!;
 
     // Load questions for this topic
+    console.time(`loadQuestions-${topicId}`);
     const allQuestions = await topic.getQuestions();
+    console.timeEnd(`loadQuestions-${topicId}`);
 
     if (!allQuestions || allQuestions.length < count) {
       throw new Error(`Not enough questions available for topic ${topicId}. Need ${count}, have ${allQuestions?.length || 0}`);
     }
 
+    console.log(`Loaded ${allQuestions.length} questions for topic ${topicId}`);
+
     // Filter out previously used questions
     const availableQuestions = allQuestions.filter(q => !sessionUsedQuestions.has(q.question));
+    console.log(`${availableQuestions.length} questions available after filtering used ones`);
 
+    // If running low on unique questions, clear the session
     if (availableQuestions.length < count) {
-      // If we're running low on unique questions, clear the session cache
+      console.log(`Resetting session for topic ${topicId} due to low question count`);
       sessionUsedQuestions.clear();
     }
 
     // Select random questions and shuffle options
-    const shuffled = shuffleArray(availableQuestions.length < count ? allQuestions : availableQuestions);
+    const questionsToUse = availableQuestions.length < count ? allQuestions : availableQuestions;
+    const shuffled = shuffleArray(questionsToUse);
     const selected = shuffled.slice(0, count).map(q => ({
       ...q,
       options: shuffleArray(q.options)
@@ -190,6 +198,7 @@ export async function getUniqueQuestionsForUser(
 
     // Mark selected questions as used
     selected.forEach(q => sessionUsedQuestions.add(q.question));
+    console.log(`Selected ${selected.length} questions for user ${userId}, topic ${topicId}`);
 
     return selected;
 
@@ -202,10 +211,15 @@ export async function getUniqueQuestionsForUser(
 // Clean up old sessions periodically (every hour)
 setInterval(() => {
   const oneHourAgo = Date.now() - 3600000;
+  let cleanedCount = 0;
   for (const [key] of sessionQuestions) {
     const timestamp = parseInt(key.split('-')[2]);
     if (timestamp < oneHourAgo) {
       sessionQuestions.delete(key);
+      cleanedCount++;
     }
+  }
+  if (cleanedCount > 0) {
+    console.log(`Cleaned up ${cleanedCount} old sessions`);
   }
 }, 3600000);
