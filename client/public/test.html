@@ -266,6 +266,7 @@
             let score = 0;
             let totalQuestions = currentTest.questions.length;
 
+            // Calculate score for non-psychometric tests
             if (!currentTest.topicId.startsWith('P')) {
                 currentTest.questions.forEach((question, index) => {
                     if (currentTest.answers[index] === question.correctAnswer) {
@@ -277,6 +278,7 @@
             }
 
             const scorePercentage = score !== null ? Math.round((score / totalQuestions) * 100) : null;
+            const endTime = new Date().toISOString();
 
             try {
                 const response = await fetch('/api/test-results', {
@@ -292,9 +294,23 @@
                 });
 
                 if (response.ok) {
-                    alert(`Test completed! ${scorePercentage !== null ? `Your score: ${scorePercentage}%` : 'Your responses have been recorded.'}`);
+                    // Store test results for results page
+                    const testResults = {
+                        score: score,
+                        totalQuestions: totalQuestions,
+                        questions: currentTest.questions,
+                        userAnswers: currentTest.answers,
+                        startTime: currentTest.startTime,
+                        endTime: endTime,
+                        topic: currentTest.title
+                    };
+                    sessionStorage.setItem('testResults', JSON.stringify(testResults));
+
+                    // Clean up current test data
                     sessionStorage.removeItem('currentTest');
-                    window.location.href = '/dashboard.html';
+
+                    // Redirect to results page
+                    window.location.href = '/test-results.html';
                 } else {
                     throw new Error('Failed to submit test results');
                 }

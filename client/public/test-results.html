@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Results - Interview Preparation Platform</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="results-page">
+        <header class="results-header">
+            <div class="container">
+                <h1>Test Results</h1>
+                <div class="score-display">
+                    <div class="score-circle">
+                        <span id="scorePercentage">-%</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main class="results-content">
+            <div class="container">
+                <div class="results-summary">
+                    <h2>Test Summary</h2>
+                    <div class="summary-stats">
+                        <div class="stat-item">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Correct Answers: </span>
+                            <span id="correctAnswers">-</span>
+                        </div>
+                        <div class="stat-item">
+                            <i class="fas fa-times-circle"></i>
+                            <span>Incorrect Answers: </span>
+                            <span id="incorrectAnswers">-</span>
+                        </div>
+                        <div class="stat-item">
+                            <i class="fas fa-clock"></i>
+                            <span>Time Taken: </span>
+                            <span id="timeTaken">-</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="feedback-section">
+                    <h2>Performance Analysis</h2>
+                    <div id="performanceFeedback" class="feedback-content">
+                        <!-- Feedback will be inserted here -->
+                    </div>
+                </div>
+
+                <div class="action-buttons">
+                    <button onclick="window.location.href='/dashboard.html'" class="btn-primary">
+                        <i class="fas fa-home"></i> Back to Dashboard
+                    </button>
+                    <button onclick="reviewTest()" class="btn-secondary">
+                        <i class="fas fa-search"></i> Review Answers
+                    </button>
+                </div>
+
+                <div id="answersReview" class="review-section hidden">
+                    <h2>Detailed Review</h2>
+                    <div id="reviewContent">
+                        <!-- Review content will be inserted here -->
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="/js/test-results.js"></script>
+</body>
+</html>
