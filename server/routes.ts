@@ -3,8 +3,7 @@ import { createServer, type Server } from "http";
 import { setupAuth } from "./auth";
 import { storage } from "./storage";
 import { insertTestSchema, insertTestResultSchema } from "@shared/schema";
-import { z } from "zod";
-import { questionBank } from "./questionBank";
+import { getQuestionsForTopic, questionBank } from "./questionBank";
 
 // Helper function to shuffle array
 function shuffleArray<T>(array: T[]): T[] {
@@ -34,19 +33,18 @@ export function registerRoutes(app: Express): Server {
           title: topicData.title,
           range: `${topicData.questions.length} questions`
         })),
-        nonVerbal: Object.entries(questionBank.nonVerbal).map(([id, topicData]) => ({
+        nonVerbal: Object.entries(questionBank.nonVerbal || {}).map(([id, topicData]) => ({
           id,
           title: topicData.title,
           range: `${topicData.questions.length} questions`
         })),
-        mathematical: Object.entries(questionBank.mathematical).map(([id, topicData]) => ({
+        mathematical: Object.entries(questionBank.mathematical || {}).map(([id, topicData]) => ({
           id,
           title: topicData.title,
           range: `${topicData.questions.length} questions`
         }))
       };
 
-      console.log('Sending topics:', topics);
       res.json(topics);
     } catch (error) {
       console.error('Error processing question bank:', error);
@@ -105,7 +103,7 @@ export function registerRoutes(app: Express): Server {
       const userUsedQuestions = usedQuestions.get(req.user.id)!;
 
       // Determine category from topic ID
-      let category: 'verbal' | 'nonVerbal' | 'mathematical';
+      let category: string;
       if (topicId.startsWith('L')) {
         category = 'verbal';
       } else if (topicId.startsWith('N')) {
@@ -116,14 +114,14 @@ export function registerRoutes(app: Express): Server {
         return res.status(400).send("Invalid topic ID");
       }
 
-      // Get questions from question bank
-      const topicData = questionBank[category][topicId];
-      if (!topicData || !topicData.questions || topicData.questions.length === 0) {
+      // Get questions for this topic
+      const questions = getQuestionsForTopic(category, topicId);
+      if (!questions || questions.length === 0) {
         return res.status(404).send("No questions available for this topic");
       }
 
       // Filter out previously used questions
-      const availableQuestions = topicData.questions.filter(q => 
+      const availableQuestions = questions.filter(q => 
         !userUsedQuestions.has(`${topicId}-${q.question}`)
       );
 
@@ -155,7 +153,7 @@ export function registerRoutes(app: Express): Server {
 
       res.json({
         topicId,
-        title: topicData.title,
+        title: questionBank[category][topicId].title,
         questions: selectedQuestions
       });
     } catch (error) {

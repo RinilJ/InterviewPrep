@@ -1,3 +1,12 @@
+// Helper function to format explanation
+function formatExplanation(question: string, answer: string, reasoning: string, formula?: string): string {
+  let explanation = `Correct Answer: ${answer}\n\nReasoning: ${reasoning}`;
+  if (formula) {
+    explanation += `\n\nFormula Used: ${formula}`;
+  }
+  return explanation;
+}
+
 // Question bank with expanded questions for each topic
 export const questionBank = {
   verbal: {
@@ -30,17 +39,25 @@ export const questionBank = {
         }
 
         const finalDist = Math.round(Math.sqrt(finalPosition.x * finalPosition.x + finalPosition.y * finalPosition.y));
+        const answer = `${finalDist} km`;
 
         return {
           question: `A person walks ${path.join(', then ')}. How far is the person from the starting point?`,
           options: [
-            `${finalDist} km`,
+            answer,
             `${finalDist + 2} km`,
             `${finalDist - 1} km`,
             `${finalDist + 1} km`
           ],
           correctAnswer: 0,
-          explanation: `Calculate the final position after each movement and find the direct distance from start to end using the Pythagorean theorem.`
+          explanation: formatExplanation(
+            `A person walks ${path.join(', then ')}. How far is the person from the starting point?`,
+            answer,
+            `To find the shortest distance from start to end point:
+            1. Track position changes in x and y coordinates
+            2. Use Pythagorean theorem to calculate direct distance`,
+            "Distance = √(x² + y²)"
+          )
         };
       })
     },
@@ -66,12 +83,19 @@ export const questionBank = {
           usedNames.add(name2);
           relationshipChain.push(`${name1} is the ${rel1} of ${name2}`);
         }
-
+        const question = `If ${relationshipChain.join(', and ')}, what is the relationship between ${Array.from(usedNames)[0]} and ${Array.from(usedNames)[usedNames.size - 1]}?`;
+        const options = ['Grandfather', 'Uncle', 'Brother', 'Cannot be determined'];
+        const correctAnswer = 3;
+        const answer = options[correctAnswer];
         return {
-          question: `If ${relationshipChain.join(', and ')}, what is the relationship between ${Array.from(usedNames)[0]} and ${Array.from(usedNames)[usedNames.size - 1]}?`,
-          options: ['Grandfather', 'Uncle', 'Brother', 'Cannot be determined'],
-          correctAnswer: 3,
-          explanation: `Analyze each relationship in the chain to determine if a unique relationship can be established.`
+          question: question,
+          options: options,
+          correctAnswer: correctAnswer,
+          explanation: formatExplanation(
+            question,
+            answer,
+            `Analyze each relationship in the chain to determine if a unique relationship can be established.  Consider the order and type of each relationship to trace the connection between the initial and final individuals.`
+          )
         };
       })
     },
@@ -89,6 +113,7 @@ export const questionBank = {
         const word = words[i % words.length];
 
         let question, options, correctAnswer;
+        let answer;
         switch (selectedType.type) {
           case 'letter-shift':
             const shift = (i % 3) + 1;
@@ -103,18 +128,25 @@ export const questionBank = {
               word
             ];
             correctAnswer = 0;
+            answer = options[correctAnswer];
             break;
           default:
             question = `If ${word} is coded according to a ${selectedType.desc}, what would be its coded form?`;
             options = [`Option A`, `Option B`, `Option C`, `Option D`];
             correctAnswer = 0;
+            answer = options[correctAnswer];
+            break;
         }
 
         return {
           question,
           options,
           correctAnswer,
-          explanation: `This is a ${selectedType.type} coding where ${selectedType.desc}.`
+          explanation: formatExplanation(
+            question,
+            answer,
+            `This is a ${selectedType.type} coding where ${selectedType.desc}.  The solution involves applying the described coding method to the given word.`
+          )
         };
       })
     },
@@ -132,17 +164,22 @@ export const questionBank = {
         const length = 5;
         const series = Array.from({ length }, (_, j) => selectedType.formula(j + 1));
         const nextNumber = selectedType.formula(length + 1);
+        const answer = String(nextNumber);
 
         return {
           question: `What comes next in the series: ${series.join(', ')}?`,
           options: [
-            String(nextNumber),
+            answer,
             String(nextNumber + 2),
             String(nextNumber - 2),
             String(nextNumber * 2)
           ],
           correctAnswer: 0,
-          explanation: `This is a ${selectedType.type} series where each number follows the pattern: ${selectedType.desc}`
+          explanation: formatExplanation(
+            `What comes next in the series: ${series.join(', ')}?`,
+            answer,
+            `This is a ${selectedType.type} series.  The pattern is defined by the formula: ${selectedType.formula}. Applying the formula to the next term in the series (n=${length + 1}) gives the answer.`
+          )
         };
       })
     },
@@ -184,17 +221,22 @@ export const questionBank = {
         const [first, second] = pair;
         const [baseTerm, relatedTerm] = first.split(' : ');
         const [targetTerm, correctAnswer] = second.split(' : ');
+        const answer = correctAnswer;
 
         return {
           question: `${baseTerm} is to ${relatedTerm} as ${targetTerm} is to:`,
           options: [
-            correctAnswer,
+            answer,
             `${targetTerm}`,
             `${baseTerm}`,
             `${relatedTerm}`
           ],
           correctAnswer: 0,
-          explanation: `This is a ${type.relationship} relationship analogy. As ${baseTerm} is related to ${relatedTerm}, similarly ${targetTerm} is related to ${correctAnswer}.`
+          explanation: formatExplanation(
+            `${baseTerm} is to ${relatedTerm} as ${targetTerm} is to:`,
+            answer,
+            `This is a ${type.relationship} relationship analogy.  The relationship between ${baseTerm} and ${relatedTerm} is the same as the relationship between ${targetTerm} and ${correctAnswer}.`
+          )
         };
       })
     },
@@ -215,12 +257,17 @@ export const questionBank = {
         ];
 
         const selectedPair = wordPairs[i % wordPairs.length];
+        const answer = selectedPair.synonyms[selectedPair.correct];
 
         return {
           question: `Choose the word most similar in meaning to: ${selectedPair.word}`,
           options: selectedPair.synonyms,
           correctAnswer: selectedPair.correct,
-          explanation: `${selectedPair.word} means ${selectedPair.synonyms[selectedPair.correct]}.`
+          explanation: formatExplanation(
+            `Choose the word most similar in meaning to: ${selectedPair.word}`,
+            answer,
+            `${selectedPair.word} means ${answer}.`
+          )
         };
       })
     },
@@ -237,12 +284,17 @@ export const questionBank = {
         ];
 
         const selectedPair = antonymPairs[i % antonymPairs.length];
+        const answer = selectedPair.options[selectedPair.correct];
 
         return {
           question: `Choose the word most opposite in meaning to: ${selectedPair.word}`,
           options: selectedPair.options,
           correctAnswer: selectedPair.correct,
-          explanation: `The opposite of ${selectedPair.word} is ${selectedPair.options[selectedPair.correct]}.`
+          explanation: formatExplanation(
+            `Choose the word most opposite in meaning to: ${selectedPair.word}`,
+            answer,
+            `The opposite of ${selectedPair.word} is ${answer}.`
+          )
         };
       })
     },
@@ -266,12 +318,17 @@ export const questionBank = {
         ];
 
         const selected = sentences[i % sentences.length];
+        const answer = selected.options[selected.correct];
 
         return {
           question: selected.text,
           options: selected.options,
           correctAnswer: selected.correct,
-          explanation: `The word '${selected.options[selected.correct]}' best completes the sentence, ${selected.context}.`
+          explanation: formatExplanation(
+            selected.text,
+            answer,
+            `The word '${answer}' best completes the sentence, ${selected.context}.`
+          )
         };
       })
     },
@@ -301,12 +358,17 @@ export const questionBank = {
         const questionIndex = i % 4;
         const passage = passages[passageIndex % passages.length];
         const questionData = passage.questions[questionIndex % passage.questions.length];
+        const answer = questionData.options[questionData.correct];
 
         return {
           question: `${passage.text}\n\n${questionData.question}`,
           options: questionData.options,
           correctAnswer: questionData.correct,
-          explanation: `Based on the passage, renewable energy sources provide clean energy without producing harmful greenhouse gases.`
+          explanation: formatExplanation(
+            `${passage.text}\n\n${questionData.question}`,
+            answer,
+            `Based on the passage, ${answer}.`
+          )
         };
       })
     },
@@ -353,11 +415,21 @@ export const questionBank = {
         ];
 
         const selectedScenario = scenarios[i % scenarios.length];
+        const answer = selectedScenario.options[selectedScenario.correct];
+
         return {
           question: `${selectedScenario.premise}\n${selectedScenario.question}`,
           options: selectedScenario.options,
           correctAnswer: selectedScenario.correct,
-          explanation: selectedScenario.explain
+          explanation: formatExplanation(
+            selectedScenario.question,
+            answer,
+            `${selectedScenario.explain}\n\nLogical Steps:
+            1. Identify the given statements
+            2. Analyze the relationships between terms
+            3. Apply logical reasoning rules
+            4. Draw valid conclusions`
+          )
         };
       })
     },
@@ -384,17 +456,22 @@ export const questionBank = {
 
         const set = wordSets[i % wordSets.length];
         const shuffled = shuffleArray([...set.words]);
+        const answer = set.correct.join(" → ");
 
         return {
           question: `Arrange these words in logical order: ${shuffled.join(", ")}`,
           options: [
-            set.correct.join(" → "),
+            answer,
             shuffled.join(" → "),
             shuffleArray([...set.words]).join(" → "),
             shuffleArray([...set.words]).join(" → ")
           ],
           correctAnswer: 0,
-          explanation: set.explain
+          explanation: formatExplanation(
+            `Arrange these words in logical order: ${shuffled.join(", ")}`,
+            answer,
+            `${set.explain}`
+          )
         };
       })
     },
@@ -457,6 +534,7 @@ export const questionBank = {
 
         const sequence = sequences[i % sequences.length];
         const correctOrder = sequence.events.join(" → ");
+        const answer = correctOrder;
 
         return {
           question: `Arrange these events in the correct sequence: ${sequence.scrambled.join(" | ")}`,
@@ -467,7 +545,11 @@ export const questionBank = {
             shuffleArray([...sequence.events]).join(" → ")
           ],
           correctAnswer: 0,
-          explanation: sequence.explain
+          explanation: formatExplanation(
+            `Arrange these events in the correct sequence: ${sequence.scrambled.join(" | ")}`,
+            answer,
+            `${sequence.explain}`
+          )
         };
       })
     },
@@ -482,17 +564,24 @@ export const questionBank = {
 
         const selectedSets = sets.slice(0, numSets);
         const relationships = selectedSets.map(set => `All ${set}`).join(', ');
+        const options = [
+          'Completely overlapping circles',
+          'Partially overlapping circles',
+          'Concentric circles',
+          'Separate circles'
+        ];
+        const correctAnswer = Math.floor(Math.random() * 4);
+        const answer = options[correctAnswer];
 
         return {
           question: `Consider the following sets: ${relationships}. Which Venn diagram best represents their relationship?`,
-          options: [
-            'Completely overlapping circles',
-            'Partially overlapping circles',
-            'Concentric circles',
-            'Separate circles'
-          ],
-          correctAnswer: Math.floor(Math.random() * 4),
-          explanation: `Analyze the logical relationships between the sets to determine the correct Venn diagram representation.`
+          options: options,
+          correctAnswer: correctAnswer,
+          explanation: formatExplanation(
+            `Consider the following sets: ${relationships}. Which Venn diagram best represents their relationship?`,
+            answer,
+            `Analyze the logical relationships between the sets to determine the correct Venn diagram representation. Consider the overlaps and exclusions between the sets to visualize the appropriate diagram.`
+          )
         };
       })
     },
@@ -507,12 +596,19 @@ export const questionBank = {
         ];
 
         const operation = diceOperations[i % diceOperations.length];
+        const options = ['1', '2', '3', '4', '5', '6'];
+        const correctAnswer = i % 6;
+        const answer = options[correctAnswer];
 
         return {
           question: `In a dice numbered 1 to 6, if ${operation.desc}, what number would be on top?`,
-          options: ['1', '2', '3', '4', '5', '6'],
-          correctAnswer: i % 6,
-          explanation: `Based on ${operation.type}, where ${operation.desc}`
+          options: options,
+          correctAnswer: correctAnswer,
+          explanation: formatExplanation(
+            `In a dice numbered 1 to 6, if ${operation.desc}, what number would be on top?`,
+            answer,
+            `Based on ${operation.type}, where ${operation.desc}.  Visualize the dice and its rotations to determine the top face.`
+          )
         };
       })
     },
@@ -549,12 +645,17 @@ export const questionBank = {
         ];
 
         const selectedPattern = patterns[i % patterns.length];
+        const answer = selectedPattern.options[selectedPattern.correct];
 
         return {
           question: `What comes next in the series: ${selectedPattern.series}`,
           options: selectedPattern.options,
           correctAnswer: selectedPattern.correct,
-          explanation: selectedPattern.explain
+          explanation: formatExplanation(
+            `What comes next in the series: ${selectedPattern.series}`,
+            answer,
+            `${selectedPattern.explain}`
+          )
         };
       })
     },
@@ -583,12 +684,17 @@ export const questionBank = {
         ];
 
         const selectedAnalogy = analogies[i % analogies.length];
+        const answer = selectedAnalogy.options[selectedAnalogy.correct];
 
         return {
           question: selectedAnalogy.premise,
           options: selectedAnalogy.options,
           correctAnswer: selectedAnalogy.correct,
-          explanation: selectedAnalogy.explain
+          explanation: formatExplanation(
+            selectedAnalogy.premise,
+            answer,
+            `${selectedAnalogy.explain}`
+          )
         };
       })
     },
@@ -600,17 +706,26 @@ export const questionBank = {
         const baseNumber = Math.floor(Math.random() * 1000) + 100;
         const percentage = Math.floor(Math.random() * 90) + 10;
         const result = (baseNumber * percentage) / 100;
+        const answer = `${result}`;
 
         return {
           question: `${percentage}% of ${baseNumber} is:`,
           options: [
-            `${result}`,
+            answer,
             `${result + 10}`,
             `${result - 10}`,
             `${result * 2}`
           ],
           correctAnswer: 0,
-          explanation: `To find the percentage, multiply ${baseNumber} by ${percentage}/100 = ${result}`
+          explanation: formatExplanation(
+            `${percentage}% of ${baseNumber} is:`,
+            answer,
+            `To calculate percentage:
+            1. Convert percentage to decimal (${percentage}/100 = ${percentage / 100})
+            2. Multiply by the base number (${baseNumber})
+            3. Result: ${result}`,
+            "Percentage = (Value × Percentage) ÷ 100"
+          )
         };
       })
     },
@@ -620,17 +735,23 @@ export const questionBank = {
         const costPrice = Math.floor(Math.random() * 900) + 100;
         const profitPercentage = Math.floor(Math.random() * 50) + 10;
         const sellingPrice = costPrice + (costPrice * profitPercentage / 100);
+        const answer = `Rs. ${sellingPrice}`;
 
         return {
           question: `If the cost price is Rs. ${costPrice} and profit percentage is ${profitPercentage}%, what is the selling price?`,
           options: [
-            `Rs. ${sellingPrice}`,
+            answer,
             `Rs. ${sellingPrice + 10}`,
             `Rs. ${sellingPrice - 10}`,
             `Rs. ${sellingPrice * 2}`
           ],
           correctAnswer: 0,
-          explanation: `Selling Price = Cost Price + (Cost Price × Profit%/100) = ${costPrice} + (${costPrice} × ${profitPercentage}/100) = ${sellingPrice}`
+          explanation: formatExplanation(
+            `If the cost price is Rs. ${costPrice} and profit percentage is ${profitPercentage}%, what is the selling price?`,
+            answer,
+            `Selling Price = Cost Price + (Cost Price × Profit%/100) = ${costPrice} + (${costPrice} × ${profitPercentage}/100) = ${sellingPrice}`,
+            "Selling Price = Cost Price + (Cost Price × Profit Percentage / 100)"
+          )
         };
       })
     },
@@ -641,17 +762,23 @@ export const questionBank = {
         const rate = Math.floor(Math.random() * 10) + 5;
         const time = Math.floor(Math.random() * 5) + 1;
         const simpleInterest = (principal * rate * time) / 100;
+        const answer = `Rs. ${simpleInterest}`;
 
         return {
           question: `What is the Simple Interest on Rs. ${principal} at ${rate}% per annum for ${time} years?`,
           options: [
-            `Rs. ${simpleInterest}`,
+            answer,
             `Rs. ${simpleInterest + 100}`,
             `Rs. ${simpleInterest - 100}`,
             `Rs. ${simpleInterest * 2}`
           ],
           correctAnswer: 0,
-          explanation: `Simple Interest = (Principal × Rate × Time)/100 = (${principal} × ${rate} × ${time})/100 = ${simpleInterest}`
+          explanation: formatExplanation(
+            `What is the Simple Interest on Rs. ${principal} at ${rate}% per annum for ${time} years?`,
+            answer,
+            `Simple Interest = (Principal × Rate × Time)/100 = (${principal} × ${rate} × ${time})/100 = ${simpleInterest}`,
+            "Simple Interest = (Principal × Rate × Time) / 100"
+          )
         };
       })
     },
@@ -662,17 +789,23 @@ export const questionBank = {
         const rate = (Math.floor(Math.random() * 10) + 5);
         const time = Math.floor(Math.random() * 3) + 1;
         const CI = principal * Math.pow((1 + rate / 100), time) - principal;
+        const answer = `Rs. ${Math.round(CI)}`;
 
         return {
-          question: `What is the Compound Interest on Rs. ${principal} at ${rate}% per annum for ${time} years?`,
+          question:`What is the Compound Interest on Rs. ${principal} at${rate}% per annum for ${time} years?`,
           options: [
-            `Rs. ${Math.round(CI)}`,
+            answer,
             `Rs. ${Math.round(CI + 100)}`,
             `Rs. ${Math.round(CI - 100)}`,
             `Rs. ${Math.round(CI * 1.5)}`
           ],
           correctAnswer: 0,
-          explanation: `CI = P(1 + r/100)^t - P = ${principal}(1 + ${rate}/100)^${time} - ${principal} = ${Math.round(CI)}`
+          explanation: formatExplanation(
+            `What is the Compound Interest on Rs. ${principal} at ${rate}% per annum for ${time} years?`,
+            answer,
+            `CI = P(1 + r/100)^t - P = ${principal}(1 + ${rate}/100)^${time} - ${principal} = ${Math.round(CI)}`,
+            "Compound Interest = P(1 + r/100)^t - P"
+          )
         };
       })
     },
@@ -683,17 +816,23 @@ export const questionBank = {
         const ratio2 = Math.floor(Math.random() * 5) + 2;
         const total = (ratio1 + ratio2) * 10;
         const part1 = (total * ratio1) / (ratio1 + ratio2);
+        const answer = `${Math.round(part1)}`;
 
         return {
           question: `If two numbers are in the ratio ${ratio1}:${ratio2} and their sum is ${total}, find the first number.`,
           options: [
-            `${Math.round(part1)}`,
+            answer,
             `${Math.round(part1 + 10)}`,
             `${Math.round(part1 - 10)}`,
             `${Math.round(part1 * 1.5)}`
           ],
           correctAnswer: 0,
-          explanation: `First number = (Total × ${ratio1})/(${ratio1} + ${ratio2}) = (${total} × ${ratio1})/${ratio1 + ratio2} = ${Math.round(part1)}`
+          explanation: formatExplanation(
+            `If two numbers are in the ratio ${ratio1}:${ratio2} and their sum is ${total}, find the first number.`,
+            answer,
+            `First number = (Total × ${ratio1})/(${ratio1} + ${ratio2}) = (${total} × ${ratio1})/${ratio1 + ratio2} = ${Math.round(part1)}`,
+            "First Number = (Total × Ratio1) / (Ratio1 + Ratio2)"
+          )
         };
       })
     },
@@ -706,17 +845,23 @@ export const questionBank = {
         const newPeople = Math.floor(Math.random() * 5) + 2;
 
         const newDays = Math.round(totalWork / newPeople);
+        const answer = `${newDays}`;
 
         return {
           question: `${numPeople} people can complete a piece of work in ${numDays} days. How many days will it take ${newPeople} people to complete the same work?`,
           options: [
-            `${newDays}`,
+            answer,
             `${newDays + 2}`,
             `${newDays - 2}`,
             `${newDays * 2}`
           ],
           correctAnswer: 0,
-          explanation: `${numPeople} people × ${numDays} days = ${totalWork} units of work.  ${totalWork} units of work / ${newPeople} people = ${newDays} days`
+          explanation: formatExplanation(
+            `${numPeople} people can complete a piece of work in ${numDays} days. How many days will it take ${newPeople} people to complete the same work?`,
+            answer,
+            `${numPeople} people × ${numDays} days = ${totalWork} units of work.  ${totalWork} units of work / ${newPeople} people = ${newDays} days`,
+            "Days = (People × Days) / New People"
+          )
         };
       })
     },
@@ -726,17 +871,23 @@ export const questionBank = {
         const speed = Math.floor(Math.random() * 60) + 20;
         const time = Math.floor(Math.random() * 10) + 2;
         const distance = speed * time;
+        const answer = `${distance} km`;
 
         return {
           question: `If a car travels at a speed of ${speed} km/h for ${time} hours, what distance does it cover?`,
           options: [
-            `${distance} km`,
+            answer,
             `${distance + 10} km`,
             `${distance - 10} km`,
             `${distance * 2} km`
           ],
           correctAnswer: 0,
-          explanation: `Distance = Speed × Time = ${speed} km/h × ${time} h = ${distance} km`
+          explanation: formatExplanation(
+            `If a car travels at a speed of ${speed} km/h for ${time} hours, what distance does it cover?`,
+            answer,
+            `Distance = Speed × Time = ${speed} km/h × ${time} h = ${distance} km`,
+            "Distance = Speed × Time"
+          )
         };
       })
     },
@@ -746,17 +897,23 @@ export const questionBank = {
         const numbers = Array.from({ length: 5 }, () => Math.floor(Math.random() * 100));
         const sum = numbers.reduce((a, b) => a + b, 0);
         const average = sum / numbers.length;
+        const answer = `${average}`;
 
         return {
           question: `What is the average of the following numbers: ${numbers.join(', ')}?`,
           options: [
-            `${average}`,
+            answer,
             `${average + 5}`,
             `${average - 5}`,
             `${average * 2}`
           ],
           correctAnswer: 0,
-          explanation: `Average = Sum of numbers / Number of numbers = ${sum} /5 = ${average}`
+          explanation: formatExplanation(
+            `What is the average of the following numbers: ${numbers.join(', ')}?`,
+            answer,
+            `Average = Sum of numbers / Number of numbers = ${sum} /5 = ${average}`,
+            "Average = Sum of Numbers / Number of Numbers"
+          )
         };
       })
     },
@@ -775,17 +932,22 @@ export const questionBank = {
           case 2: result = num1 * num2; question = `What is ${num1} × ${num2}?`; break;
           case 3: result = num1 / num2; question = `What is ${num1} / ${num2}?`; break;
         }
+        const answer = `${result}`;
 
         return {
           question: question,
           options: [
-            `${result}`,
+            answer,
             `${result + 5}`,
             `${result - 5}`,
             `${result * 2}`
           ],
           correctAnswer: 0,
-          explanation: `${num1} ${operation === 0 ? '+' : operation === 1 ? '-' : operation === 2 ? '×' : '/'} ${num2} = ${result}`
+          explanation: formatExplanation(
+            question,
+            answer,
+            `${num1} ${operation === 0 ? '+' : operation === 1 ? '-' : operation === 2 ? '×' : '/'} ${num2} = ${result}`
+          )
         };
       })
     },
@@ -796,17 +958,22 @@ export const questionBank = {
         const b = Math.floor(Math.random() * 10) + 1;
         const c = a + b;
         const question = `If x + ${a} = ${c}, what is the value of x?`;
+        const answer = `${b}`;
 
         return {
           question: question,
           options: [
-            `${b}`,
+            answer,
             `${a}`,
             `${a + b}`,
             `${a - b}`
           ],
           correctAnswer: 0,
-          explanation: `x = ${c} - ${a} = ${b}`
+          explanation: formatExplanation(
+            question,
+            answer,
+            `x = ${c} - ${a} = ${b}`
+          )
         };
       })
     },
@@ -816,6 +983,12 @@ export const questionBank = {
         const shapes = ['circle', 'square', 'triangle', 'rectangle'];
         const shape = shapes[Math.floor(Math.random() * shapes.length)];
         const question = `What is a ${shape}?`;
+        const answer = [
+          `A round 2D shape`,
+          `A 4-sided polygon`,
+          `A 3-sided polygon`,
+          `A 4-sided polygon with 4 right angles`
+        ][shapes.indexOf(shape)];
 
         return {
           question: question,
@@ -826,7 +999,11 @@ export const questionBank = {
             `A 4-sided polygon with 4 right angles`
           ],
           correctAnswer: shapes.indexOf(shape),
-          explanation: `A ${shape} is a basic geometric figure`
+          explanation: formatExplanation(
+            question,
+            answer,
+            `A ${shape} is a basic geometric figure.`
+          )
         };
       })
     },
@@ -836,17 +1013,23 @@ export const questionBank = {
         const length = Math.floor(Math.random() * 10) + 5;
         const width = Math.floor(Math.random() * 10) + 5;
         const area = length * width;
+        const answer = `${area} cm²`;
 
         return {
           question: `What is the area of a rectangle with length ${length} cm and width ${width} cm?`,
           options: [
-            `${area} cm²`,
+            answer,
             `${area + 10} cm²`,
             `${area - 10} cm²`,
             `${area * 2} cm²`
           ],
           correctAnswer: 0,
-          explanation: `Area = Length × Width = ${length} cm × ${width} cm = ${area} cm²`
+          explanation: formatExplanation(
+            `What is the area of a rectangle with length ${length} cm and width ${width} cm?`,
+            answer,
+            `Area = Length × Width = ${length} cm × ${width} cm = ${area} cm²`,
+            "Area of Rectangle = Length × Width"
+          )
         };
       })
     },
@@ -854,12 +1037,21 @@ export const questionBank = {
 };
 
 // Helper function to generate expanded questions
-function generateExpandedQuestions(baseQuestion: string, count: number) {
+function generateQuestions(baseQuestion: string, count: number) {
   return Array.from({ length: count }, (_, i) => ({
-    question: `${baseQuestion} (Variation ${i + 1})`,
+    question: `${baseQuestion} #${i + 1}`,
     options: ["Option A", "Option B", "Option C", "Option D"],
-    correctAnswer: Math.floor(Math.random() * 4)
+    correctAnswer: Math.floor(Math.random() * 4),
+    explanation: `This is the explanation for ${baseQuestion} #${i + 1}`
   }));
+}
+
+// Lazy load sections of the question bank as needed
+export function getQuestionsForTopic(category: string, topicId: string): any[] {
+  if (!questionBank[category]?.[topicId]) {
+    return [];
+  }
+  return questionBank[category][topicId].questions;
 }
 
 //Fisher-Yates shuffle algorithm
@@ -870,25 +1062,3 @@ function shuffleArray(array: any[]) {
   }
   return array;
 }
-
-
-// Export the expanded question bank separately
-export const questionBankExpanded = {
-  verbal: {},
-  nonVerbal: {},
-  mathematical: {},
-  technical: {},
-  psychometric: {}
-};
-
-// Initialize expanded questions
-Object.keys(questionBank).forEach(category => {
-  Object.keys(questionBank[category]).forEach(topicId => {
-    if (!questionBankExpanded[category][topicId]) {
-      questionBankExpanded[category][topicId] = generateExpandedQuestions(
-        `Sample ${category} question for topic ${topicId}`,
-        50
-      );
-    }
-  });
-});
