@@ -1,16 +1,21 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
+import { setupAuth } from "./auth";
 import { storage } from "./storage";
 
 export function registerRoutes(app: Express): Server {
   console.log('[Routes] Starting route registration...');
+
+  // Set up authentication routes and middleware
+  setupAuth(app);
+  console.log('[Routes] Auth routes registered');
 
   // Simple health check endpoint
   app.get("/api/health", (req, res) => {
     res.json({ status: "ok" });
   });
 
-  // Minimal test endpoint
+  // Test endpoint
   app.get("/api/test", (req, res) => {
     res.json({ message: "Server is running" });
   });
