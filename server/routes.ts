@@ -329,10 +329,17 @@ export function registerRoutes(app: Express): Server {
             q && q.question && q.options && Array.isArray(q.options) && q.options.length > 0
         );
 
-        // Randomly select 10 unique questions
-        const shuffled = [...allQuestions]
-            .sort(() => Math.random() - 0.5)
-            .slice(0, NUM_QUESTIONS);
+        // Fisher-Yates shuffle for better randomization
+        const shuffle = (array) => {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        };
+
+        // Select 10 random questions
+        const shuffled = shuffle([...allQuestions]).slice(0, NUM_QUESTIONS);
         
         const selectedQuestions = shuffled.map(q => ({
             questionText: q.question || q.questionText,
