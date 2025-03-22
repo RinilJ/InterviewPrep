@@ -125,7 +125,176 @@ export const questionBank = {
         correctAnswer: 0
       }
     ],
-    "L06": [ // Clocks
+    "L06": [ // Rankings and Arrangements
+      {
+        question: "In a row of 40 students, R is 11th from the left and T is 7th from the right. How many students are there between R and T?",
+        options: ["20", "22", "23", "24"],
+        correctAnswer: 2
+      },
+      {
+        question: "In a queue, A is 16th from the front and B is 17th from the back. If C is exactly between A and B, and there are 48 people in the queue, what is C's position from the front?",
+        options: ["24", "25", "26", "27"],
+        correctAnswer: 1
+      },
+      {
+        question: "Five friends P, Q, R, S and T are sitting in a row. S is between T and Q. R is next to P but not next to S. Who is in the middle?",
+        options: ["S", "Q", "R", "T"],
+        correctAnswer: 0
+      },
+      {
+        question: "In a class of 45 students, Rohit's rank from the top is 16th. What is his rank from the bottom?",
+        options: ["29th", "30th", "31st", "32nd"],
+        correctAnswer: 1
+      }
+    ],
+    "L07": [ // Number and Letter Analogies
+      {
+        question: "CAT : FDW :: DOG : ?",
+        options: ["GRJ", "HRJ", "GRH", "HRK"],
+        correctAnswer: 0
+      },
+      {
+        question: "ACE : FHJ :: KMO : ?",
+        options: ["PRT", "QSU", "RST", "PQR"],
+        correctAnswer: 0
+      },
+      {
+        question: "6 : 42 :: 8 : ?",
+        options: ["56", "64", "72", "80"],
+        correctAnswer: 2
+      },
+      {
+        question: "PRESS : QSFTT :: BRAIN : ?",
+        options: ["CSBJO", "CSJBO", "CSBNI", "CSBIO"],
+        correctAnswer: 3
+      }
+    ],
+    "L08": [ // Mixed Analogies
+      {
+        question: "Book : Pages :: Tree : ?",
+        options: ["Branches", "Leaves", "Fruits", "Roots"],
+        correctAnswer: 1
+      },
+      {
+        question: "Clock : Time :: Thermometer : ?",
+        options: ["Mercury", "Temperature", "Heat", "Celsius"],
+        correctAnswer: 1
+      },
+      {
+        question: "Printer : Paper :: Monitor : ?",
+        options: ["Screen", "Display", "Pixels", "Resolution"],
+        correctAnswer: 2
+      },
+      {
+        question: "Water : Thirst :: Food : ?",
+        options: ["Energy", "Hunger", "Health", "Nutrition"],
+        correctAnswer: 1
+      }
+    ],
+    "L09": [ // Syllogism (Deductions)
+      {
+        question: "All roses are flowers. Some flowers are red. Therefore:",
+        options: [
+          "All roses are red",
+          "Some roses are red",
+          "No roses are red",
+          "No conclusion can be drawn"
+        ],
+        correctAnswer: 3
+      },
+      {
+        question: "All birds can fly. Penguins are birds. Therefore:",
+        options: [
+          "Penguins can fly",
+          "Penguins cannot fly",
+          "Some penguins can fly",
+          "The premise is incorrect"
+        ],
+        correctAnswer: 3
+      },
+      {
+        question: "All metals conduct electricity. Gold is a metal. Therefore:",
+        options: [
+          "Gold might conduct electricity",
+          "Gold conducts electricity",
+          "Gold is the best conductor",
+          "No conclusion can be drawn"
+        ],
+        correctAnswer: 1
+      }
+    ],
+    "L10": [ // Odd Man Out
+      {
+        question: "Find the odd one out: Table, Chair, Bed, Paint, Sofa",
+        options: ["Table", "Chair", "Paint", "Sofa"],
+        correctAnswer: 2
+      },
+      {
+        question: "Which is different from others: Lion, Tiger, Deer, Leopard",
+        options: ["Lion", "Tiger", "Deer", "Leopard"],
+        correctAnswer: 2
+      },
+      {
+        question: "Find the odd one: Mercury, Mars, Moon, Venus",
+        options: ["Mercury", "Mars", "Moon", "Venus"],
+        correctAnswer: 2
+      },
+      {
+        question: "Which doesn't belong: Copper, Iron, Gold, Plastic",
+        options: ["Copper", "Iron", "Gold", "Plastic"],
+        correctAnswer: 3
+      }
+    ],
+    "L11": [ // Data Sufficiency and Venn Diagrams
+      {
+        question: "All squares are rectangles. All rectangles are parallelograms. Which conclusion is valid?",
+        options: [
+          "All parallelograms are squares",
+          "All squares are parallelograms",
+          "Some parallelograms are squares",
+          "No parallelograms are squares"
+        ],
+        correctAnswer: 1
+      },
+      {
+        question: "Some doctors are surgeons. All surgeons are specialists. What can be concluded?",
+        options: [
+          "All doctors are specialists",
+          "Some specialists are doctors",
+          "All specialists are surgeons",
+          "No conclusion can be drawn"
+        ],
+        correctAnswer: 1
+      },
+      {
+        question: "In a group of 60 people, 25 like tea, 30 like coffee, and 15 like both. How many people don't like either?",
+        options: ["15", "20", "25", "30"],
+        correctAnswer: 1
+      }
+    ],
+    "L12": [ // Calendars
+      {
+        question: "If January 1, 2024 is Monday, what day is March 1, 2024?",
+        options: ["Friday", "Saturday", "Sunday", "Monday"],
+        correctAnswer: 0
+      },
+      {
+        question: "How many times can the 29th of a month occur in a non-leap year?",
+        options: ["11", "12", "13", "14"],
+        correctAnswer: 0
+      },
+      {
+        question: "In a particular year, there are 53 Sundays. Which day was January 1st of that year?",
+        options: ["Sunday", "Monday", "Friday", "Saturday"],
+        correctAnswer: 0
+      },
+      {
+        question: "If today is Tuesday, what day will it be after 100 days?",
+        options: ["Tuesday", "Wednesday", "Thursday", "Friday"],
+        correctAnswer: 3
+      }
+    ],
+    "L13": [ // Clocks
       {
         question: "If the time is 3:15, what is the angle between the hour and minute hands?",
         options: ["7.5°", "17.5°", "27.5°", "37.5°"],
