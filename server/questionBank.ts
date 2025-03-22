@@ -3,7 +3,7 @@ import * as verbalQuestions from './questions/verbal';
 import * as nonVerbalQuestions from './questions/nonVerbal';
 import * as mathematicalQuestions from './questions/mathematical';
 
-// Cache for tracking used questions per test session
+// Cache for tracking used questions per session
 const sessionQuestions = new Map<string, Set<string>>();
 
 // Question bank structure with lazy loading
@@ -128,7 +128,7 @@ export const questionBank: QuestionBank = {
   }
 };
 
-// Helper function to shuffle array
+// Fisher-Yates shuffle algorithm for better randomization
 function shuffleArray<T>(array: T[]): T[] {
   const shuffled = [...array];
   for (let i = shuffled.length - 1; i > 0; i--) {
@@ -138,7 +138,7 @@ function shuffleArray<T>(array: T[]): T[] {
   return shuffled;
 }
 
-// Function to get unique questions for a test session
+// Get unique questions for a test session
 export async function getUniqueQuestionsForUser(
   userId: number,
   topicId: string,
@@ -147,6 +147,7 @@ export async function getUniqueQuestionsForUser(
   console.log(`Getting ${count} questions for user ${userId}, topic ${topicId}`);
 
   try {
+    // Determine category from topic ID
     let category: keyof QuestionBank;
     if (topicId.startsWith('L')) category = 'verbal';
     else if (topicId.startsWith('N')) category = 'nonVerbal';
@@ -166,20 +167,28 @@ export async function getUniqueQuestionsForUser(
     const sessionUsedQuestions = sessionQuestions.get(sessionKey)!;
 
     // Load questions for this topic
-    const questions = await topic.getQuestions();
+    const allQuestions = await topic.getQuestions();
 
-    if (!questions || questions.length < count) {
-      throw new Error(`Not enough questions available for topic ${topicId}. Need ${count}, have ${questions?.length || 0}`);
+    if (!allQuestions || allQuestions.length < count) {
+      throw new Error(`Not enough questions available for topic ${topicId}. Need ${count}, have ${allQuestions?.length || 0}`);
+    }
+
+    // Filter out previously used questions
+    const availableQuestions = allQuestions.filter(q => !sessionUsedQuestions.has(q.question));
+
+    if (availableQuestions.length < count) {
+      // If we're running low on unique questions, clear the session cache
+      sessionUsedQuestions.clear();
     }
 
     // Select random questions and shuffle options
-    const shuffled = shuffleArray(questions);
+    const shuffled = shuffleArray(availableQuestions.length < count ? allQuestions : availableQuestions);
     const selected = shuffled.slice(0, count).map(q => ({
       ...q,
       options: shuffleArray(q.options)
     }));
 
-    // Mark questions as used
+    // Mark selected questions as used
     selected.forEach(q => sessionUsedQuestions.add(q.question));
 
     return selected;
@@ -190,7 +199,7 @@ export async function getUniqueQuestionsForUser(
   }
 }
 
-// Clean up old sessions periodically
+// Clean up old sessions periodically (every hour)
 setInterval(() => {
   const oneHourAgo = Date.now() - 3600000;
   for (const [key] of sessionQuestions) {
