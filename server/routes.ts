@@ -83,12 +83,6 @@ export function registerRoutes(app: Express): Server {
     if (!topicId) return res.status(400).send("Topic ID is required");
 
     try {
-      // Get unique questions for this user and topic
-      const questions = getUniqueQuestionsForUser(req.user.id, topicId);
-      if (!questions || questions.length === 0) {
-        return res.status(404).send("No questions available for this topic");
-      }
-
       // Determine category from topic ID
       let category: string;
       if (topicId.startsWith('L')) {
@@ -99,6 +93,17 @@ export function registerRoutes(app: Express): Server {
         category = 'mathematical';
       } else {
         return res.status(400).send("Invalid topic ID");
+      }
+
+      // Get unique questions for this user and topic
+      const questions = getUniqueQuestionsForUser(req.user.id, topicId);
+
+      // Log question generation for debugging
+      console.log(`Generated ${questions.length} questions for user ${req.user.id}, topic ${topicId}`);
+      console.log('Question IDs:', questions.map(q => q.question.substring(0, 30) + '...'));
+
+      if (!questions || questions.length === 0) {
+        return res.status(404).send("No questions available for this topic");
       }
 
       res.json({

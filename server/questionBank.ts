@@ -17,16 +17,18 @@ function getUniqueRandomIndices(max: number, count: number): number[] {
   return indices.slice(0, count);
 }
 
-// Cache for tracking used questions per user
-const usedQuestions = new Map<number, Set<string>>();
+// Cache for tracking used questions per user and topic
+const usedQuestions = new Map<string, Set<string>>();
 
 // Function to get unique questions for a user
 export function getUniqueQuestionsForUser(userId: number, topicId: string, count: number = 10): any[] {
-  // Initialize user's question tracking if not exists
-  if (!usedQuestions.has(userId)) {
-    usedQuestions.set(userId, new Set());
+  const userTopicKey = `${userId}-${topicId}`;
+
+  // Initialize user-topic tracking if not exists
+  if (!usedQuestions.has(userTopicKey)) {
+    usedQuestions.set(userTopicKey, new Set());
   }
-  const userUsedQuestions = usedQuestions.get(userId)!;
+  const userTopicUsedQuestions = usedQuestions.get(userTopicKey)!;
 
   // Get base questions for the topic
   const category = topicId.startsWith('L') ? 'verbal' : 
@@ -34,29 +36,35 @@ export function getUniqueQuestionsForUser(userId: number, topicId: string, count
   const topicQuestions = questionBank[category][topicId].questions;
 
   // Filter out used questions
-  const availableQuestions = topicQuestions.filter(q => 
-    !userUsedQuestions.has(`${topicId}-${q.question}`)
-  );
+  const availableQuestions = topicQuestions.filter(q => !userTopicUsedQuestions.has(q.question));
 
   // If running low on questions, reset the used questions for this topic
   if (availableQuestions.length < count) {
-    const topicUsedQuestions = Array.from(userUsedQuestions)
-      .filter(q => q.startsWith(topicId));
-    topicUsedQuestions.forEach(q => userUsedQuestions.delete(q));
+    usedQuestions.delete(userTopicKey);
+    usedQuestions.set(userTopicKey, new Set());
+    return getUniqueQuestionsForUser(userId, topicId, count);
   }
 
   // Get random unique questions
-  const selectedQuestions = getUniqueRandomIndices(availableQuestions.length, count)
-    .map(i => {
-      const question = availableQuestions[i];
-      userUsedQuestions.add(`${topicId}-${question.question}`);
-      return question;
-    });
+  const indices = getUniqueRandomIndices(availableQuestions.length, count);
+  const selectedQuestions = indices.map(i => {
+    const question = availableQuestions[i];
+    userTopicUsedQuestions.add(question.question);
+    return {
+      ...question,
+      options: [...question.options] // Create a new array to avoid reference issues
+    };
+  });
 
-  // Clean up if cache gets too large
-  if (userUsedQuestions.size > 1000) {
-    usedQuestions.set(userId, new Set());
-  }
+  // Shuffle options for each question
+  selectedQuestions.forEach(q => {
+    const correctAnswer = q.options[q.correctAnswer];
+    for (let i = q.options.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [q.options[i], q.options[j]] = [q.options[j], q.options[i]];
+    }
+    q.correctAnswer = q.options.indexOf(correctAnswer);
+  });
 
   return selectedQuestions;
 }
