@@ -21,7 +21,44 @@ export function registerRoutes(app: Express): Server {
   // Get aptitude topics
   app.get("/api/aptitude-topics", (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
-    res.json(questionBank);
+
+    try {
+      // Transform the question bank into the expected format
+      const topics = {
+        verbal: Object.entries(questionBank.verbal).map(([id, questions]) => ({
+          id,
+          title: questions[0]?.title || id,
+          range: questions[0]?.range || `${questions.length} questions`
+        })),
+        nonVerbal: Object.entries(questionBank.nonVerbal).map(([id, questions]) => ({
+          id,
+          title: questions[0]?.title || id,
+          range: questions[0]?.range || `${questions.length} questions`
+        })),
+        mathematical: Object.entries(questionBank.mathematical).map(([id, questions]) => ({
+          id,
+          title: questions[0]?.title || id,
+          range: questions[0]?.range || `${questions.length} questions`
+        })),
+        technical: Object.entries(questionBank.technical).map(([id, questions]) => ({
+          id,
+          title: questions[0]?.title || id,
+          description: questions[0]?.description,
+          range: questions[0]?.range || `${questions.length} questions`
+        })),
+        psychometric: Object.entries(questionBank.psychometric).map(([id, questions]) => ({
+          id,
+          title: questions[0]?.title || id,
+          range: questions[0]?.range || `${questions.length} questions`
+        }))
+      };
+
+      console.log('Sending topics:', topics);
+      res.json(topics);
+    } catch (error) {
+      console.error('Error processing question bank:', error);
+      res.status(500).send('Failed to load topics');
+    }
   });
 
   // Tests
