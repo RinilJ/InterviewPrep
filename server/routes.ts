@@ -4,7 +4,6 @@ import { setupAuth } from "./auth";
 import { storage } from "./storage";
 import { insertTestSchema, insertTestResultSchema, insertDiscussionSlotSchema, insertSlotBookingSchema } from "@shared/schema";
 import { z } from "zod";
-import { questionBank } from "./questionBank";
 import { generateQuestions } from "./openaiService";
 
 const NUM_QUESTIONS = 10;
