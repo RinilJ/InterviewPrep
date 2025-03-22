@@ -27,6 +27,7 @@ registerForm.addEventListener('submit', async (e) => {
 
         if (response.ok) {
             const user = await response.json();
+            console.log('Registration successful:', user); // Debug log
             // Redirect based on role
             window.location.href = user.role === 'teacher' ? '/teacher-dashboard.html' : '/dashboard.html';
         } else {
@@ -58,6 +59,7 @@ loginForm.addEventListener('submit', async (e) => {
 
         if (response.ok) {
             const user = await response.json();
+            console.log('Login successful:', user); // Debug log
             // Redirect based on role
             window.location.href = user.role === 'teacher' ? '/teacher-dashboard.html' : '/dashboard.html';
         } else {

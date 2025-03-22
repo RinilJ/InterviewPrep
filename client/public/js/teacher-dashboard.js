@@ -33,7 +33,7 @@ async function initializeDashboard() {
     if (!user) return;
 
     // Update user info
-    const userInfo = `${user.username} (${user.department || 'N/A'} - Batch ${user.batch || 'N/A'}, Year ${user.year || 'N/A'})`;
+    const userInfo = `${user.username} (${user.department} - Batch ${user.batch}, Year ${user.year})`;
     document.getElementById('userName').textContent = userInfo;
     console.log('Setting user info:', userInfo); // Debug log
 
@@ -110,6 +110,11 @@ async function loadDiscussionSlots(filter = 'all') {
     `).join('');
 }
 
+// Filter discussion slots
+function filterDiscussionSlots(filter) {
+    loadDiscussionSlots(filter);
+}
+
 // Create new discussion slot
 async function createSlot(e) {
     e.preventDefault();
@@ -169,10 +174,6 @@ document.querySelectorAll('.tab').forEach(tab => {
     });
 });
 
-// Discussion filters
-document.querySelectorAll('.btn-filter').forEach(button => {
-    button.addEventListener('click', () => filterDiscussionSlots(button.dataset.filter));
-});
 
 // Event listeners
 document.getElementById('createSlotBtn').addEventListener('click', openModal);
@@ -190,3 +191,8 @@ document.getElementById('logoutBtn').addEventListener('click', async () => {
 
 // Initialize dashboard when page loads
 document.addEventListener('DOMContentLoaded', initializeDashboard);
+
+// Add event listeners for discussion filters
+document.querySelectorAll('.btn-filter').forEach(button => {
+    button.addEventListener('click', () => filterDiscussionSlots(button.dataset.filter));
+});
