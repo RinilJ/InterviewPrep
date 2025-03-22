@@ -1,147 +1,91 @@
 import { z } from 'zod';
 
 // Helper function to format explanation
-function formatExplanation(question: string, answer: string, reasoning: string, formula?: string): string {
-  let explanation = `Correct Answer: ${answer}\n\nReasoning: ${reasoning}`;
-  if (formula) {
-    explanation += `\n\nFormula Used: ${formula}`;
-  }
-  return explanation;
+function formatExplanation(question: string, answer: string, reasoning: string): string {
+  return `Correct Answer: ${answer}\n\nReasoning: ${reasoning}`;
 }
 
 // Cache for tracking used questions per test session
 const sessionQuestions = new Map<string, Set<string>>();
 
-// Get unique random indices
-function getUniqueRandomIndices(max: number, count: number): number[] {
-  const indices = Array.from({ length: max }, (_, i) => i);
-  for (let i = indices.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [indices[i], indices[j]] = [indices[j], indices[i]];
-  }
-  return indices.slice(0, count);
-}
-
-// Topic-specific question generators
-function generateDirectionSenseQuestion(): any {
-  const directions = ['North', 'South', 'East', 'West', 'North-East', 'North-West', 'South-East', 'South-West'];
-  const distances = [2, 3, 4, 5, 6, 7, 8, 9, 10];
-  const steps = Math.floor(Math.random() * 2) + 2; // 2-3 steps
-  const path = [];
-  let finalPosition = { x: 0, y: 0 };
-
-  // Generate unique path
-  const usedDirections = new Set();
-  for (let i = 0; i < steps; i++) {
-    let dir;
-    do {
-      dir = directions[Math.floor(Math.random() * directions.length)];
-    } while (usedDirections.has(dir));
-    usedDirections.add(dir);
-
-    const dist = distances[Math.floor(Math.random() * distances.length)];
-    path.push(`${dist} km ${dir}`);
-
-    switch (dir) {
-      case 'North': finalPosition.y += dist; break;
-      case 'South': finalPosition.y -= dist; break;
-      case 'East': finalPosition.x += dist; break;
-      case 'West': finalPosition.x -= dist; break;
-      case 'North-East': finalPosition.x += dist * 0.707; finalPosition.y += dist * 0.707; break;
-      case 'North-West': finalPosition.x -= dist * 0.707; finalPosition.y += dist * 0.707; break;
-      case 'South-East': finalPosition.x += dist * 0.707; finalPosition.y -= dist * 0.707; break;
-      case 'South-West': finalPosition.x -= dist * 0.707; finalPosition.y -= dist * 0.707; break;
-    }
-  }
-
-  return {
-    question: `A person walks ${path.join(', then ')}. In which direction is the person from the starting point?`,
-    options: ['North', 'South', 'East', 'West'],
-    correctAnswer: Math.floor(Math.random() * 4),
-    explanation: `Calculate the final direction based on the movements: ${path.join(', then ')}`
-  };
-}
-
-function generateBloodRelationsQuestion(): any {
-  const relations = [
-    { role: 'father', inverse: 'son' },
-    { role: 'mother', inverse: 'daughter' },
-    { role: 'brother', inverse: 'sister' },
-    { role: 'uncle', inverse: 'nephew' },
-    { role: 'aunt', inverse: 'niece' },
-    { role: 'grandfather', inverse: 'grandson' }
-  ];
-  const names = ['John', 'Mary', 'James', 'Sarah', 'Robert', 'Emma', 'William', 'Elizabeth'];
-
-  const relation = relations[Math.floor(Math.random() * relations.length)];
-  const name1 = names[Math.floor(Math.random() * names.length)];
-  const name2 = names[Math.floor(Math.random() * names.length)];
-
-  return {
-    question: `If ${name1} is ${relation.role} of ${name2}, what is ${name2} to ${name1}?`,
-    options: [relation.inverse, relation.role, 'cousin', 'not related'],
+// Pre-defined question banks for each topic
+const directionSenseQuestions = [
+  {
+    question: "A person walks 3 km North, then 4 km East, and finally 3 km South. How far is he from the starting point?",
+    options: ["4 km", "5 km", "6 km", "7 km"],
     correctAnswer: 0,
-    explanation: `Since ${name1} is the ${relation.role} of ${name2}, ${name2} must be the ${relation.inverse} of ${name1}.`
-  };
-}
-
-function generateCodingDecodingQuestion(): any {
-  const words = ['COMPUTER', 'PROGRAM', 'KEYBOARD', 'MONITOR', 'SYSTEM'];
-  const word = words[Math.floor(Math.random() * words.length)];
-  const shift = Math.floor(Math.random() * 3) + 1;
-
-  const encoded = word.split('').map(c =>
-    String.fromCharCode(((c.charCodeAt(0) - 65 + shift) % 26) + 65)
-  ).join('');
-
-  return {
-    question: `If each letter in ${word} is shifted ${shift} position(s) forward in the alphabet, what is the coded word?`,
-    options: [
-      encoded,
-      encoded.split('').reverse().join(''),
-      word.split('').reverse().join(''),
-      word
-    ],
+    explanation: "The person ends up 4 km East of the starting point as the North and South movements cancel out."
+  },
+  {
+    question: "Starting from point A, Alex walks 5 km East to point B, then 12 km North to point C. How far is C from A?",
+    options: ["13 km", "17 km", "15 km", "11 km"],
     correctAnswer: 0,
-    explanation: `Each letter is shifted ${shift} positions forward in the alphabet. Original word: ${word}, Encoded: ${encoded}`
-  };
-}
+    explanation: "Using the Pythagorean theorem: √(5² + 12²) = 13 km"
+  },
+  {
+    question: "Walking from his house, Sam goes 15 meters North, then 20 meters West, then 15 meters South. How far is he from his house?",
+    options: ["20 meters", "25 meters", "30 meters", "35 meters"],
+    correctAnswer: 0,
+    explanation: "The North and South movements cancel out, leaving only 20 meters West"
+  },
+  // Add more unique direction sense questions...
+];
 
-// Main function to generate questions for a topic
-function generateQuestionsForTopic(topicId: string, count: number = 10): any[] {
-  console.time(`generateQuestionsForTopic-${topicId}`);
+const bloodRelationQuestions = [
+  {
+    question: "A is B's sister, C is B's mother, D is C's father, E is D's mother. How is A related to E?",
+    options: ["Great granddaughter", "Grandmother", "Daughter", "Granddaughter"],
+    correctAnswer: 0,
+    explanation: "A is B's sister → C is their mother → D is their grandfather → E is their great grandmother"
+  },
+  {
+    question: "If P is Q's son, S is P's sister, R is Q's mother, then how is S related to R?",
+    options: ["Granddaughter", "Daughter", "Grandmother", "Cannot be determined"],
+    correctAnswer: 0,
+    explanation: "P is Q's son and S is P's sister, so S is Q's daughter. R is Q's mother, making S R's granddaughter"
+  },
+  // Add more unique blood relation questions...
+];
 
-  let generateQuestion;
+const codingDecodingQuestions = [
+  {
+    question: "If COMPUTER is coded as RFUVQNPC, then how will PRINTER be coded?",
+    options: ["QSJOUFQ", "SFUOJSQ", "QSJOUFS", "None of these"],
+    correctAnswer: 2,
+    explanation: "Each letter is replaced by the next letter in the alphabet (P→Q, R→S, etc.)"
+  },
+  {
+    question: "In a certain code, '247' means 'spread the news', '147' means 'spread good news' and '367' means 'tell the truth'. What is the code for 'tell'?",
+    options: ["3", "6", "7", "Cannot be determined"],
+    correctAnswer: 0,
+    explanation: "By comparing the codes, '3' must represent 'tell' as it's the unique digit in 'tell the truth'"
+  },
+  // Add more unique coding-decoding questions...
+];
+
+// Function to get random unique questions for a topic
+function getUniqueQuestionsForTopic(topicId: string, count: number): any[] {
+  let questionBank;
   switch (topicId) {
     case 'L01':
-      generateQuestion = generateDirectionSenseQuestion;
+      questionBank = directionSenseQuestions;
       break;
     case 'L02':
-      generateQuestion = generateBloodRelationsQuestion;
+      questionBank = bloodRelationQuestions;
       break;
     case 'L03':
-      generateQuestion = generateCodingDecodingQuestion;
+      questionBank = codingDecodingQuestions;
       break;
-    // Add more cases for other topics
     default:
-      generateQuestion = generateDirectionSenseQuestion; // Fallback
+      questionBank = directionSenseQuestions; // Fallback
   }
 
-  const questions = [];
-  const uniqueQuestionKeys = new Set<string>();
-
-  while (questions.length < count) {
-    const question = generateQuestion();
-    const questionKey = `${question.question}-${question.correctAnswer}`;
-
-    if (!uniqueQuestionKeys.has(questionKey)) {
-      uniqueQuestionKeys.add(questionKey);
-      questions.push(question);
-    }
-  }
-
-  console.timeEnd(`generateQuestionsForTopic-${topicId}`);
-  return questions;
+  // Shuffle and select questions
+  const shuffledQuestions = [...questionBank].sort(() => Math.random() - 0.5);
+  return shuffledQuestions.slice(0, count).map(q => ({
+    ...q,
+    options: [...q.options].sort(() => Math.random() - 0.5)
+  }));
 }
 
 // Main function to get unique questions for a user
@@ -154,18 +98,16 @@ export function getUniqueQuestionsForUser(userId: number, topicId: string, count
   }
 
   try {
-    const questions = generateQuestionsForTopic(topicId, count);
+    // Get unique questions for this topic
+    const questions = getUniqueQuestionsForTopic(topicId, count);
 
     if (questions.length < count) {
-      throw new Error(`Could not generate enough unique questions (got ${questions.length}, needed ${count})`);
+      throw new Error(`Not enough questions available for topic ${topicId}`);
     }
 
-    // Mark questions as used
+    // Track used questions for this session
     const sessionUsedQuestions = sessionQuestions.get(sessionKey)!;
-    questions.forEach(q => {
-      sessionUsedQuestions.add(q.question);
-      q.options = shuffleArray([...q.options]);
-    });
+    questions.forEach(q => sessionUsedQuestions.add(q.question));
 
     console.timeEnd('getUniqueQuestionsForUser');
     return questions;
@@ -174,15 +116,6 @@ export function getUniqueQuestionsForUser(userId: number, topicId: string, count
     console.error('Error in getUniqueQuestionsForUser:', error);
     throw error;
   }
-}
-
-function shuffleArray<T>(array: T[]): T[] {
-  const shuffled = [...array];
-  for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-  }
-  return shuffled;
 }
 
 // Clean up old sessions periodically
@@ -199,9 +132,9 @@ setInterval(() => {
 // Question bank structure
 export const questionBank = {
   verbal: {
-    "L01": { title: "Direction Sense", questions: [] },
-    "L02": { title: "Blood Relations", questions: [] },
-    "L03": { title: "Coding and Decoding", questions: [] },
+    "L01": { title: "Direction Sense", questions: directionSenseQuestions },
+    "L02": { title: "Blood Relations", questions: bloodRelationQuestions },
+    "L03": { title: "Coding and Decoding", questions: codingDecodingQuestions },
     "L04": { title: "Number Series", questions: [] },
     "L05": { title: "Analogy", questions: [] },
     "L06": { title: "Synonyms", questions: [] },
@@ -233,3 +166,12 @@ export const questionBank = {
     "Q12": { title: "Probability", questions: [] }
   }
 };
+
+function shuffleArray<T>(array: T[]): T[] {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+}
