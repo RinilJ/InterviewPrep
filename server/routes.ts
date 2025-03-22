@@ -318,21 +318,27 @@ export function registerRoutes(app: Express): Server {
             return res.status(400).send("Invalid topic ID");
         }
 
-        const allQuestions = questionBank[category]?.[topicId] || [];
+        // Get questions from expanded question bank first, fall back to regular question bank
+        let allQuestions = questionBankExpanded[category]?.[topicId] || questionBank[category]?.[topicId] || [];
         if (!allQuestions.length) {
             return res.status(404).send("No questions available for this topic");
         }
 
-        // Randomly select 10 unique questions using Fisher-Yates shuffle
-        const shuffle = (array) => {
-            for (let i = array.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [array[i], array[j]] = [array[j], array[i]];
-            }
-            return array;
-        };
+        // Ensure we have valid questions with all required properties
+        allQuestions = allQuestions.filter(q => 
+            q && q.question && q.options && Array.isArray(q.options) && q.options.length > 0
+        );
+
+        // Randomly select 10 unique questions
+        const shuffled = [...allQuestions]
+            .sort(() => Math.random() - 0.5)
+            .slice(0, NUM_QUESTIONS);
         
-        const selectedQuestions = shuffle([...allQuestions]).slice(0, NUM_QUESTIONS);
+        const selectedQuestions = shuffled.map(q => ({
+            questionText: q.question || q.questionText,
+            options: q.options,
+            correctAnswer: q.correctAnswer || q.answer
+        }));
 
         res.json({
             topicId,
