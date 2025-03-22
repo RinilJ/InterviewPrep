@@ -292,15 +292,24 @@ export function registerRoutes(app: Express): Server {
             return res.status(400).send("Invalid topic ID");
         }
 
-        // Generate questions using OpenAI
-        const questions = await generateQuestions(category, topic);
-
-        // Return the generated test
-        res.json({
-            topicId,
-            title: topic,
-            questions
-        });
+        try {
+            // Try generating questions using OpenAI
+            const questions = await generateQuestions(category, topic);
+            res.json({
+                topicId,
+                title: topic,
+                questions
+            });
+        } catch (error) {
+            // Fallback to static question bank
+            console.log('Falling back to static question bank');
+            const staticQuestions = questionBank[category] || [];
+            res.json({
+                topicId,
+                title: topic,
+                questions: staticQuestions.slice(0, 10) // Return first 10 questions
+            });
+        }
     } catch (error) {
         console.error('Error generating test:', error);
         res.status(500).send("Failed to generate test questions");
