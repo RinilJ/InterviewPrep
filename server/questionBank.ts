@@ -63,7 +63,97 @@ const codingDecodingQuestions = [
   // Add more unique coding-decoding questions...
 ];
 
-// Function to get random unique questions for a topic
+// L04: Number Series Questions
+const numberSeriesQuestions = [
+  {
+    question: "What comes next in the series: 2, 4, 8, 16, 32, __?",
+    options: ["64", "48", "56", "40"],
+    correctAnswer: 0,
+    explanation: "Each number is multiplied by 2 to get the next number (2×2=4, 4×2=8, etc.)"
+  },
+  {
+    question: "Find the next number: 1, 3, 6, 10, 15, __?",
+    options: ["21", "18", "20", "25"],
+    correctAnswer: 1,
+    explanation: "The difference between consecutive terms increases by 1 (+2, +3, +4, +5)"
+  },
+  {
+    question: "Complete the sequence: 3, 6, 11, 18, 27, __?",
+    options: ["38", "36", "40", "42"],
+    correctAnswer: 0,
+    explanation: "Add consecutive numbers starting from 3 (3+3=6, 6+5=11, 11+7=18, etc.)"
+  }
+  // Add more number series questions...
+];
+
+// L05: Analogy Questions
+const analogyQuestions = [
+  {
+    question: "Book is to Reading as Food is to:",
+    options: ["Eating", "Cooking", "Tasting", "Serving"],
+    correctAnswer: 0,
+    explanation: "Book is used for Reading, similarly Food is used for Eating"
+  },
+  {
+    question: "Bird is to Sky as Fish is to:",
+    options: ["Water", "Ocean", "Sea", "River"],
+    correctAnswer: 0,
+    explanation: "Birds live/move in Sky, similarly Fish live/move in Water"
+  }
+  // Add more analogy questions...
+];
+
+// L06: Synonyms Questions
+const synonymQuestions = [
+  {
+    question: "Select the word most similar in meaning to 'Benevolent':",
+    options: ["Kind", "Cruel", "Strict", "Harsh"],
+    correctAnswer: 0,
+    explanation: "Benevolent means kind or generous"
+  },
+  {
+    question: "Choose the synonym for 'Eloquent':",
+    options: ["Articulate", "Silent", "Quiet", "Reserved"],
+    correctAnswer: 0,
+    explanation: "Eloquent means fluent or persuasive in speaking"
+  }
+  // Add more synonym questions...
+];
+
+// N01: Logical Venn Diagrams
+const logicalVennQuestions = [
+  {
+    question: "In a Venn diagram showing the relationship between 'Birds', 'Flying creatures', and 'Insects', where would a butterfly be placed?",
+    options: [
+      "Intersection of Flying creatures and Insects",
+      "Only in Birds",
+      "Only in Insects",
+      "Outside all circles"
+    ],
+    correctAnswer: 0,
+    explanation: "A butterfly is both a flying creature and an insect"
+  }
+  // Add more Venn diagram questions...
+];
+
+// Q01: Percentages Questions
+const percentageQuestions = [
+  {
+    question: "If 15% of a number is 45, what is the number?",
+    options: ["300", "250", "350", "400"],
+    correctAnswer: 0,
+    explanation: "If 15% = 45, then 1% = 3, and 100% = 300"
+  },
+  {
+    question: "What is 25% of 120?",
+    options: ["30", "40", "25", "35"],
+    correctAnswer: 0,
+    explanation: "25% = 1/4, so 25% of 120 = 120 ÷ 4 = 30"
+  }
+  // Add more percentage questions...
+];
+
+// Function to get unique questions for a topic
 function getUniqueQuestionsForTopic(topicId: string, count: number): any[] {
   let questionBank;
   switch (topicId) {
@@ -75,6 +165,21 @@ function getUniqueQuestionsForTopic(topicId: string, count: number): any[] {
       break;
     case 'L03':
       questionBank = codingDecodingQuestions;
+      break;
+    case 'L04':
+      questionBank = numberSeriesQuestions;
+      break;
+    case 'L05':
+      questionBank = analogyQuestions;
+      break;
+    case 'L06':
+      questionBank = synonymQuestions;
+      break;
+    case 'N01':
+      questionBank = logicalVennQuestions;
+      break;
+    case 'Q01':
+      questionBank = percentageQuestions;
       break;
     default:
       questionBank = directionSenseQuestions; // Fallback
@@ -135,9 +240,9 @@ export const questionBank = {
     "L01": { title: "Direction Sense", questions: directionSenseQuestions },
     "L02": { title: "Blood Relations", questions: bloodRelationQuestions },
     "L03": { title: "Coding and Decoding", questions: codingDecodingQuestions },
-    "L04": { title: "Number Series", questions: [] },
-    "L05": { title: "Analogy", questions: [] },
-    "L06": { title: "Synonyms", questions: [] },
+    "L04": { title: "Number Series", questions: numberSeriesQuestions },
+    "L05": { title: "Analogy", questions: analogyQuestions },
+    "L06": { title: "Synonyms", questions: synonymQuestions },
     "L07": { title: "Antonyms", questions: [] },
     "L08": { title: "Sentence Completion", questions: [] },
     "L09": { title: "Reading Comprehension", questions: [] },
@@ -146,13 +251,13 @@ export const questionBank = {
     "L12": { title: "Logical Sequence", questions: [] }
   },
   nonVerbal: {
-    "N01": { title: "Logical Venn Diagrams", questions: [] },
+    "N01": { title: "Logical Venn Diagrams", questions: logicalVennQuestions },
     "N02": { title: "Dice and Cubes", questions: [] },
     "N03": { title: "Figure Series", questions: [] },
     "N04": { title: "Pattern Completion", questions: [] }
   },
   mathematical: {
-    "Q01": { title: "Percentages", questions: [] },
+    "Q01": { title: "Percentages", questions: percentageQuestions },
     "Q02": { title: "Profit and Loss", questions: [] },
     "Q03": { title: "Interest", questions: [] },
     "Q04": { title: "Time and Work", questions: [] },
