@@ -2,10 +2,182 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { setupAuth } from "./auth";
 import { storage } from "./storage";
-import { insertTestSchema, insertTestResultSchema, insertDiscussionSlotSchema, insertSlotBookingSchema } from "@shared/schema";
+import { insertTestSchema, insertTestResultSchema } from "@shared/schema";
 import { z } from "zod";
-import { generateQuestions } from "./openaiService";
 import { questionBank } from "./questionBank";
+
+// Helper function to shuffle array
+function shuffleArray<T>(array: T[]): T[] {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
+}
+
+export function registerRoutes(app: Express): Server {
+  setupAuth(app);
+
+  // Get aptitude topics
+  app.get("/api/aptitude-topics", (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    res.json(questionBank);
+  });
+
+  // Tests
+  app.get("/api/tests", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const tests = await storage.getTests();
+    res.json(tests);
+  });
+
+  app.post("/api/tests", async (req, res) => {
+    if (!req.isAuthenticated() || req.user.role !== "teacher") {
+      return res.sendStatus(401);
+    }
+
+    const parsed = insertTestSchema.parse(req.body);
+    const test = await storage.createTest({ ...parsed, createdBy: req.user.id });
+    res.status(201).json(test);
+  });
+
+  // Test Results
+  app.get("/api/test-results", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const results = await storage.getTestResults(req.user.id);
+    res.json(results);
+  });
+
+  app.post("/api/test-results", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+
+    const parsed = insertTestResultSchema.parse(req.body);
+    const result = await storage.createTestResult({
+      ...parsed,
+      userId: req.user.id,
+      completedAt: new Date()
+    });
+    res.status(201).json(result);
+  });
+
+  // Generate test with questions from question bank
+  app.get("/api/generate-test", (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+
+    const topicId = req.query.topicId as string;
+    if (!topicId) return res.status(400).send("Topic ID is required");
+
+    try {
+      // Determine category from topic ID
+      let category: string;
+      if (topicId.startsWith('L')) {
+        category = 'verbal';
+      } else if (topicId.startsWith('N')) {
+        category = 'nonVerbal';
+      } else if (topicId.startsWith('Q')) {
+        category = 'mathematical';
+      } else if (topicId.startsWith('T')) {
+        category = 'technical';
+      } else if (topicId.startsWith('P')) {
+        category = 'psychometric';
+      } else {
+        return res.status(400).send("Invalid topic ID");
+      }
+
+      // Get questions from question bank
+      const questions = questionBank[category][topicId];
+      if (!questions || questions.length === 0) {
+        return res.status(404).send("No questions available for this topic");
+      }
+
+      // Randomly select 10 unique questions
+      const selectedQuestions = shuffleArray([...questions])
+        .slice(0, 10)
+        .map(q => ({
+          question: q.question,
+          options: q.options,
+          correctAnswer: q.correctAnswer,
+          explanation: q.explanation
+        }));
+
+      // Get topic title
+      const topicTitle = Object.values(questionBank)
+        .flatMap(category => Object.entries(category))
+        .find(([id]) => id === topicId)?.[1]?.[0]?.title || "Practice Test";
+
+      res.json({
+        topicId,
+        title: topicTitle,
+        questions: selectedQuestions
+      });
+    } catch (error) {
+      console.error('Error generating test:', error);
+      res.status(500).send("Failed to generate test questions. Please try again.");
+    }
+  });
+
+  app.post("/api/logout", (req, res, next) => {
+    req.logout((err) => {
+      if (err) return next(err);
+      res.sendStatus(200);
+    });
+  });
+
+  //Teacher-specific routes
+  app.get("/api/teacher/stats", async (req, res) => {
+    if (!req.isAuthenticated() || req.user.role !== "teacher") {
+      return res.sendStatus(401);
+    }
+
+    // Filter students based on teacher's department
+    const filteredStudents = studentProgress.filter(student =>
+      student.department === req.user.department
+    );
+
+    res.json(teacherStats(filteredStudents));
+  });
+
+  app.get("/api/teacher/students", async (req, res) => {
+    if (!req.isAuthenticated() || req.user.role !== "teacher") {
+      return res.sendStatus(401);
+    }
+
+    // Filter students based on teacher's department
+    const filteredStudents = studentProgress.filter(student =>
+      student.department === req.user.department
+    );
+
+    res.json(filteredStudents);
+  });
+
+
+  app.post("/api/forgot-password", async (req, res) => {
+    const { email } = req.body;
+    const user = await storage.getUserByEmail(email);
+
+    if (!user) {
+      return res.status(404).send("No account found with this email");
+    }
+
+    // In a real application, you would:
+    // 1. Generate a password reset token
+    // 2. Save it to the database with an expiration
+    // 3. Send an email with a reset link
+    // For demo purposes, we'll just send a success response
+
+    res.status(200).send("Password reset instructions sent");
+  });
+
+  const httpServer = createServer(app);
+  return httpServer;
+}
+
+// Update the teacherStats to be dynamic based on filtered students
+const teacherStats = (filteredStudents: any[]) => ({
+  totalStudents: filteredStudents.length,
+  activeSessions: 3,
+  discussionSlots: sampleDiscussionSlots.length
+});
 
 // Sample discussion slots with some slots having no specific topic (open discussion)
 const sampleDiscussionSlots = [
@@ -37,13 +209,6 @@ const sampleDiscussionSlots = [
     mentor: { username: "Ms. Emily Brown" }
   }
 ];
-
-// Update the teacherStats to be dynamic based on filtered students
-const teacherStats = (filteredStudents: any[]) => ({
-  totalStudents: filteredStudents.length,
-  activeSessions: 3,
-  discussionSlots: sampleDiscussionSlots.length
-});
 
 // Sample student progress data
 const studentProgress = [
@@ -116,32 +281,32 @@ const aptitudeTopics = {
     { id: "Q12", title: "Data Interpretation", range: "4.01 - 4.02" }
   ],
   technical: [
-    { 
-      id: "T01", 
+    {
+      id: "T01",
       title: "Data Structures & Algorithms",
       range: "5.01 - 5.20",
       description: "Solving problems using arrays, linked lists, trees, graphs, sorting, searching, and dynamic programming"
     },
-    { 
-      id: "T02", 
+    {
+      id: "T02",
       title: "Competitive Programming",
       range: "5.21 - 5.40",
       description: "Leetcode, Codeforces, HackerRank-style coding challenges"
     },
-    { 
-      id: "T03", 
+    {
+      id: "T03",
       title: "System Design",
       range: "5.41 - 5.60",
       description: "Designing scalable and efficient systems, architecture patterns, and best practices"
     },
-    { 
-      id: "T04", 
+    {
+      id: "T04",
       title: "Object-Oriented Programming",
       range: "5.61 - 5.80",
       description: "Concepts including inheritance, polymorphism, encapsulation, and abstraction"
     },
-    { 
-      id: "T05", 
+    {
+      id: "T05",
       title: "Code Debugging Challenge",
       range: "5.81 - 5.99",
       description: "Debug and fix code issues in your preferred programming language"
@@ -158,164 +323,3 @@ const aptitudeTopics = {
     { id: "P08", title: "Communication Style", range: "8.06 - 8.20" }
   ]
 };
-
-
-const generateSampleQuestions = (numQuestions: number) => {
-    const questions = questionBank[category]?.[topicId] || [];
-    const shuffled = [...questions].sort(() => Math.random() - 0.5);
-    return shuffled.slice(0, numQuestions).map(q => ({
-        questionText: q.question || q.questionText,
-        options: q.options,
-        answer: q.correctAnswer || q.answer
-    }));
-};
-
-
-export function registerRoutes(app: Express): Server {
-  setupAuth(app);
-
-  // Teacher-specific routes
-  app.get("/api/teacher/stats", async (req, res) => {
-    if (!req.isAuthenticated() || req.user.role !== "teacher") {
-      return res.sendStatus(401);
-    }
-
-    // Filter students based on teacher's department
-    const filteredStudents = studentProgress.filter(student =>
-      student.department === req.user.department
-    );
-
-    res.json(teacherStats(filteredStudents));
-  });
-
-  app.get("/api/teacher/students", async (req, res) => {
-    if (!req.isAuthenticated() || req.user.role !== "teacher") {
-      return res.sendStatus(401);
-    }
-
-    // Filter students based on teacher's department
-    const filteredStudents = studentProgress.filter(student =>
-      student.department === req.user.department
-    );
-
-    res.json(filteredStudents);
-  });
-
-  // Get aptitude topics
-  app.get("/api/aptitude-topics", (req, res) => {
-    if (!req.isAuthenticated()) return res.sendStatus(401);
-    res.json(aptitudeTopics);
-  });
-
-  // Tests
-  app.get("/api/tests", async (req, res) => {
-    if (!req.isAuthenticated()) return res.sendStatus(401);
-    const tests = await storage.getTests();
-    res.json(tests);
-  });
-
-  app.post("/api/tests", async (req, res) => {
-    if (!req.isAuthenticated() || req.user.role !== "teacher") {
-      return res.sendStatus(401);
-    }
-
-    const parsed = insertTestSchema.parse(req.body);
-    const test = await storage.createTest({ ...parsed, createdBy: req.user.id });
-    res.status(201).json(test);
-  });
-
-  // Test Results
-  app.get("/api/test-results", async (req, res) => {
-    if (!req.isAuthenticated()) return res.sendStatus(401);
-    const results = await storage.getTestResults(req.user.id);
-    res.json(results);
-  });
-
-  app.post("/api/test-results", async (req, res) => {
-    if (!req.isAuthenticated()) return res.sendStatus(401);
-
-    const parsed = insertTestResultSchema.parse(req.body);
-    const result = await storage.createTestResult({
-      ...parsed,
-      userId: req.user.id,
-      completedAt: new Date()
-    });
-    res.status(201).json(result);
-  });
-
-  // Generate test with questions from OpenAI
-  app.get("/api/generate-test", async (req, res) => {
-    if (!req.isAuthenticated()) return res.sendStatus(401);
-
-    const topicId = req.query.topicId as string;
-    if (!topicId) return res.status(400).send("Topic ID is required");
-
-    try {
-        let category: 'aptitude' | 'technical' | 'psychometric';
-        let topic = getTopicTitle(topicId);
-
-        if (topicId.startsWith('L') || topicId.startsWith('N') || topicId.startsWith('Q')) {
-            category = 'aptitude';
-        } else if (topicId.startsWith('T')) {
-            category = 'technical';
-        } else if (topicId.startsWith('P')) {
-            category = 'psychometric';
-        } else {
-            return res.status(400).send("Invalid topic ID");
-        }
-
-        console.log(`Generating questions for ${category} - ${topic} (${topicId})`);
-        const questions = await generateQuestions(category, topic, topicId);
-
-        if (!questions || questions.length === 0) {
-            throw new Error('No questions generated');
-        }
-
-        res.json({
-            topicId,
-            title: topic,
-            questions
-        });
-    } catch (error) {
-        console.error('Error generating test:', error);
-        res.status(500).send("Failed to generate test questions. Please try again.");
-    }
-  });
-
-  app.post("/api/logout", (req, res, next) => {
-    req.logout((err) => {
-      if (err) return next(err);
-      res.sendStatus(200);
-    });
-  });
-
-  // Helper function to get topic title
-  function getTopicTitle(topicId: string): string {
-    // Find the topic across all categories
-    for (const category of Object.keys(questionBank)) {
-      const topic = questionBank[category].find(t => t.id === topicId);
-      if (topic) return topic.title;
-    }
-    return "Unknown Topic";
-  }
-
-  app.post("/api/forgot-password", async (req, res) => {
-    const { email } = req.body;
-    const user = await storage.getUserByEmail(email);
-
-    if (!user) {
-      return res.status(404).send("No account found with this email");
-    }
-
-    // In a real application, you would:
-    // 1. Generate a password reset token
-    // 2. Save it to the database with an expiration
-    // 3. Send an email with a reset link
-    // For demo purposes, we'll just send a success response
-
-    res.status(200).send("Password reset instructions sent");
-  });
-
-  const httpServer = createServer(app);
-  return httpServer;
-}
