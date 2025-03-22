@@ -2,22 +2,99 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { setupAuth } from "./auth";
 import { storage } from "./storage";
+import { getUniqueQuestionsForUser, questionBank, validateQuestionBank } from "./questionBank";
 
 export function registerRoutes(app: Express): Server {
   console.log('[Routes] Starting route registration...');
+
+  // Validate question bank during startup
+  if (!validateQuestionBank()) {
+    console.error('[Routes] Question bank validation failed');
+    process.exit(1);
+  }
+  console.log('[Routes] Question bank validated successfully');
 
   // Set up authentication routes and middleware
   setupAuth(app);
   console.log('[Routes] Auth routes registered');
 
+  // Get aptitude topics
+  app.get("/api/aptitude-topics", (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+
+    try {
+      const topics = {
+        verbal: Object.entries(questionBank.verbal).map(([id, topicData]) => ({
+          id,
+          title: topicData.title,
+          questionCount: topicData.questions.length
+        })),
+        nonVerbal: Object.entries(questionBank.nonVerbal).map(([id, topicData]) => ({
+          id,
+          title: topicData.title,
+          questionCount: topicData.questions.length
+        })),
+        mathematical: Object.entries(questionBank.mathematical).map(([id, topicData]) => ({
+          id,
+          title: topicData.title,
+          questionCount: topicData.questions.length
+        }))
+      };
+
+      res.json(topics);
+    } catch (error) {
+      console.error('[Routes] Error processing topics:', error);
+      res.status(500).send('Failed to load topics');
+    }
+  });
+
+  // Generate test with unique questions
+  app.get("/api/generate-test", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+
+    const topicId = req.query.topicId as string;
+    if (!topicId) return res.status(400).send("Topic ID is required");
+
+    try {
+      // Determine category from topic ID
+      let category: keyof typeof questionBank;
+      if (topicId.startsWith('L')) {
+        category = 'verbal';
+      } else if (topicId.startsWith('N')) {
+        category = 'nonVerbal';
+      } else if (topicId.startsWith('Q')) {
+        category = 'mathematical';
+      } else {
+        return res.status(400).send("Invalid topic ID");
+      }
+
+      console.log(`[Routes] Generating test for user ${req.user.id}, topic ${topicId}`);
+
+      // Get unique questions for this user and topic
+      const questions = await getUniqueQuestionsForUser(req.user.id, topicId);
+
+      if (!questions || questions.length === 0) {
+        return res.status(404).send("No questions available for this topic");
+      }
+
+      res.json({
+        topicId,
+        title: questionBank[category][topicId].title,
+        questions: questions,
+        startTime: new Date().toISOString(),
+        currentQuestionIndex: 0,
+        answers: new Array(questions.length).fill(null)
+      });
+
+    } catch (error) {
+      console.error('[Routes] Error generating test:', error);
+      res.status(500).send("Failed to generate test questions");
+    }
+  });
+
   // Simple health check endpoint
   app.get("/api/health", (req, res) => {
     res.json({ status: "ok" });
-  });
-
-  // Test endpoint
-  app.get("/api/test", (req, res) => {
-    res.json({ message: "Server is running" });
   });
 
   console.log('[Routes] Core routes registered');

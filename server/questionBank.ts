@@ -1,120 +1,146 @@
 import { z } from 'zod';
 
-// Question bank structure (titles only)
+// Question bank structure with sample questions
 export const questionBank = {
   verbal: {
-    "L01": { title: "Direction Sense", questions: [] },
-    "L02": { title: "Blood Relations", questions: [] },
-    "L03": { title: "Coding and Decoding", questions: [] },
-    "L04": { title: "Number Series", questions: [] },
-    "L05": { title: "Analogy", questions: [] },
-    "L06": { title: "Synonyms", questions: [] },
-    "L07": { title: "Antonyms", questions: [] },
-    "L08": { title: "Sentence Completion", questions: [] },
-    "L09": { title: "Reading Comprehension", questions: [] },
-    "L10": { title: "Verbal Reasoning", questions: [] },
-    "L11": { title: "Word Order", questions: [] },
-    "L12": { title: "Logical Sequence", questions: [] }
+    "L01": {
+      title: "Direction Sense",
+      questions: [
+        {
+          id: "L01-1",
+          question: "If you are facing north and turn 90 degrees clockwise, which direction are you facing?",
+          options: ["East", "West", "South", "North"],
+          correctAnswer: 0,
+          explanation: "When facing north, a 90-degree clockwise turn means you're facing east."
+        },
+        {
+          id: "L01-2",
+          question: "Starting from south, if you turn right twice, which direction will you face?",
+          options: ["North", "South", "East", "West"],
+          correctAnswer: 0,
+          explanation: "From south, turning right twice (180 degrees) leads to north."
+        }
+      ]
+    },
+    "L02": {
+      title: "Blood Relations",
+      questions: [
+        {
+          id: "L02-1",
+          question: "If A is B's sister and C is B's mother, how is A related to C?",
+          options: ["Daughter", "Mother", "Aunt", "Grandmother"],
+          correctAnswer: 0,
+          explanation: "Since A is B's sister and C is B's mother, A must be C's daughter."
+        }
+      ]
+    }
   },
   nonVerbal: {
-    "N01": { title: "Logical Venn Diagrams", questions: [] },
-    "N02": { title: "Dice and Cubes", questions: [] },
-    "N03": { title: "Figure Series", questions: [] },
-    "N04": { title: "Pattern Completion", questions: [] }
+    "N01": {
+      title: "Logical Venn Diagrams",
+      questions: [
+        {
+          id: "N01-1",
+          question: "In a Venn diagram showing the relationship between 'Birds', 'Flying creatures', and 'Insects', where would a butterfly be placed?",
+          options: [
+            "Intersection of Flying creatures and Insects only",
+            "Intersection of all three sets",
+            "Birds section only",
+            "Outside all sets"
+          ],
+          correctAnswer: 0,
+          explanation: "A butterfly is both a flying creature and an insect, but not a bird."
+        }
+      ]
+    }
   },
   mathematical: {
-    "Q01": { title: "Percentages", questions: [] },
-    "Q02": { title: "Profit and Loss", questions: [] },
-    "Q03": { title: "Interest", questions: [] },
-    "Q04": { title: "Time and Work", questions: [] },
-    "Q05": { title: "Time and Distance", questions: [] },
-    "Q06": { title: "Averages", questions: [] },
-    "Q07": { title: "Ratios and Proportions", questions: [] },
-    "Q08": { title: "Geometry", questions: [] },
-    "Q09": { title: "Numbers", questions: [] },
-    "Q10": { title: "Data Interpretation", questions: [] },
-    "Q11": { title: "Permutations and Combinations", questions: [] },
-    "Q12": { title: "Probability", questions: [] }
+    "Q01": {
+      title: "Percentages",
+      questions: [
+        {
+          id: "Q01-1",
+          question: "What is 15% of 200?",
+          options: ["30", "25", "35", "40"],
+          correctAnswer: 0,
+          explanation: "15% of 200 = (15/100) × 200 = 30"
+        }
+      ]
+    }
   }
 };
 
-// Simple startup validation - only checks structure
+// Validate question bank structure and content
 export function validateQuestionBank(): boolean {
-  console.log('Validating question bank structure');
   try {
-    return (
-      typeof questionBank === 'object' &&
-      questionBank.verbal &&
-      questionBank.nonVerbal &&
-      questionBank.mathematical
-    );
+    // Check main categories exist
+    if (!questionBank.verbal || !questionBank.nonVerbal || !questionBank.mathematical) {
+      return false;
+    }
+
+    // Check each category has valid questions
+    for (const category of Object.values(questionBank)) {
+      for (const topic of Object.values(category)) {
+        if (!Array.isArray(topic.questions)) {
+          return false;
+        }
+
+        // Validate each question
+        for (const question of topic.questions) {
+          if (!question.id || !question.question || !Array.isArray(question.options) || 
+              question.correctAnswer === undefined || !question.explanation) {
+            return false;
+          }
+        }
+      }
+    }
+
+    return true;
   } catch (error) {
     console.error('Validation error:', error);
     return false;
   }
 }
 
-// Session tracking with cleanup
-const sessions = new Map<string, Set<string>>();
+// Async question generation with proper typing
+interface Question {
+  id: string;
+  question: string;
+  options: string[];
+  correctAnswer: number;
+  explanation: string;
+}
 
-// Lightweight cleanup every hour
-setInterval(() => {
-  const oneHourAgo = Date.now() - 3600000;
-  sessions.forEach((_, key) => {
-    const timestamp = parseInt(key.split('-')[2]);
-    if (timestamp < oneHourAgo) {
-      sessions.delete(key);
-    }
-  });
-}, 3600000);
-
-// Async question generation
 export async function getUniqueQuestionsForUser(
   userId: number,
   topicId: string,
   count: number = 10
-): Promise<any[]> {
+): Promise<Question[]> {
   console.time(`generateQuestions-${userId}-${topicId}`);
 
-  const sessionKey = `${userId}-${topicId}-${Date.now()}`;
-  if (!sessions.has(sessionKey)) {
-    sessions.set(sessionKey, new Set());
-  }
-
   try {
-    // Generate basic questions
-    const questions = await generateBasicQuestions(topicId, count);
-    const usedQuestions = sessions.get(sessionKey)!;
+    let category: 'verbal' | 'nonVerbal' | 'mathematical';
+    if (topicId.startsWith('L')) category = 'verbal';
+    else if (topicId.startsWith('N')) category = 'nonVerbal';
+    else if (topicId.startsWith('Q')) category = 'mathematical';
+    else throw new Error('Invalid topic ID');
 
-    // Filter unique questions
-    const uniqueQuestions = questions.filter(q => !usedQuestions.has(q.id));
-    uniqueQuestions.forEach(q => usedQuestions.add(q.id));
+    const topic = questionBank[category][topicId];
+    if (!topic) throw new Error('Topic not found');
+
+    const questions = topic.questions;
+    if (!questions || questions.length === 0) {
+      throw new Error('No questions available for this topic');
+    }
+
+    // Shuffle questions and return requested count
+    const shuffled = [...questions].sort(() => Math.random() - 0.5);
+    const selected = shuffled.slice(0, Math.min(count, shuffled.length));
 
     console.timeEnd(`generateQuestions-${userId}-${topicId}`);
-    return uniqueQuestions.slice(0, count);
+    return selected;
   } catch (error) {
     console.error('Error generating questions:', error);
     throw error;
   }
-}
-
-// Basic question generation
-async function generateBasicQuestions(topicId: string, count: number): Promise<any[]> {
-  return new Promise(resolve => {
-    const questions = [];
-    const timestamp = Date.now();
-
-    for (let i = 0; i < count; i++) {
-      const question = {
-        id: `${topicId}-${timestamp}-${i}`,
-        question: `Sample question ${i + 1} for ${topicId}`,
-        options: ['Option A', 'Option B', 'Option C', 'Option D'],
-        correctAnswer: 0,
-        explanation: 'This is a sample explanation'
-      };
-      questions.push(question);
-    }
-
-    resolve(questions);
-  });
 }
