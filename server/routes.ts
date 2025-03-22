@@ -3,9 +3,21 @@ import { createServer, type Server } from "http";
 import { setupAuth } from "./auth";
 import { storage } from "./storage";
 import { insertTestSchema, insertTestResultSchema } from "@shared/schema";
-import { getUniqueQuestionsForUser, questionBank } from "./questionBank";
+import { getUniqueQuestionsForUser, questionBank, validateQuestionBank } from "./questionBank";
 
 export function registerRoutes(app: Express): Server {
+  // Validate question bank during startup - lightweight check
+  console.time('startup-validation');
+  console.log('Starting question bank validation...');
+
+  if (!validateQuestionBank()) {
+    console.error('Question bank validation failed');
+    process.exit(1);
+  }
+
+  console.log('Question bank validation successful');
+  console.timeEnd('startup-validation');
+
   setupAuth(app);
 
   // Get aptitude topics
@@ -59,12 +71,12 @@ export function registerRoutes(app: Express): Server {
       }
 
       console.time('generateTest');
+      console.log(`Generating test for user ${req.user.id}, topic ${topicId}`);
+
       // Get unique questions for this user and topic
       const questions = await getUniqueQuestionsForUser(req.user.id, topicId);
+      console.log(`Generated ${questions.length} questions`);
 
-      // Log question generation for debugging
-      console.log(`Generated ${questions.length} questions for user ${req.user.id}, topic ${topicId}`);
-      console.log('First question:', questions[0]?.question.substring(0, 30) + '...');
       console.timeEnd('generateTest');
 
       if (!questions || questions.length === 0) {
@@ -82,7 +94,7 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
-  // Tests
+  // Remaining routes...
   app.get("/api/tests", async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
     const tests = await storage.getTests();
@@ -99,7 +111,6 @@ export function registerRoutes(app: Express): Server {
     res.status(201).json(test);
   });
 
-  // Test Results
   app.get("/api/test-results", async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
     const results = await storage.getTestResults(req.user.id);
