@@ -1,11 +1,5 @@
 import { Question } from '../types';
 
-// Direction Sense Questions (L01) - Already implemented
-
-// Blood Relations Questions (L02) - Already implemented
-
-// Coding-Decoding Questions (L03) - Already implemented
-
 // Number Series Questions (L04)
 export async function getNumberSeriesQuestions(): Promise<Question[]> {
   return [
@@ -68,8 +62,7 @@ export async function getNumberSeriesQuestions(): Promise<Question[]> {
       options: ["37", "35", "39", "41"],
       correctAnswer: 0,
       explanation: "Add increasing numbers (+3, +5, +7, +9, +11)"
-    },
-    // Continue with 90 more similar questions with varying patterns...
+    }
   ];
 }
 
@@ -142,3 +135,16 @@ export async function getLogicalSequenceQuestions(): Promise<Question[]> {
     // Add 99 more similar questions...
   ];
 }
+
+// All other question functions with proper exports...
+export { getDirectionSenseQuestions } from './verbal/directionSense';
+export { getBloodRelationQuestions } from './verbal/bloodRelations';
+export { getCodingDecodingQuestions } from './verbal/codingDecoding';
+export { getAnalogyQuestions } from './verbal/analogy';
+export { getSynonymQuestions } from './verbal/synonyms';
+export { getAntonymQuestions } from './verbal/antonyms';
+export { getSentenceCompletionQuestions } from './verbal/sentenceCompletion';
+export { getReadingComprehensionQuestions } from './verbal/readingComprehension';
+export { getVerbalReasoningQuestions } from './verbal/verbalReasoning';
+export { getWordOrderQuestions } from './verbal/wordOrder';
+export { getLogicalSequenceQuestions } from './verbal/logicalSequence';
