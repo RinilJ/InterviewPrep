@@ -1,15 +1,11 @@
-import OpenAI from "openai";
-
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+import axios from 'axios';
 
 interface GeneratedQuestion {
   question: string;
   options: string[];
   correctAnswer: number;
   explanation?: string;
-  code?: string; // For technical questions with code snippets
+  code?: string;
 }
 
 // Module-specific prompts for better context
@@ -58,6 +54,8 @@ const MODULE_PROMPTS = {
   "P04": "Generate a team dynamics situation",
   "P05": "Create a problem-solving style assessment"
 };
+
+const DEEPSEEK_API_URL = 'https://api.deepseek.com/v1/chat/completions';
 
 const PROMPTS = {
   aptitude: (topic: string, moduleId: string) => `Generate a unique ${topic} question.
@@ -110,8 +108,6 @@ const PROMPTS = {
     }`
 };
 
-// Cache to store used questions per module
-const questionCache = new Map<string, Set<string>>();
 
 export async function generateQuestions(
   category: 'aptitude' | 'technical' | 'psychometric',
@@ -120,52 +116,53 @@ export async function generateQuestions(
   count: number = 10
 ): Promise<GeneratedQuestion[]> {
   try {
-    // Initialize cache for this module if not exists
-    if (!questionCache.has(moduleId)) {
-      questionCache.set(moduleId, new Set());
+    if (!process.env.DEEPSEEK_API_KEY) {
+      throw new Error('DEEPSEEK_API_KEY not configured');
     }
-    const usedQuestions = questionCache.get(moduleId)!;
 
-    const prompt = PROMPTS[category](topic, moduleId);
     const questions: GeneratedQuestion[] = [];
     let attempts = 0;
-    const maxAttempts = count * 3; // Allow for some retry attempts
+    const maxAttempts = count * 3;
 
     while (questions.length < count && attempts < maxAttempts) {
       try {
-        const completion = await openai.chat.completions.create({
-          model: "gpt-3.5-turbo",
-          messages: [
-            {
-              role: "system",
-              content: `You are an expert question generator for ${category} tests, specifically focusing on ${topic}.`
-            },
-            {
-              role: "user",
-              content: prompt
+        const response = await axios.post(
+          DEEPSEEK_API_URL,
+          {
+            model: "deepseek-chat",
+            messages: [
+              {
+                role: "system",
+                content: `You are an expert question generator for ${category} tests, specifically focusing on ${topic}.`
+              },
+              {
+                role: "user",
+                content: PROMPTS[category](topic, moduleId)
+              }
+            ],
+            temperature: 0.8
+          },
+          {
+            headers: {
+              'Authorization': `Bearer ${process.env.DEEPSEEK_API_KEY}`,
+              'Content-Type': 'application/json'
             }
-          ],
-          temperature: 0.8, // Slightly increase randomness for more variety
-        });
+          }
+        );
 
-        const response = completion.choices[0]?.message?.content;
-        if (response) {
+        const generatedContent = response.data.choices[0]?.message?.content;
+        if (generatedContent) {
           try {
-            const questionData = JSON.parse(response);
-
-            // Check for uniqueness using question text
-            if (!usedQuestions.has(questionData.question)) {
-              usedQuestions.add(questionData.question);
-              questions.push(questionData);
-              console.log(`Generated unique question ${questions.length}/${count} for module ${moduleId}`);
-            }
+            const questionData = JSON.parse(generatedContent);
+            questions.push(questionData);
+            console.log(`Generated question ${questions.length}/${count} for module ${moduleId}`);
           } catch (error) {
-            console.error('Failed to parse OpenAI response:', error);
+            console.error('Failed to parse API response:', error);
           }
         }
       } catch (error) {
-        console.error('OpenAI API error for single question:', error);
-        await new Promise(resolve => setTimeout(resolve, 1000)); // Add delay between retries
+        console.error('API error for single question:', error);
+        await new Promise(resolve => setTimeout(resolve, 1000));
       }
       attempts++;
     }
