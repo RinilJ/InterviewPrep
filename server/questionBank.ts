@@ -5,6 +5,9 @@ function formatExplanation(question: string, answer: string, reasoning: string):
   return `Correct Answer: ${answer}\n\nReasoning: ${reasoning}`;
 }
 
+// Cache for tracking used questions per test session
+const sessionQuestions = new Map<string, Set<string>>();
+
 // Pre-defined question banks for each topic
 const directionSenseQuestions = [
   {
@@ -19,13 +22,7 @@ const directionSenseQuestions = [
     correctAnswer: 0,
     explanation: "Using the Pythagorean theorem: √(5² + 12²) = 13 km"
   },
-  // Add more direction sense questions...
-  {
-    question: "A car travels 10 km West, then 24 km South. What is the shortest distance back to the starting point?",
-    options: ["25 km", "26 km", "34 km", "14 km"],
-    correctAnswer: 0,
-    explanation: "Use the Pythagorean theorem: √(10² + 24²) = 26 km"
-  }
+  // Add more direction sense questions to ensure at least 10
 ];
 
 const bloodRelationQuestions = [
@@ -41,67 +38,97 @@ const bloodRelationQuestions = [
     correctAnswer: 0,
     explanation: "P is Q's son and S is P's sister, so S is Q's daughter. R is Q's mother, making S R's granddaughter"
   },
-  // Add more blood relation questions...
-  {
-    question: "X is Y's brother. Z is Y's father. How is X related to Z?",
-    options: ["Son", "Brother", "Father", "Nephew"],
-    correctAnswer: 0,
-    explanation: "X is the son of Z."
-  }
+  // Add more blood relation questions to ensure at least 10
 ];
 
-// Cache for tracking used questions per test session
-const sessionQuestions = new Map<string, Set<string>>();
+const codingDecodingQuestions = [
+  {
+    question: "If COMPUTER is coded as RFUVQNPC, then how will PRINTER be coded?",
+    options: ["QSJOUFQ", "SFUOJSQ", "QSJOUFS", "None of these"],
+    correctAnswer: 2,
+    explanation: "Each letter is replaced by the next letter in the alphabet (P→Q, R→S, etc.)"
+  },
+  {
+    question: "In a certain code, '247' means 'spread the news', '147' means 'spread good news' and '367' means 'tell the truth'. What is the code for 'tell'?",
+    options: ["3", "6", "7", "Cannot be determined"],
+    correctAnswer: 0,
+    explanation: "By comparing the codes, '3' must represent 'tell' as it's the unique digit in 'tell the truth'"
+  },
+  // Add more coding-decoding questions to ensure at least 10
+];
+
+// Get questions for a specific topic
+function getQuestionsForTopic(topicId: string): any[] {
+  console.log(`Getting questions for topic: ${topicId}`);
+
+  switch(topicId) {
+    case 'L01':
+      return directionSenseQuestions;
+    case 'L02':
+      return bloodRelationQuestions;
+    case 'L03':
+      return codingDecodingQuestions;
+    // Add cases for other topics
+    default:
+      throw new Error(`No questions available for topic ${topicId}`);
+  }
+}
 
 // Function to get unique questions for a test session
 export function getUniqueQuestionsForUser(userId: number, topicId: string, count: number = 10): any[] {
   console.log(`Getting ${count} questions for user ${userId}, topic ${topicId}`);
   const sessionKey = `${userId}-${topicId}-${Date.now()}`;
 
-  // Initialize session tracking
-  if (!sessionQuestions.has(sessionKey)) {
-    sessionQuestions.set(sessionKey, new Set());
-  }
-
   try {
-    let topicQuestions = [];
+    // Get questions for the specific topic
+    const topicQuestions = getQuestionsForTopic(topicId);
 
-    // Get questions based on topic
-    if (topicId === 'L01') {
-      topicQuestions = directionSenseQuestions;
-    } else if (topicId === 'L02') {
-      topicQuestions = bloodRelationQuestions;
-    } else {
-      // Return direction sense questions as fallback for testing
-      console.log(`Using fallback questions for topic ${topicId}`);
-      topicQuestions = directionSenseQuestions;
+    if (!topicQuestions || topicQuestions.length < count) {
+      throw new Error(`Not enough questions available for topic ${topicId}. Need ${count}, have ${topicQuestions?.length || 0}`);
     }
 
-    // Shuffle questions and select required number
-    const shuffled = [...topicQuestions].sort(() => Math.random() - 0.5);
-    const selected = shuffled.slice(0, count);
-
-    console.log(`Selected ${selected.length} questions for topic ${topicId}`);
-
-    // Mark questions as used in this session
+    // Initialize session tracking
+    if (!sessionQuestions.has(sessionKey)) {
+      sessionQuestions.set(sessionKey, new Set());
+    }
     const sessionUsedQuestions = sessionQuestions.get(sessionKey)!;
+
+    // Shuffle and select questions
+    const shuffled = [...topicQuestions].sort(() => Math.random() - 0.5);
+    const selected = shuffled.slice(0, count).map(q => ({
+      ...q,
+      options: [...q.options].sort(() => Math.random() - 0.5)
+    }));
+
+    // Mark questions as used
     selected.forEach(q => sessionUsedQuestions.add(q.question));
 
+    console.log(`Selected ${selected.length} questions for topic ${topicId}`);
     return selected;
 
   } catch (error) {
     console.error('Error in getUniqueQuestionsForUser:', error);
-    throw new Error(`Failed to get questions for topic ${topicId}: ${error.message}`);
+    throw error;
   }
 }
+
+// Clean up old sessions periodically
+setInterval(() => {
+  const oneHourAgo = Date.now() - 3600000;
+  for (const [key] of sessionQuestions) {
+    const timestamp = parseInt(key.split('-')[2]);
+    if (timestamp < oneHourAgo) {
+      sessionQuestions.delete(key);
+    }
+  }
+}, 3600000);
 
 // Question bank structure
 export const questionBank = {
   verbal: {
     "L01": { title: "Direction Sense", questions: directionSenseQuestions },
     "L02": { title: "Blood Relations", questions: bloodRelationQuestions },
-    // Other verbal topics with empty questions arrays for now
-    "L03": { title: "Coding and Decoding", questions: [] },
+    "L03": { title: "Coding and Decoding", questions: codingDecodingQuestions },
     "L04": { title: "Number Series", questions: [] },
     "L05": { title: "Analogy", questions: [] },
     "L06": { title: "Synonyms", questions: [] },
@@ -133,33 +160,6 @@ export const questionBank = {
     "Q12": { title: "Probability", questions: [] }
   }
 };
-
-// Clean up old sessions periodically
-setInterval(() => {
-  const oneHourAgo = Date.now() - 3600000;
-  for (const [key] of sessionQuestions) {
-    const timestamp = parseInt(key.split('-')[2]);
-    if (timestamp < oneHourAgo) {
-      sessionQuestions.delete(key);
-    }
-  }
-}, 3600000);
-
-const codingDecodingQuestions = [
-  {
-    question: "If COMPUTER is coded as RFUVQNPC, then how will PRINTER be coded?",
-    options: ["QSJOUFQ", "SFUOJSQ", "QSJOUFS", "None of these"],
-    correctAnswer: 2,
-    explanation: "Each letter is replaced by the next letter in the alphabet (P→Q, R→S, etc.)"
-  },
-  {
-    question: "In a certain code, '247' means 'spread the news', '147' means 'spread good news' and '367' means 'tell the truth'. What is the code for 'tell'?",
-    options: ["3", "6", "7", "Cannot be determined"],
-    correctAnswer: 0,
-    explanation: "By comparing the codes, '3' must represent 'tell' as it's the unique digit in 'tell the truth'"
-  },
-  // Add more unique coding-decoding questions...
-];
 
 const numberSeriesQuestions = [
   {
