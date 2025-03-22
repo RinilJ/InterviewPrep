@@ -3,21 +3,9 @@ import { createServer, type Server } from "http";
 import { setupAuth } from "./auth";
 import { storage } from "./storage";
 import { insertTestSchema, insertTestResultSchema } from "@shared/schema";
-import { getUniqueQuestionsForUser, questionBank, validateQuestionBank } from "./questionBank";
+import { getUniqueQuestionsForUser, questionBank } from "./questionBank";
 
 export function registerRoutes(app: Express): Server {
-  // Validate question bank during startup - lightweight check
-  console.time('startup-validation');
-  console.log('Starting question bank validation...');
-
-  if (!validateQuestionBank()) {
-    console.error('Question bank validation failed');
-    process.exit(1);
-  }
-
-  console.log('Question bank validation successful');
-  console.timeEnd('startup-validation');
-
   setupAuth(app);
 
   // Get aptitude topics
@@ -25,21 +13,22 @@ export function registerRoutes(app: Express): Server {
     if (!req.isAuthenticated()) return res.sendStatus(401);
 
     try {
+      // Transform the question bank into the expected format
       const topics = {
         verbal: Object.entries(questionBank.verbal).map(([id, topicData]) => ({
           id,
           title: topicData.title,
-          range: "Dynamic questions"
+          range: `${topicData.questions.length} questions`
         })),
         nonVerbal: Object.entries(questionBank.nonVerbal || {}).map(([id, topicData]) => ({
           id,
           title: topicData.title,
-          range: "Dynamic questions"
+          range: `${topicData.questions.length} questions`
         })),
         mathematical: Object.entries(questionBank.mathematical || {}).map(([id, topicData]) => ({
           id,
           title: topicData.title,
-          range: "Dynamic questions"
+          range: `${topicData.questions.length} questions`
         }))
       };
 
@@ -50,8 +39,44 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
+  // Tests
+  app.get("/api/tests", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const tests = await storage.getTests();
+    res.json(tests);
+  });
+
+  app.post("/api/tests", async (req, res) => {
+    if (!req.isAuthenticated() || req.user.role !== "teacher") {
+      return res.sendStatus(401);
+    }
+
+    const parsed = insertTestSchema.parse(req.body);
+    const test = await storage.createTest({ ...parsed, createdBy: req.user.id });
+    res.status(201).json(test);
+  });
+
+  // Test Results
+  app.get("/api/test-results", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const results = await storage.getTestResults(req.user.id);
+    res.json(results);
+  });
+
+  app.post("/api/test-results", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+
+    const parsed = insertTestResultSchema.parse(req.body);
+    const result = await storage.createTestResult({
+      ...parsed,
+      userId: req.user.id,
+      completedAt: new Date()
+    });
+    res.status(201).json(result);
+  });
+
   // Generate test with unique questions
-  app.get("/api/generate-test", async (req, res) => {
+  app.get("/api/generate-test", (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
 
     const topicId = req.query.topicId as string;
@@ -70,14 +95,12 @@ export function registerRoutes(app: Express): Server {
         return res.status(400).send("Invalid topic ID");
       }
 
-      console.time('generateTest');
-      console.log(`Generating test for user ${req.user.id}, topic ${topicId}`);
-
       // Get unique questions for this user and topic
-      const questions = await getUniqueQuestionsForUser(req.user.id, topicId);
-      console.log(`Generated ${questions.length} questions`);
+      const questions = getUniqueQuestionsForUser(req.user.id, topicId);
 
-      console.timeEnd('generateTest');
+      // Log question generation for debugging
+      console.log(`Generated ${questions.length} questions for user ${req.user.id}, topic ${topicId}`);
+      console.log('Question IDs:', questions.map(q => q.question.substring(0, 30) + '...'));
 
       if (!questions || questions.length === 0) {
         return res.status(404).send("No questions available for this topic");
@@ -90,43 +113,8 @@ export function registerRoutes(app: Express): Server {
       });
     } catch (error) {
       console.error('Error generating test:', error);
-      res.status(500).send("Failed to generate test questions");
+      res.status(500).send("Failed to generate test questions. Please try again.");
     }
-  });
-
-  // Remaining routes...
-  app.get("/api/tests", async (req, res) => {
-    if (!req.isAuthenticated()) return res.sendStatus(401);
-    const tests = await storage.getTests();
-    res.json(tests);
-  });
-
-  app.post("/api/tests", async (req, res) => {
-    if (!req.isAuthenticated() || req.user.role !== "teacher") {
-      return res.sendStatus(401);
-    }
-
-    const parsed = insertTestSchema.parse(req.body);
-    const test = await storage.createTest({ ...parsed, createdBy: req.user.id });
-    res.status(201).json(test);
-  });
-
-  app.get("/api/test-results", async (req, res) => {
-    if (!req.isAuthenticated()) return res.sendStatus(401);
-    const results = await storage.getTestResults(req.user.id);
-    res.json(results);
-  });
-
-  app.post("/api/test-results", async (req, res) => {
-    if (!req.isAuthenticated()) return res.sendStatus(401);
-
-    const parsed = insertTestResultSchema.parse(req.body);
-    const result = await storage.createTestResult({
-      ...parsed,
-      userId: req.user.id,
-      completedAt: new Date()
-    });
-    res.status(201).json(result);
   });
 
   app.post("/api/logout", (req, res, next) => {
@@ -185,12 +173,14 @@ export function registerRoutes(app: Express): Server {
   return httpServer;
 }
 
+// Update the teacherStats to be dynamic based on filtered students
 const teacherStats = (filteredStudents: any[]) => ({
   totalStudents: filteredStudents.length,
   activeSessions: 3,
   discussionSlots: sampleDiscussionSlots.length
 });
 
+// Sample discussion slots with some slots having no specific topic (open discussion)
 const sampleDiscussionSlots = [
   {
     id: 1,
@@ -221,6 +211,7 @@ const sampleDiscussionSlots = [
   }
 ];
 
+// Sample student progress data
 const studentProgress = [
   {
     id: 1,
@@ -253,3 +244,83 @@ const studentProgress = [
     averageScore: 92
   }
 ];
+
+const aptitudeTopics = {
+  verbal: [
+    { id: "L01", title: "Direction Sense", range: "1.01 - 1.10" },
+    { id: "L02", title: "Blood Relations", range: "1.11 - 1.20" },
+    { id: "L03", title: "Coding and Decoding", range: "1.21 - 1.28" },
+    { id: "L04", title: "Number Series", range: "1.29 - 1.34" },
+    { id: "L05", title: "Letter (Alphabet) Series", range: "1.35 - 1.40" },
+    { id: "L06", title: "Rankings and Arrangements", range: "1.41 - 1.54" },
+    { id: "L07", title: "Number and Letter Analogies", range: "1.55 - 1.64" },
+    { id: "L08", title: "Mixed Analogies", range: "1.65 - 1.77" },
+    { id: "L09", title: "Syllogism (Deductions)", range: "1.78 - 1.82" },
+    { id: "L10", title: "Odd Man Out (Classifications)", range: "1.83 - 1.91" },
+    { id: "L11", title: "Data Sufficiency and Venn Diagrams", range: "1.92 - 1.98" },
+    { id: "L12", title: "Calendars", range: "1.99 - 1.104" },
+    { id: "L13", title: "Clocks", range: "2.01 - 2.09" }
+  ],
+  nonVerbal: [
+    { id: "N01", title: "Logical Venn Diagrams", range: "2.10 - 2.19" },
+    { id: "N02", title: "Dice and Cubes", range: "2.20 - 2.24" },
+    { id: "N03", title: "Mirror and Water Images", range: "2.25 - 2.29" },
+    { id: "N04", title: "Missing Number in Figures and Picture Series", range: "3.01 - 3.08" }
+  ],
+  mathematical: [
+    { id: "Q01", title: "Percentages", range: "3.09 - 3.15" },
+    { id: "Q02", title: "Profit and Loss", range: "3.16 - 3.23" },
+    { id: "Q03", title: "Simple and Compound Interest", range: "3.24 - 3.31" },
+    { id: "Q04", title: "Ratios and Proportions", range: "3.32 - 3.40" },
+    { id: "Q05", title: "Age, Mixtures and Allegations", range: "3.41 - 3.48" },
+    { id: "Q06", title: "Time and Work (+ Pipes and Cisterns)", range: "3.49 - 3.55" },
+    { id: "Q07", title: "Time and Distance (+ Boats and Trains)", range: "3.56 - 3.63" },
+    { id: "Q08", title: "Averages", range: "3.64 - 3.67" },
+    { id: "Q09", title: "Geometry", range: "3.68 - 3.74" },
+    { id: "Q10", title: "Numbers", range: "3.75 - 3.83" },
+    { id: "Q11", title: "Permutations, Combinations and Probability", range: "3.84 - 3.90" },
+    { id: "Q12", title: "Data Interpretation", range: "4.01 - 4.02" }
+  ],
+  technical: [
+    {
+      id: "T01",
+      title: "Data Structures & Algorithms",
+      range: "5.01 - 5.20",
+      description: "Solving problems using arrays, linked lists, trees, graphs, sorting, searching, and dynamic programming"
+    },
+    {
+      id: "T02",
+      title: "Competitive Programming",
+      range: "5.21 - 5.40",
+      description: "Leetcode, Codeforces, HackerRank-style coding challenges"
+    },
+    {
+      id: "T03",
+      title: "System Design",
+      range: "5.41 - 5.60",
+      description: "Designing scalable and efficient systems, architecture patterns, and best practices"
+    },
+    {
+      id: "T04",
+      title: "Object-Oriented Programming",
+      range: "5.61 - 5.80",
+      description: "Concepts including inheritance, polymorphism, encapsulation, and abstraction"
+    },
+    {
+      id: "T05",
+      title: "Code Debugging Challenge",
+      range: "5.81 - 5.99",
+      description: "Debug and fix code issues in your preferred programming language"
+    }
+  ],
+  psychometric: [
+    { id: "P01", title: "Personality Assessment", range: "7.01 - 7.15" },
+    { id: "P02", title: "Emotional Intelligence", range: "7.16 - 7.30" },
+    { id: "P03", title: "Leadership Potential", range: "7.31 - 7.45" },
+    { id: "P04", title: "Team Dynamics", range: "7.46 - 7.60" },
+    { id: "P05", title: "Problem-Solving Style", range: "7.61 - 7.75" },
+    { id: "P06", title: "Work Ethics", range: "7.76 - 7.90" },
+    { id: "P07", title: "Stress Management", range: "7.91 - 8.05" },
+    { id: "P08", title: "Communication Style", range: "8.06 - 8.20" }
+  ]
+};
