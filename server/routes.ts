@@ -3,20 +3,7 @@ import { createServer, type Server } from "http";
 import { setupAuth } from "./auth";
 import { storage } from "./storage";
 import { insertTestSchema, insertTestResultSchema } from "@shared/schema";
-import { getQuestionsForTopic, questionBank } from "./questionBank";
-
-// Helper function to shuffle array
-function shuffleArray<T>(array: T[]): T[] {
-  const shuffled = [...array];
-  for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-  }
-  return shuffled;
-}
-
-// Track used questions per user
-const usedQuestions = new Map<number, Set<string>>();
+import { getUniqueQuestionsForUser, questionBank } from "./questionBank";
 
 export function registerRoutes(app: Express): Server {
   setupAuth(app);
@@ -88,7 +75,7 @@ export function registerRoutes(app: Express): Server {
     res.status(201).json(result);
   });
 
-  // Generate test with unique questions from question bank
+  // Generate test with unique questions
   app.get("/api/generate-test", (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
 
@@ -96,11 +83,11 @@ export function registerRoutes(app: Express): Server {
     if (!topicId) return res.status(400).send("Topic ID is required");
 
     try {
-      // Initialize user's used questions set if not exists
-      if (!usedQuestions.has(req.user.id)) {
-        usedQuestions.set(req.user.id, new Set());
+      // Get unique questions for this user and topic
+      const questions = getUniqueQuestionsForUser(req.user.id, topicId);
+      if (!questions || questions.length === 0) {
+        return res.status(404).send("No questions available for this topic");
       }
-      const userUsedQuestions = usedQuestions.get(req.user.id)!;
 
       // Determine category from topic ID
       let category: string;
@@ -114,47 +101,10 @@ export function registerRoutes(app: Express): Server {
         return res.status(400).send("Invalid topic ID");
       }
 
-      // Get questions for this topic
-      const questions = getQuestionsForTopic(category, topicId);
-      if (!questions || questions.length === 0) {
-        return res.status(404).send("No questions available for this topic");
-      }
-
-      // Filter out previously used questions
-      const availableQuestions = questions.filter(q => 
-        !userUsedQuestions.has(`${topicId}-${q.question}`)
-      );
-
-      if (availableQuestions.length < 10) {
-        // Reset used questions for this topic if not enough unique questions remain
-        const topicQuestions = Array.from(userUsedQuestions)
-          .filter(q => q.startsWith(topicId));
-        topicQuestions.forEach(q => userUsedQuestions.delete(q));
-      }
-
-      // Randomly select 10 unique questions
-      const selectedQuestions = shuffleArray(availableQuestions)
-        .slice(0, 10)
-        .map(q => {
-          // Mark question as used
-          userUsedQuestions.add(`${topicId}-${q.question}`);
-          return {
-            question: q.question,
-            options: q.options,
-            correctAnswer: q.correctAnswer,
-            explanation: q.explanation
-          };
-        });
-
-      // Clear old questions if set gets too large
-      if (userUsedQuestions.size > 1000) {
-        usedQuestions.set(req.user.id, new Set());
-      }
-
       res.json({
         topicId,
         title: questionBank[category][topicId].title,
-        questions: selectedQuestions
+        questions: questions
       });
     } catch (error) {
       console.error('Error generating test:', error);

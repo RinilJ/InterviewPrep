@@ -7,7 +7,61 @@ function formatExplanation(question: string, answer: string, reasoning: string, 
   return explanation;
 }
 
-// Question bank with expanded questions for each topic
+// Utility function to generate unique random indices
+function getUniqueRandomIndices(max: number, count: number): number[] {
+  const indices = Array.from({length: max}, (_, i) => i);
+  for (let i = indices.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [indices[i], indices[j]] = [indices[j], indices[i]];
+  }
+  return indices.slice(0, count);
+}
+
+// Cache for tracking used questions per user
+const usedQuestions = new Map<number, Set<string>>();
+
+// Function to get unique questions for a user
+export function getUniqueQuestionsForUser(userId: number, topicId: string, count: number = 10): any[] {
+  // Initialize user's question tracking if not exists
+  if (!usedQuestions.has(userId)) {
+    usedQuestions.set(userId, new Set());
+  }
+  const userUsedQuestions = usedQuestions.get(userId)!;
+
+  // Get base questions for the topic
+  const category = topicId.startsWith('L') ? 'verbal' : 
+                  topicId.startsWith('N') ? 'nonVerbal' : 'mathematical';
+  const topicQuestions = questionBank[category][topicId].questions;
+
+  // Filter out used questions
+  const availableQuestions = topicQuestions.filter(q => 
+    !userUsedQuestions.has(`${topicId}-${q.question}`)
+  );
+
+  // If running low on questions, reset the used questions for this topic
+  if (availableQuestions.length < count) {
+    const topicUsedQuestions = Array.from(userUsedQuestions)
+      .filter(q => q.startsWith(topicId));
+    topicUsedQuestions.forEach(q => userUsedQuestions.delete(q));
+  }
+
+  // Get random unique questions
+  const selectedQuestions = getUniqueRandomIndices(availableQuestions.length, count)
+    .map(i => {
+      const question = availableQuestions[i];
+      userUsedQuestions.add(`${topicId}-${question.question}`);
+      return question;
+    });
+
+  // Clean up if cache gets too large
+  if (userUsedQuestions.size > 1000) {
+    usedQuestions.set(userId, new Set());
+  }
+
+  return selectedQuestions;
+}
+
+// Question bank with unique questions for each topic
 export const questionBank = {
   verbal: {
     "L01": {
@@ -15,17 +69,23 @@ export const questionBank = {
       questions: Array.from({ length: 100 }, (_, i) => {
         const directions = ['North', 'South', 'East', 'West', 'North-East', 'North-West', 'South-East', 'South-West'];
         const distances = [2, 3, 4, 5, 6, 7, 8, 9, 10];
-        const steps = Math.floor(i / 20) + 2; // 2-6 steps in the path
+        const steps = Math.floor(Math.random() * 3) + 2; // 2-4 steps for variety
 
         let path = [];
         let finalPosition = { x: 0, y: 0 };
 
+        // Generate unique path
+        const usedDirections = new Set();
         for (let j = 0; j < steps; j++) {
-          const dir = directions[Math.floor(Math.random() * directions.length)];
+          let dir;
+          do {
+            dir = directions[Math.floor(Math.random() * directions.length)];
+          } while (usedDirections.has(dir));
+          usedDirections.add(dir);
+
           const dist = distances[Math.floor(Math.random() * distances.length)];
           path.push(`${dist} km towards ${dir}`);
 
-          // Calculate final position
           switch (dir) {
             case 'North': finalPosition.y += dist; break;
             case 'South': finalPosition.y -= dist; break;
@@ -41,14 +101,16 @@ export const questionBank = {
         const finalDist = Math.round(Math.sqrt(finalPosition.x * finalPosition.x + finalPosition.y * finalPosition.y));
         const answer = `${finalDist} km`;
 
+        // Generate unique wrong options
+        const wrongOptions = [
+          finalDist + Math.floor(Math.random() * 5) + 1,
+          finalDist - Math.floor(Math.random() * 5) - 1,
+          finalDist * (Math.floor(Math.random() * 2) + 2)
+        ].map(d => `${d} km`);
+
         return {
           question: `A person walks ${path.join(', then ')}. How far is the person from the starting point?`,
-          options: [
-            answer,
-            `${finalDist + 2} km`,
-            `${finalDist - 1} km`,
-            `${finalDist + 1} km`
-          ],
+          options: [answer, ...wrongOptions],
           correctAnswer: 0,
           explanation: formatExplanation(
             `A person walks ${path.join(', then ')}. How far is the person from the starting point?`,
