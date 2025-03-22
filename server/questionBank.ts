@@ -255,7 +255,7 @@ export const questionBank = {
         options: ["$150", "$200", "$250", "$300"],
         correctAnswer: 1
       }
-    ]
+    ],
     "Q02": [ // Profit and Loss
       {
         question: "A shopkeeper bought an item for $800 and sold it for $1000. What is the profit percentage?",
