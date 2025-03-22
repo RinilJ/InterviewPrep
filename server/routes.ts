@@ -318,14 +318,21 @@ export function registerRoutes(app: Express): Server {
             return res.status(400).send("Invalid topic ID");
         }
 
-        const allQuestions = questionBankExpanded[category]?.[topicId] || [];
+        const allQuestions = questionBank[category]?.[topicId] || [];
         if (!allQuestions.length) {
             return res.status(404).send("No questions available for this topic");
         }
 
-        // Randomly select 10 questions
-        const shuffled = [...allQuestions].sort(() => 0.5 - Math.random());
-        const selectedQuestions = shuffled.slice(0, NUM_QUESTIONS);
+        // Randomly select 10 unique questions using Fisher-Yates shuffle
+        const shuffle = (array) => {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        };
+        
+        const selectedQuestions = shuffle([...allQuestions]).slice(0, NUM_QUESTIONS);
 
         res.json({
             topicId,
