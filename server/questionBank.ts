@@ -1,7 +1,7 @@
-// Question bank for aptitude tests
+// Question bank and expanded versions for different test types
 export const questionBank = {
   verbal: {
-    "L01": [ // Direction Sense - 100 questions
+    "L01": [ // Direction Sense
       {
         question: "If you are facing north and turn 90 degrees clockwise, which direction will you face?",
         options: ["East", "West", "South", "North-East"],
@@ -750,160 +750,32 @@ export const questionBank = {
   }
 };
 
-const questionBankExpanded = {
-    verbal: {
-        "L01": Array.from({ length: 50 }, (_, i) => ({
-            question: `Direction Sense Question ${i + 1}: If you are facing north and turn ${45 + i * 15} degrees clockwise, which direction will you face?`,
-            options: ["East", "West", "South", "North-East"],
-            correctAnswer: i % 4
-        })),
-        "L02": Array.from({ length: 50 }, (_, i) => ({
-            question: `Blood Relations Question ${i + 1}: If A is the father of B, B is the brother of C, and D is the son of C, how is A related to D?`,
-            options: ["Grandfather", "Uncle", "Father", "Cannot be determined"],
-            correctAnswer: 0
-        })),
-        "L03": Array.from({ length: 50 }, (_, i) => ({
-            question: `Coding and Decoding Question ${i + 1}: If A is coded as B, B as C, and so on, how is XYZ coded?`,
-            options: ["YZA", "YZB", "YAB", "ZAB"],
-            correctAnswer: 0
-        })),
-        "L04": Array.from({ length: 50 }, (_, i) => ({
-            question: `Number Series Question ${i + 1}: Find the next number in the series: 1, 4, 9, 16, ...`,
-            options: [`${25 + i}`, `${25 - i}`, `${25 * i}`, `${25 / i}`],
-            correctAnswer: 0
-        })),
-        "L05": Array.from({ length: 50 }, (_, i) => ({
-            question: `Letter Series Question ${i + 1}: Find the next letter in the series: A, C, E, G, ...`,
-            options: ["I", "H", "J", "K"],
-            correctAnswer: 0
-        })),
-        "L06": Array.from({ length: 50 }, (_, i) => ({
-            question: `Rankings and Arrangements Question ${i + 1}: In a line of 10 people, X is 3rd from the left and Y is 4th from the right. How many people are between X and Y?`,
-            options: ["2", "3", "4", "5"],
-            correctAnswer: 2
-        })),
-        "L07": Array.from({ length: 50 }, (_, i) => ({
-            question: `Number and Letter Analogies Question ${i + 1}: Find the analogy: AB : BC :: DE : ?`,
-            options: ["EF", "FG", "ED", "GH"],
-            correctAnswer: 0
-        })),
-        "L08": Array.from({ length: 50 }, (_, i) => ({
-            question: `Mixed Analogies Question ${i + 1}: Find the analogy: Car : Road :: Ship : ?`,
-            options: ["Sea", "Air", "Land", "River"],
-            correctAnswer: 0
-        })),
-        "L09": Array.from({ length: 50 }, (_, i) => ({
-            question: `Syllogism Question ${i + 1}: All A are B. Some B are C. Conclusion: ?`,
-            options: ["All A are C", "Some A are C", "No A are C", "Cannot be determined"],
-            correctAnswer: 3
-        })),
-        "L10": Array.from({ length: 50 }, (_, i) => ({
-            question: `Odd Man Out Question ${i + 1}: Find the odd one out: 1, 3, 5, 7, 8`,
-            options: ["1", "3", "5", "8"],
-            correctAnswer: 3
-        })),
-        "L11": Array.from({ length: 50 }, (_, i) => ({
-            question: `Data Sufficiency Question ${i + 1}: Is X > Y?`,
-            options: ["Yes", "No", "Cannot be determined", "Insufficient data"],
-            correctAnswer: 2
-        })),
-        "L12": Array.from({ length: 50 }, (_, i) => ({
-            question: `Calendar Question ${i + 1}: If Jan 1st is Monday, what day is Jan 15th?`,
-            options: ["Sunday", "Monday", "Tuesday", "Wednesday"],
-            correctAnswer: 0
-        }))
-    },
-    nonVerbal: {
-        "N01": Array.from({ length: 50 }, (_, i) => ({
-            question: `Pattern Recognition ${i + 1}: Which figure completes the series?`,
-            options: ["Figure A", "Figure B", "Figure C", "Figure D"],
-            correctAnswer: i % 4
-        })),
-        "N02": Array.from({ length: 50 }, (_, i) => ({
-            question: `Dice and Cubes Question ${i + 1}: If a dice shows 3 on top, what number is on the bottom?`,
-            options: ["1", "2", "4", "6"],
-            correctAnswer: 3
-        })),
-        "N03": Array.from({ length: 50 }, (_, i) => ({
-            question: `Mirror Images Question ${i + 1}: What is the mirror image of the word "TEST"?`,
-            options: ["TSET", "TSE", "TEST", "TST"],
-            correctAnswer: 0
-        })),
-        "N04": Array.from({ length: 50 }, (_, i) => ({
-            question: `Water Images Question ${i + 1}: What is the water image of the letter "X"?`,
-            options: ["X", "x", "V", "None of these"],
-            correctAnswer: 0
-        }))
-    },
-    mathematical: {
-        "Q01": Array.from({ length: 50 }, (_, i) => ({
-            question: `If ${i + 5}% of a number is ${(i + 1) * 15}, what is the number?`,
-            options: [
-                `${((i + 1) * 15 * 100) / (i + 5)}`,
-                `${((i + 1) * 15 * 100) / (i + 5) + 10}`,
-                `${((i + 1) * 15 * 100) / (i + 5) - 10}`,
-                `${((i + 1) * 15 * 100) / (i + 5) + 20}`
-            ],
-            correctAnswer: 0
-        })),
-        "Q02": Array.from({ length: 50 }, (_, i) => ({
-            question: `Simple Interest Question ${i + 1}: What is the simple interest on $1000 at ${i + 5}% for 2 years?`,
-            options: [`${(i + 5) * 20}`, `${(i + 5) * 10}`, `${(i + 5) * 30}`, `${(i + 5) * 40}`],
-            correctAnswer: 0
-        })),
-        "Q03": Array.from({ length: 50 }, (_, i) => ({
-            question: `Compound Interest Question ${i + 1}: A sum doubles in 10 years at simple interest. What is the interest rate?`,
-            options: ["5%", "10%", "15%", "20%"],
-            correctAnswer: 1
-        })),
-        "Q04": Array.from({ length: 50 }, (_, i) => ({
-            question: `Ratios and Proportions Question ${i + 1}: If A : B = 2 : 3 and B : C = 4 : 5, then A : C = ?`,
-            options: ["8 : 15", "6 : 10", "10 : 6", "15 : 8"],
-            correctAnswer: 0
-        })),
-        "Q05": Array.from({ length: 50 }, (_, i) => ({
-            question: `Age Problems Question ${i + 1}: A is twice as old as B. In 5 years, A will be 1.5 times as old as B. Find B's present age.`,
-            options: ["10", "5", "15", "20"],
-            correctAnswer: 0
-        })),
-        "Q06": Array.from({ length: 50 }, (_, i) => ({
-            question: `Time and Work Question ${i + 1}: A does work in 2 days, B in 3 days. How long to do it together?`,
-            options: ["1.2", "1", "2", "0.5"],
-            correctAnswer: 0
-        })),
-        "Q07": Array.from({ length: 50 }, (_, i) => ({
-            question: `Time and Distance Question ${i + 1}: Train travels at 60 kmph, covers 300 km. How long does it take?`,
-            options: ["5 hours", "6 hours", "7 hours", "8 hours"],
-            correctAnswer: 0
-        })),
-        "Q08": Array.from({ length: 50 }, (_, i) => ({
-            question: `Averages Question ${i + 1}: Average of 10 numbers is 5. What is the sum?`,
-            options: ["50", "40", "60", "70"],
-            correctAnswer: 0
-        })),
-        "Q09": Array.from({ length: 50 }, (_, i) => ({
-            question: `Geometry Question ${i + 1}: Area of a square with side 10 is ?`,
-            options: ["100", "10", "50", "20"],
-            correctAnswer: 0
-        })),
-        "Q10": Array.from({ length: 50 }, (_, i) => ({
-            question: `Numbers Question ${i + 1}: What is the largest prime number less than 20?`,
-            options: ["17", "19", "13", "11"],
-            correctAnswer: 1
-        })),
-        "Q11": Array.from({ length: 50 }, (_, i) => ({
-            question: `Probability Question ${i + 1}: Probability of heads in a coin toss?`,
-            options: ["0.5", "0.25", "0.75", "1"],
-            correctAnswer: 0
-        })),
-        "Q12": Array.from({ length: 50 }, (_, i) => ({
-            question: `Data Interpretation Question ${i + 1}: If a pie chart shows 25% for A, what is the angle?`,
-            options: ["90", "45", "180", "360"],
-            correctAnswer: 0
-        }))
-    },
-    technical: {},
-    psychometric: {}
+// Helper function to generate expanded questions
+function generateExpandedQuestions(baseQuestion: string, count: number) {
+  return Array.from({ length: count }, (_, i) => ({
+    question: `${baseQuestion} (Variation ${i + 1})`,
+    options: ["Option A", "Option B", "Option C", "Option D"],
+    correctAnswer: Math.floor(Math.random() * 4)
+  }));
+}
+
+// Export the expanded question bank separately
+export const questionBankExpanded = {
+  verbal: {},
+  nonVerbal: {},
+  mathematical: {},
+  technical: {},
+  psychometric: {}
 };
 
-export {questionBank, questionBankExpanded};
+// Initialize expanded questions
+Object.keys(questionBank).forEach(category => {
+  Object.keys(questionBank[category]).forEach(topicId => {
+    if (!questionBankExpanded[category][topicId]) {
+      questionBankExpanded[category][topicId] = generateExpandedQuestions(
+        `Sample ${category} question for topic ${topicId}`,
+        50
+      );
+    }
+  });
+});

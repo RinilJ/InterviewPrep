@@ -5,8 +5,7 @@ import { storage } from "./storage";
 import { insertTestSchema, insertTestResultSchema, insertDiscussionSlotSchema, insertSlotBookingSchema } from "@shared/schema";
 import { z } from "zod";
 import { generateQuestions } from "./openaiService";
-
-const NUM_QUESTIONS = 10;
+import { questionBank } from "./questionBank";
 
 // Sample discussion slots with some slots having no specific topic (open discussion)
 const sampleDiscussionSlots = [
@@ -40,7 +39,7 @@ const sampleDiscussionSlots = [
 ];
 
 // Update the teacherStats to be dynamic based on filtered students
-const teacherStats = (filteredStudents) => ({
+const teacherStats = (filteredStudents: any[]) => ({
   totalStudents: filteredStudents.length,
   activeSessions: 3,
   discussionSlots: sampleDiscussionSlots.length
@@ -171,13 +170,6 @@ const generateSampleQuestions = (numQuestions: number) => {
     }));
 };
 
-import { questionBank, questionBankExpanded } from './questionBank';
-
-for (const category in aptitudeTopics) {
-    for (const topic of aptitudeTopics[category]) {
-        questionBankExpanded[category][topic.id] = generateSampleQuestions(100);
-    }
-}
 
 export function registerRoutes(app: Express): Server {
   setupAuth(app);
@@ -188,10 +180,8 @@ export function registerRoutes(app: Express): Server {
       return res.sendStatus(401);
     }
 
-    // Filter students based on teacher's batch and year
+    // Filter students based on teacher's department
     const filteredStudents = studentProgress.filter(student =>
-      student.batch === req.user.batch &&
-      student.year === req.user.year &&
       student.department === req.user.department
     );
 
@@ -203,10 +193,8 @@ export function registerRoutes(app: Express): Server {
       return res.sendStatus(401);
     }
 
-    // Filter students based on teacher's batch and year
+    // Filter students based on teacher's department
     const filteredStudents = studentProgress.filter(student =>
-      student.batch === req.user.batch &&
-      student.year === req.user.year &&
       student.department === req.user.department
     );
 
@@ -255,41 +243,6 @@ export function registerRoutes(app: Express): Server {
     res.status(201).json(result);
   });
 
-  // Discussion Slots
-  app.get("/api/discussion-slots", async (req, res) => {
-    if (!req.isAuthenticated()) return res.sendStatus(401);
-    res.json(sampleDiscussionSlots);
-  });
-
-  app.post("/api/discussion-slots", async (req, res) => {
-    if (!req.isAuthenticated() || req.user.role !== "teacher") {
-      return res.sendStatus(401);
-    }
-
-    const parsed = insertDiscussionSlotSchema.parse(req.body);
-    const slot = await storage.createDiscussionSlot({
-      ...parsed,
-      mentorId: req.user.id,
-      maxParticipants: parsed.maxParticipants || 10
-    });
-    res.status(201).json(slot);
-  });
-
-  // Slot Bookings
-  app.post("/api/slot-bookings", async (req, res) => {
-    if (!req.isAuthenticated() || req.user.role !== "student") {
-      return res.sendStatus(401);
-    }
-
-    const parsed = insertSlotBookingSchema.parse(req.body);
-    const booking = await storage.createSlotBooking({
-      ...parsed,
-      userId: req.user.id,
-      bookedAt: new Date()
-    });
-    res.status(201).json(booking);
-  });
-
   // Generate test with questions from OpenAI
   app.get("/api/generate-test", async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
@@ -298,13 +251,11 @@ export function registerRoutes(app: Express): Server {
     if (!topicId) return res.status(400).send("Topic ID is required");
 
     try {
-        let category: string;
-        if (topicId.startsWith('L')) {
-            category = 'verbal';
-        } else if (topicId.startsWith('N')) {
-            category = 'nonVerbal';
-        } else if (topicId.startsWith('Q')) {
-            category = 'mathematical';
+        let category: 'aptitude' | 'technical' | 'psychometric';
+        let topic = getTopicTitle(topicId);
+
+        if (topicId.startsWith('L') || topicId.startsWith('N') || topicId.startsWith('Q')) {
+            category = 'aptitude';
         } else if (topicId.startsWith('T')) {
             category = 'technical';
         } else if (topicId.startsWith('P')) {
@@ -313,45 +264,23 @@ export function registerRoutes(app: Express): Server {
             return res.status(400).send("Invalid topic ID");
         }
 
-        // Get questions from expanded question bank first, fall back to regular question bank
-        let allQuestions = questionBankExpanded[category]?.[topicId] || questionBank[category]?.[topicId] || [];
-        if (!allQuestions.length) {
-            return res.status(404).send("No questions available for this topic");
+        console.log(`Generating questions for ${category} - ${topic} (${topicId})`);
+        const questions = await generateQuestions(category, topic, topicId);
+
+        if (!questions || questions.length === 0) {
+            throw new Error('No questions generated');
         }
-
-        // Ensure we have valid questions with all required properties
-        allQuestions = allQuestions.filter(q => 
-            q && q.question && q.options && Array.isArray(q.options) && q.options.length > 0
-        );
-
-        // Fisher-Yates shuffle for better randomization
-        const shuffle = (array) => {
-            for (let i = array.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [array[i], array[j]] = [array[j], array[i]];
-            }
-            return array;
-        };
-
-        // Select 10 random questions
-        const shuffled = shuffle([...allQuestions]).slice(0, NUM_QUESTIONS);
-        
-        const selectedQuestions = shuffled.map(q => ({
-            questionText: q.question || q.questionText,
-            options: q.options,
-            correctAnswer: q.correctAnswer || q.answer
-        }));
 
         res.json({
             topicId,
-            title: getTopicTitle(topicId),
-            questions: selectedQuestions
+            title: topic,
+            questions
         });
     } catch (error) {
-        console.error('Error fetching questions:', error);
-        res.status(500).send("Failed to fetch questions");
+        console.error('Error generating test:', error);
+        res.status(500).send("Failed to generate test questions. Please try again.");
     }
-});
+  });
 
   app.post("/api/logout", (req, res, next) => {
     req.logout((err) => {
@@ -363,8 +292,8 @@ export function registerRoutes(app: Express): Server {
   // Helper function to get topic title
   function getTopicTitle(topicId: string): string {
     // Find the topic across all categories
-    for (const category of Object.keys(aptitudeTopics)) {
-      const topic = aptitudeTopics[category].find(t => t.id === topicId);
+    for (const category of Object.keys(questionBank)) {
+      const topic = questionBank[category].find(t => t.id === topicId);
       if (topic) return topic.title;
     }
     return "Unknown Topic";
