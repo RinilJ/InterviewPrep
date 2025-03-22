@@ -1,139 +1,103 @@
 import { z } from 'zod';
 
-// Helper function to format explanation
-function formatExplanation(question: string, answer: string, reasoning: string, formula?: string): string {
-  let explanation = `Correct Answer: ${answer}\n\nReasoning: ${reasoning}`;
-  if (formula) {
-    explanation += `\n\nFormula Used: ${formula}`;
-  }
-  return explanation;
+// Interface for question data
+interface Question {
+  id: string;
+  question: string;
+  options: string[];
+  correctAnswer: number;
+  explanation: string;
 }
 
-// Function to get unique random indices
-function getUniqueRandomIndices(max: number, count: number): number[] {
-  const indices = Array.from({ length: max }, (_, i) => i);
-  for (let i = indices.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [indices[i], indices[j]] = [indices[j], indices[i]];
-  }
-  return indices.slice(0, count);
+interface SessionData {
+  usedQuestions: Set<string>;
+  startTime: number;
+  retryCount: number;
 }
 
-// Cache for tracking used questions per test session
-const sessionQuestions = new Map<string, Set<string>>();
+// Cache for tracking sessions
+const sessions = new Map<string, SessionData>();
 
-// Function to generate questions dynamically
-function generateQuestionsForTopic(topicId: string, count: number = 15): any[] {
-  console.time(`generateQuestionsForTopic-${topicId}`);
-
-  const questions = [];
-  const uniqueQuestionKeys = new Set<string>();
-
-  for (let attempts = 0; attempts < count * 2 && questions.length < count; attempts++) {
-    let question;
-    if (topicId.startsWith('L')) {
-      question = generateVerbalQuestion(attempts);
-    } else if (topicId.startsWith('N')) {
-      question = generateNonVerbalQuestion(attempts);
-    } else {
-      question = generateMathQuestion(attempts);
-    }
-
-    // Ensure question uniqueness using a key
-    const questionKey = `${question.question}-${question.correctAnswer}`;
-    if (!uniqueQuestionKeys.has(questionKey)) {
-      uniqueQuestionKeys.add(questionKey);
-      questions.push(question);
+// Clean up old sessions periodically
+setInterval(() => {
+  const oneHourAgo = Date.now() - 3600000;
+  for (const [key, data] of sessions) {
+    if (data.startTime < oneHourAgo) {
+      sessions.delete(key);
     }
   }
+}, 3600000);
 
-  console.timeEnd(`generateQuestionsForTopic-${topicId}`);
-  console.log(`Generated ${questions.length} unique questions for topic ${topicId}`);
+// Asynchronous function to get unique questions for a test
+export async function getUniqueQuestionsForUser(
+  userId: number,
+  topicId: string,
+  count: number = 10,
+  maxRetries: number = 2
+): Promise<Question[]> {
+  console.time(`getQuestions-${userId}-${topicId}`);
 
-  return questions;
-}
+  const sessionKey = `${userId}-${topicId}`;
 
-function generateVerbalQuestion(index: number): any {
-  const directions = ['North', 'South', 'East', 'West'];
-  const steps = Math.floor(Math.random() * 2) + 2; // 2-3 steps for simplicity
-  const path = [];
+  try {
+    // Initialize or get session
+    if (!sessions.has(sessionKey)) {
+      sessions.set(sessionKey, {
+        usedQuestions: new Set(),
+        startTime: Date.now(),
+        retryCount: 0
+      });
+    }
 
-  const usedDirections = new Set();
-  for (let i = 0; i < steps; i++) {
-    let dir;
-    do {
-      dir = directions[Math.floor(Math.random() * directions.length)];
-    } while (usedDirections.has(dir));
-    usedDirections.add(dir);
+    const session = sessions.get(sessionKey)!;
+    console.log(`Session ${sessionKey}: Used questions = ${session.usedQuestions.size}, Retries = ${session.retryCount}`);
 
-    const dist = Math.floor(Math.random() * 5) + 1;
-    path.push(`${dist}km ${dir}`);
+    // Check retry limit
+    if (session.retryCount >= maxRetries) {
+      sessions.delete(sessionKey);
+      throw new Error(`Max retries (${maxRetries}) exceeded for question generation`);
+    }
+
+    // Generate small batch of questions
+    const batchSize = Math.min(15, count * 1.5); // Generate 50% more than needed, max 15
+    console.time('generateQuestions');
+    const questions = await generateQuestions(topicId, batchSize);
+    console.timeEnd('generateQuestions');
+
+    // Filter unique questions
+    const uniqueQuestions = questions.filter(q => !session.usedQuestions.has(q.id));
+    console.log(`Generated ${uniqueQuestions.length} unique questions of ${count} needed`);
+
+    if (uniqueQuestions.length < count) {
+      session.retryCount++;
+      throw new Error('Not enough unique questions');
+    }
+
+    // Select random questions and mark as used
+    const selectedQuestions = uniqueQuestions.slice(0, count).map(q => {
+      session.usedQuestions.add(q.id);
+      return {
+        ...q,
+        options: shuffleArray([...q.options])
+      };
+    });
+
+    // Reset retry count on success
+    session.retryCount = 0;
+    console.timeEnd(`getQuestions-${userId}-${topicId}`);
+    return selectedQuestions;
+
+  } catch (error) {
+    console.error('Question generation error:', error);
+    if (sessions.get(sessionKey)?.retryCount! < maxRetries) {
+      console.log(`Retrying question generation (${sessions.get(sessionKey)?.retryCount! + 1}/${maxRetries})`);
+      return getUniqueQuestionsForUser(userId, topicId, count, maxRetries);
+    }
+    throw error;
   }
-
-  const question = `A person walks ${path.join(', then ')}. What is their final direction?`;
-  const correctAnswer = Math.floor(Math.random() * directions.length);
-
-  return {
-    question,
-    options: directions,
-    correctAnswer,
-    explanation: `Follow the path step by step to determine the final direction.`
-  };
 }
 
-function generateNonVerbalQuestion(index: number): any {
-  const shapes = ['circle', 'triangle', 'square', 'pentagon'];
-  const sequence = shapes.slice(0, 3);
-  const correctAnswer = Math.floor(Math.random() * shapes.length);
-
-  return {
-    question: `What comes next in the sequence: ${sequence.join(', ')}?`,
-    options: shapes,
-    correctAnswer,
-    explanation: `Look for the pattern in the sequence.`
-  };
-}
-
-function generateMathQuestion(index: number): any {
-  const num1 = Math.floor(Math.random() * 50) + 1;
-  const num2 = Math.floor(Math.random() * 50) + 1;
-  const operators = ['+', '-', '*'];
-  const operator = operators[index % operators.length];
-
-  let answer: number, question: string;
-  switch (operator) {
-    case '+':
-      answer = num1 + num2;
-      question = `What is ${num1} + ${num2}?`;
-      break;
-    case '-':
-      answer = num1 - num2;
-      question = `What is ${num1} - ${num2}?`;
-      break;
-    case '*':
-      answer = num1 * num2;
-      question = `What is ${num1} × ${num2}?`;
-      break;
-    default:
-      answer = num1 + num2;
-      question = `What is ${num1} + ${num2}?`;
-  }
-
-  const options = [
-    answer,
-    answer + Math.floor(Math.random() * 5) + 1,
-    answer - Math.floor(Math.random() * 5) - 1,
-    answer * 2
-  ];
-
-  return {
-    question,
-    options: shuffleArray(options),
-    correctAnswer: 0,
-    explanation: `Calculate using basic arithmetic.`
-  };
-}
-
+// Helper function to shuffle array
 function shuffleArray<T>(array: T[]): T[] {
   const shuffled = [...array];
   for (let i = shuffled.length - 1; i > 0; i--) {
@@ -143,57 +107,89 @@ function shuffleArray<T>(array: T[]): T[] {
   return shuffled;
 }
 
-// Main function to get unique questions for a user
-export function getUniqueQuestionsForUser(userId: number, topicId: string, count: number = 10): any[] {
-  console.time('getUniqueQuestionsForUser');
+// Asynchronous question generation
+async function generateQuestions(topicId: string, count: number): Promise<Question[]> {
+  return new Promise((resolve) => {
+    const questions: Question[] = [];
 
-  const sessionKey = `${userId}-${topicId}-${Date.now()}`;
-  if (!sessionQuestions.has(sessionKey)) {
-    sessionQuestions.set(sessionKey, new Set());
-  }
-
-  try {
-    console.time('generateQuestions');
-    const questions = generateQuestionsForTopic(topicId, count);
-    console.timeEnd('generateQuestions');
-
-    if (questions.length < count) {
-      throw new Error(`Could not generate enough unique questions (got ${questions.length}, needed ${count})`);
+    for (let i = 0; i < count; i++) {
+      const baseQuestion = generateQuestionByType(topicId, i);
+      questions.push({
+        ...baseQuestion,
+        id: `${topicId}-${Date.now()}-${i}`
+      });
     }
 
-    // Mark questions as used and shuffle options
-    const sessionUsedQuestions = sessionQuestions.get(sessionKey)!;
-    questions.forEach(q => {
-      sessionUsedQuestions.add(q.question);
-      q.options = shuffleArray([...q.options]);
-      if (q.correctAnswer !== 0) {
-        const correctOption = q.options[q.correctAnswer];
-        q.options = [correctOption, ...q.options.filter(opt => opt !== correctOption)];
-        q.correctAnswer = 0;
-      }
-    });
+    resolve(shuffleArray(questions));
+  });
+}
 
-    console.timeEnd('getUniqueQuestionsForUser');
-    return questions;
+// Generate question based on topic type
+function generateQuestionByType(topicId: string, index: number): Question {
+  const timestamp = Date.now();
 
-  } catch (error) {
-    console.error('Error in getUniqueQuestionsForUser:', error);
-    throw error;
+  if (topicId.startsWith('L')) { // Verbal
+    return generateVerbalQuestion(topicId, index, timestamp);
+  } else if (topicId.startsWith('N')) { // Non-verbal
+    return generateNonVerbalQuestion(topicId, index, timestamp);
+  } else { // Mathematical
+    return generateMathQuestion(topicId, index, timestamp);
   }
 }
 
-// Clean up old sessions periodically
-setInterval(() => {
-  const oneHourAgo = Date.now() - 3600000;
-  for (const [key] of sessionQuestions) {
-    const timestamp = parseInt(key.split('-')[2]);
-    if (timestamp < oneHourAgo) {
-      sessionQuestions.delete(key);
-    }
-  }
-}, 3600000);
+function generateVerbalQuestion(topicId: string, index: number, timestamp: number): Question {
+  const directions = ['North', 'South', 'East', 'West'];
+  const steps = Math.floor(Math.random() * 2) + 2;
+  const path = [];
 
-// Question bank structure (questions are generated on-demand)
+  for (let i = 0; i < steps; i++) {
+    const dir = directions[Math.floor(Math.random() * directions.length)];
+    const dist = Math.floor(Math.random() * 5) + 1;
+    path.push(`${dist}km ${dir}`);
+  }
+
+  return {
+    id: `${topicId}-${timestamp}-${index}`,
+    question: `A person walks ${path.join(', then ')}. What direction are they from the start?`,
+    options: shuffleArray([...directions]),
+    correctAnswer: 0,
+    explanation: 'Follow the path step by step to determine the final direction.'
+  };
+}
+
+function generateNonVerbalQuestion(topicId: string, index: number, timestamp: number): Question {
+  const shapes = ['circle', 'triangle', 'square', 'pentagon'];
+  const sequence = shapes.slice(0, 3);
+
+  return {
+    id: `${topicId}-${timestamp}-${index}`,
+    question: `What comes next in the sequence: ${sequence.join(', ')}?`,
+    options: shuffleArray([...shapes]),
+    correctAnswer: 0,
+    explanation: 'Look for the pattern in the sequence.'
+  };
+}
+
+function generateMathQuestion(topicId: string, index: number, timestamp: number): Question {
+  const num1 = Math.floor(Math.random() * 50) + 1;
+  const num2 = Math.floor(Math.random() * 50) + 1;
+  const answer = num1 + num2;
+
+  return {
+    id: `${topicId}-${timestamp}-${index}`,
+    question: `What is ${num1} + ${num2}?`,
+    options: shuffleArray([
+      answer.toString(),
+      (answer + 5).toString(),
+      (answer - 5).toString(),
+      (answer * 2).toString()
+    ]),
+    correctAnswer: 0,
+    explanation: `${num1} + ${num2} = ${answer}`
+  };
+}
+
+// Question bank structure (titles only, questions generated on-demand)
 export const questionBank = {
   verbal: {
     "L01": { title: "Direction Sense", questions: [] },
