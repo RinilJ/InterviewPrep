@@ -176,14 +176,20 @@ async function bookSlot(slotId) {
 // Start a test
 async function startTest(topicId) {
     try {
+        // Show loading state
+        const button = event.target;
+        const originalText = button.innerHTML;
+        button.disabled = true;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+
         // Fetch questions for this topic
         const response = await fetch(`/api/generate-test?topicId=${topicId}`);
         if (!response.ok) {
-            throw new Error('Failed to generate test');
+            throw new Error(await response.text());
         }
-        
+
         const test = await response.json();
-        
+
         // Store the current test in session storage
         sessionStorage.setItem('currentTest', JSON.stringify({
             topicId,
@@ -192,7 +198,7 @@ async function startTest(topicId) {
             answers: [],
             startTime: new Date().toISOString()
         }));
-        
+
         // Redirect to the test page
         window.location.href = '/test.html';
     } catch (error) {
