@@ -12,7 +12,7 @@
         <header class="dashboard-header">
             <div class="container">
                 <div class="header-content">
-                    <h1>Dashboard</h1>
+                    <h1>Student Dashboard</h1>
                     <div class="user-info">
                         <span id="userName">Loading...</span>
                         <button id="logoutBtn" class="btn-secondary">Logout</button>
@@ -65,27 +65,29 @@
                 </div>
 
                 <div id="aptitudeTab" class="tab-content">
-                    <div class="test-grid">
-                        <div class="test-category">
+                    <div class="test-categories">
+                        <div class="category-section">
                             <div class="category-header">
                                 <i class="fas fa-comments"></i>
                                 <h2>Logical Reasoning (Verbal)</h2>
                             </div>
-                            <div id="verbalTests" class="test-list"></div>
+                            <div id="verbalTests" class="test-grid"></div>
                         </div>
-                        <div class="test-category">
+
+                        <div class="category-section">
                             <div class="category-header">
                                 <i class="fas fa-puzzle-piece"></i>
                                 <h2>Logical Reasoning (Non-Verbal)</h2>
                             </div>
-                            <div id="nonVerbalTests" class="test-list"></div>
+                            <div id="nonVerbalTests" class="test-grid"></div>
                         </div>
-                        <div class="test-category">
+
+                        <div class="category-section">
                             <div class="category-header">
                                 <i class="fas fa-calculator"></i>
                                 <h2>Mathematical Aptitude</h2>
                             </div>
-                            <div id="mathematicalTests" class="test-list"></div>
+                            <div id="mathematicalTests" class="test-grid"></div>
                         </div>
                     </div>
                 </div>
@@ -95,7 +97,7 @@
                         <i class="fas fa-laptop-code"></i>
                         <h2>Technical Assessment</h2>
                     </div>
-                    <div id="technicalTests" class="test-list"></div>
+                    <div id="technicalTests" class="test-grid"></div>
                 </div>
 
                 <div id="psychometricTab" class="tab-content hidden">
@@ -103,7 +105,7 @@
                         <i class="fas fa-user-check"></i>
                         <h2>Psychometric Assessment</h2>
                     </div>
-                    <div id="psychometricTests" class="test-list"></div>
+                    <div id="psychometricTests" class="test-grid"></div>
                 </div>
 
                 <div id="discussionsTab" class="tab-content hidden">
