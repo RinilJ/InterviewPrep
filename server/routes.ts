@@ -25,31 +25,20 @@ export function registerRoutes(app: Express): Server {
     try {
       // Transform the question bank into the expected format
       const topics = {
-        verbal: Object.entries(questionBank.verbal).map(([id, questions]) => ({
+        verbal: Object.entries(questionBank.verbal).map(([id, topicData]) => ({
           id,
-          title: questions[0]?.title || id,
-          range: questions[0]?.range || `${questions.length} questions`
+          title: topicData.title,
+          range: `${topicData.questions.length} questions`
         })),
-        nonVerbal: Object.entries(questionBank.nonVerbal).map(([id, questions]) => ({
+        nonVerbal: Object.entries(questionBank.nonVerbal).map(([id, topicData]) => ({
           id,
-          title: questions[0]?.title || id,
-          range: questions[0]?.range || `${questions.length} questions`
+          title: topicData.title,
+          range: `${topicData.questions.length} questions`
         })),
-        mathematical: Object.entries(questionBank.mathematical).map(([id, questions]) => ({
+        mathematical: Object.entries(questionBank.mathematical).map(([id, topicData]) => ({
           id,
-          title: questions[0]?.title || id,
-          range: questions[0]?.range || `${questions.length} questions`
-        })),
-        technical: Object.entries(questionBank.technical).map(([id, questions]) => ({
-          id,
-          title: questions[0]?.title || id,
-          description: questions[0]?.description,
-          range: questions[0]?.range || `${questions.length} questions`
-        })),
-        psychometric: Object.entries(questionBank.psychometric).map(([id, questions]) => ({
-          id,
-          title: questions[0]?.title || id,
-          range: questions[0]?.range || `${questions.length} questions`
+          title: topicData.title,
+          range: `${topicData.questions.length} questions`
         }))
       };
 
@@ -106,29 +95,25 @@ export function registerRoutes(app: Express): Server {
 
     try {
       // Determine category from topic ID
-      let category: string;
+      let category: 'verbal' | 'nonVerbal' | 'mathematical';
       if (topicId.startsWith('L')) {
         category = 'verbal';
       } else if (topicId.startsWith('N')) {
         category = 'nonVerbal';
       } else if (topicId.startsWith('Q')) {
         category = 'mathematical';
-      } else if (topicId.startsWith('T')) {
-        category = 'technical';
-      } else if (topicId.startsWith('P')) {
-        category = 'psychometric';
       } else {
         return res.status(400).send("Invalid topic ID");
       }
 
       // Get questions from question bank
-      const questions = questionBank[category][topicId];
-      if (!questions || questions.length === 0) {
+      const topicData = questionBank[category][topicId];
+      if (!topicData || !topicData.questions || topicData.questions.length === 0) {
         return res.status(404).send("No questions available for this topic");
       }
 
       // Randomly select 10 unique questions
-      const selectedQuestions = shuffleArray([...questions])
+      const selectedQuestions = shuffleArray([...topicData.questions])
         .slice(0, 10)
         .map(q => ({
           question: q.question,
@@ -137,14 +122,9 @@ export function registerRoutes(app: Express): Server {
           explanation: q.explanation
         }));
 
-      // Get topic title
-      const topicTitle = Object.values(questionBank)
-        .flatMap(category => Object.entries(category))
-        .find(([id]) => id === topicId)?.[1]?.[0]?.title || "Practice Test";
-
       res.json({
         topicId,
-        title: topicTitle,
+        title: topicData.title,
         questions: selectedQuestions
       });
     } catch (error) {
