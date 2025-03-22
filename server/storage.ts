@@ -10,22 +10,22 @@ export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: Omit<User, "id" | "createdAt">): Promise<User>;
-  
+
   // Tests
   createTest(test: Omit<Test, "id">): Promise<Test>;
   getTests(): Promise<Test[]>;
-  
+
   // Test Results
   createTestResult(result: Omit<TestResult, "id" | "completedAt">): Promise<TestResult>;
   getTestResults(userId: number): Promise<TestResult[]>;
-  
+
   // Discussion Slots
   createDiscussionSlot(slot: Omit<DiscussionSlot, "id">): Promise<DiscussionSlot>;
   getDiscussionSlots(): Promise<DiscussionSlot[]>;
-  
+
   // Slot Bookings
   createSlotBooking(booking: Omit<SlotBooking, "id" | "bookedAt">): Promise<SlotBooking>;
-  
+
   sessionStore: session.Store;
 }
 
@@ -46,8 +46,30 @@ export class MemStorage implements IStorage {
     this.slotBookings = new Map();
     this.currentId = 1;
     this.sessionStore = new MemoryStore({
-      checkPeriod: 86400000,
+      checkPeriod: 86400000 // 24 hours
     });
+
+    // Initialize an admin user for testing if needed
+    this.createInitialUser();
+  }
+
+  private async createInitialUser() {
+    // Only create if no users exist
+    if (this.users.size === 0) {
+      try {
+        await this.createUser({
+          username: "admin",
+          password: "admin123", // This is just for development
+          role: "teacher",
+          department: "CS",
+          batch: null,
+          year: null
+        });
+        console.log("Initial admin user created");
+      } catch (error) {
+        console.error("Failed to create initial user:", error);
+      }
+    }
   }
 
   async getUser(id: number): Promise<User | undefined> {
