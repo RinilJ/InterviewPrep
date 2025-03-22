@@ -12,192 +12,171 @@ interface GeneratedQuestion {
   code?: string; // For technical questions with code snippets
 }
 
-// Fallback questions for each category
-const fallbackQuestions = {
-  aptitude: [
-    {
-      question: "In a family, A is B's sister, B is C's mother, and D is C's daughter. What is A's relation to D?",
-      options: ["Aunt", "Mother", "Grandmother", "Sister"],
-      correctAnswer: 0,
-      explanation: "A is B's sister, B is C's mother, and D is C's daughter. Therefore, A is C's aunt, making A the aunt of D."
-    },
-    {
-      question: "A person walks 5 km towards north, then turns right and walks 3 km. Again turns right and walks 5 km. How far is he from the starting point?",
-      options: ["3 km", "5 km", "8 km", "13 km"],
-      correctAnswer: 0,
-      explanation: "After walking north and south the same distance (5km), only the eastward distance (3km) remains"
-    }
-  ],
-  technical: [
-    {
-      question: "What will be the output of this Python code?\n\ndef func(x=[]):\n    x.append(1)\n    return x\n\nprint(func())\nprint(func())",
-      options: [
-        "[1]\\n[1]", 
-        "[1]\\n[1, 1]", 
-        "[1, 1]\\n[1, 1, 1]", 
-        "Error"
-      ],
-      correctAnswer: 1,
-      explanation: "In Python, default mutable arguments are created once when the function is defined. The same list is used in subsequent calls.",
-      code: `def func(x=[]):
-    x.append(1)
-    return x
+// Module-specific prompts for better context
+const MODULE_PROMPTS = {
+  // Verbal Reasoning Modules
+  "L01": "Generate a direction sense question involving complex paths and cardinal directions",
+  "L02": "Create a blood relations question with extended family relationships",
+  "L03": "Create a coding-decoding question using letter/number patterns",
+  "L04": "Generate a number series question with complex mathematical patterns",
+  "L05": "Create a letter series question with alphabetical patterns",
+  "L06": "Generate a ranking/arrangement question with multiple conditions",
+  "L07": "Create a number/letter analogy question",
+  "L08": "Generate a mixed analogy question combining different concepts",
+  "L09": "Create a syllogism question testing logical deduction",
+  "L10": "Generate an odd-man-out question for classification",
 
-print(func())
-print(func())`
-    },
-    {
-      question: "What is the time complexity of this algorithm?\n\ndef mystery(n):\n    if n <= 1: return 1\n    return mystery(n-1) + mystery(n-1)",
-      options: ["O(n)", "O(n log n)", "O(2^n)", "O(n^2)"],
-      correctAnswer: 2,
-      explanation: "This is a recursive function making 2 calls for each n, creating a binary tree of height n, resulting in O(2^n).",
-      code: `def mystery(n):
-    if n <= 1: return 1
-    return mystery(n-1) + mystery(n-1)`
-    }
-  ],
-  psychometric: [
-    {
-      question: "You notice a colleague taking credit for your work during a team meeting. How do you respond?",
-      options: [
-        "Immediately confront them in front of everyone",
-        "Discuss the matter privately with them after the meeting",
-        "Report them to your supervisor without talking to them",
-        "Say nothing and let it go"
-      ],
-      correctAnswer: 1,
-      explanation: "Professional conflict resolution involves direct but private communication"
-    },
-    {
-      question: "When facing a complex project with a tight deadline, what's your first step?",
-      options: [
-        "Start working immediately without planning",
-        "Create a detailed project plan and timeline",
-        "Ask for an extension immediately",
-        "Delegate all tasks to team members"
-      ],
-      correctAnswer: 1,
-      explanation: "Effective project management starts with proper planning and organization"
-    }
-  ]
+  // Non-verbal Reasoning Modules
+  "N01": "Create a logical Venn diagram question with set relationships",
+  "N02": "Generate a dice/cube question with spatial reasoning",
+  "N03": "Create a mirror/water image question",
+  "N04": "Generate a missing number/figure series question",
+
+  // Mathematical Aptitude Modules
+  "Q01": "Create a percentage problem with real-world applications",
+  "Q02": "Generate a profit/loss question with complex scenarios",
+  "Q03": "Create an interest calculation problem",
+  "Q04": "Generate a ratio/proportion question",
+  "Q05": "Create an age/mixture problem",
+  "Q06": "Generate a time/work question",
+  "Q07": "Create a time/distance/speed problem",
+  "Q08": "Generate an averages question",
+  "Q09": "Create a geometry problem",
+  "Q10": "Generate a number system question",
+
+  // Technical Modules
+  "T01": "Generate a DSA problem with code implementation and complexity analysis",
+  "T02": "Create a competitive programming challenge with algorithmic thinking",
+  "T03": "Generate a system design question with scalability considerations",
+  "T04": "Create an OOP concept question with practical implementation",
+  "T05": "Generate a code debugging challenge with common programming issues",
+
+  // Psychometric Modules
+  "P01": "Create a personality assessment scenario",
+  "P02": "Generate an emotional intelligence situation",
+  "P03": "Create a leadership potential scenario",
+  "P04": "Generate a team dynamics situation",
+  "P05": "Create a problem-solving style assessment"
 };
 
 const PROMPTS = {
-  aptitude: (topic: string) => `Generate a unique aptitude question for ${topic}. 
-    Make sure the question tests analytical and logical thinking.
-    For topics like Blood Relations or Direction Sense, create complex scenarios.
-    For numerical topics, focus on application-based problems.
-    The response should be in JSON format with the following structure:
+  aptitude: (topic: string, moduleId: string) => `Generate a unique ${topic} question.
+    Context: ${MODULE_PROMPTS[moduleId]}
+    Requirements:
+    - Question should be challenging but solvable
+    - Include step-by-step solution in the explanation
+    - Ensure options are distinct and plausible
+    - Make sure question tests analytical thinking
+
+    The response should be in JSON format:
     {
-      "question": "clear and detailed question text",
+      "question": "detailed question text",
       "options": ["option1", "option2", "option3", "option4"],
       "correctAnswer": 0-based index of correct option,
-      "explanation": "detailed step-by-step explanation"
+      "explanation": "detailed step-by-step solution"
     }`,
 
-  technical: (topic: string) => `Generate a challenging technical programming question for ${topic}.
-    The question should involve actual code snippets and test understanding of programming concepts.
-    Focus on practical scenarios and debugging challenges.
-    For System Design questions, include architectural considerations.
-    For DSA questions, include time/space complexity analysis.
-    The response should be in JSON format with the following structure:
+  technical: (topic: string, moduleId: string) => `Generate a unique technical question for ${topic}.
+    Context: ${MODULE_PROMPTS[moduleId]}
+    Requirements:
+    - For coding questions, include actual code snippets
+    - Test understanding of core concepts
+    - Include time/space complexity for algorithms
+    - Focus on practical, industry-relevant scenarios
+
+    The response should be in JSON format:
     {
-      "question": "question text with embedded code snippet",
-      "code": "full code snippet if applicable",
+      "question": "detailed question text",
+      "code": "code snippet if applicable",
       "options": ["option1", "option2", "option3", "option4"],
       "correctAnswer": 0-based index of correct option,
-      "explanation": "detailed explanation including complexity analysis or design considerations"
+      "explanation": "detailed solution with analysis"
     }`,
 
-  psychometric: (topic: string) => `Generate a situational judgment question for ${topic}.
-    Create realistic workplace scenarios that test behavioral tendencies.
-    Focus on professional situations and decision-making skills.
-    Include scenarios testing leadership, teamwork, and problem-solving.
-    The response should be in JSON format with the following structure:
+  psychometric: (topic: string, moduleId: string) => `Generate a unique psychometric question for ${topic}.
+    Context: ${MODULE_PROMPTS[moduleId]}
+    Requirements:
+    - Create realistic workplace scenarios
+    - Focus on behavioral assessment
+    - Include various response strategies
+    - Ensure options reflect different approaches
+
+    The response should be in JSON format:
     {
-      "question": "detailed scenario description",
+      "question": "detailed scenario",
       "options": ["response1", "response2", "response3", "response4"],
       "correctAnswer": 0-based index of best option,
-      "explanation": "detailed explanation of why this response is most appropriate"
+      "explanation": "detailed analysis of each response"
     }`
 };
+
+// Cache to store used questions per module
+const questionCache = new Map<string, Set<string>>();
 
 export async function generateQuestions(
   category: 'aptitude' | 'technical' | 'psychometric',
   topic: string,
-  count: number = 5
+  moduleId: string,
+  count: number = 10
 ): Promise<GeneratedQuestion[]> {
   try {
-    const prompt = PROMPTS[category](topic);
-    const questions: GeneratedQuestion[] = [];
-    const usedQuestions = new Set<string>(); // Track used questions to prevent duplicates
+    // Initialize cache for this module if not exists
+    if (!questionCache.has(moduleId)) {
+      questionCache.set(moduleId, new Set());
+    }
+    const usedQuestions = questionCache.get(moduleId)!;
 
-    for (let i = 0; i < count; i++) {
+    const prompt = PROMPTS[category](topic, moduleId);
+    const questions: GeneratedQuestion[] = [];
+    let attempts = 0;
+    const maxAttempts = count * 3; // Allow for some retry attempts
+
+    while (questions.length < count && attempts < maxAttempts) {
       try {
         const completion = await openai.chat.completions.create({
           model: "gpt-3.5-turbo",
           messages: [
             {
               role: "system",
-              content: "You are a professional question generator for aptitude, technical, and psychometric tests."
+              content: `You are an expert question generator for ${category} tests, specifically focusing on ${topic}.`
             },
             {
               role: "user",
               content: prompt
             }
           ],
-          temperature: 0.7,
+          temperature: 0.8, // Slightly increase randomness for more variety
         });
 
         const response = completion.choices[0]?.message?.content;
         if (response) {
           try {
             const questionData = JSON.parse(response);
-            // Check if this question is unique
+
+            // Check for uniqueness using question text
             if (!usedQuestions.has(questionData.question)) {
               usedQuestions.add(questionData.question);
               questions.push(questionData);
-            } else {
-              // If duplicate, try one more time
-              i--;
+              console.log(`Generated unique question ${questions.length}/${count} for module ${moduleId}`);
             }
           } catch (error) {
             console.error('Failed to parse OpenAI response:', error);
-            // Use a fallback question if parsing fails
-            if (fallbackQuestions[category] && fallbackQuestions[category].length > 0) {
-              const fallbackQuestion = fallbackQuestions[category][i % fallbackQuestions[category].length];
-              if (!usedQuestions.has(fallbackQuestion.question)) {
-                usedQuestions.add(fallbackQuestion.question);
-                questions.push(fallbackQuestion);
-              }
-            }
           }
         }
       } catch (error) {
         console.error('OpenAI API error for single question:', error);
-        // Use a fallback question if API call fails
-        if (fallbackQuestions[category] && fallbackQuestions[category].length > 0) {
-          const fallbackQuestion = fallbackQuestions[category][i % fallbackQuestions[category].length];
-          if (!usedQuestions.has(fallbackQuestion.question)) {
-            usedQuestions.add(fallbackQuestion.question);
-            questions.push(fallbackQuestion);
-          }
-        }
+        await new Promise(resolve => setTimeout(resolve, 1000)); // Add delay between retries
       }
+      attempts++;
     }
 
-    // If no questions were generated, use fallback questions
     if (questions.length === 0) {
-      return fallbackQuestions[category] || [];
+      throw new Error(`Failed to generate questions for module ${moduleId}`);
     }
 
     return questions;
   } catch (error) {
-    console.error('OpenAI API error:', error);
-    // Return fallback questions if available, otherwise throw error
-    if (fallbackQuestions[category]) {
-      return fallbackQuestions[category];
-    }
+    console.error('Question generation error:', error);
     throw new Error('Failed to generate questions');
   }
 }
