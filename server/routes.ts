@@ -115,16 +115,36 @@ const aptitudeTopics = {
     { id: "Q12", title: "Data Interpretation", range: "4.01 - 4.02" }
   ],
   technical: [
-    { id: "T01", title: "Data Structures", range: "5.01 - 5.15" },
-    { id: "T02", title: "Algorithms", range: "5.16 - 5.30" },
-    { id: "T03", title: "Database Management", range: "5.31 - 5.45" },
-    { id: "T04", title: "Operating Systems", range: "5.46 - 5.60" },
-    { id: "T05", title: "Computer Networks", range: "5.61 - 5.75" },
-    { id: "T06", title: "Object-Oriented Programming", range: "5.76 - 5.90" },
-    { id: "T07", title: "Web Technologies", range: "5.91 - 6.05" },
-    { id: "T08", title: "Software Engineering", range: "6.06 - 6.20" },
-    { id: "T09", title: "Cloud Computing", range: "6.21 - 6.35" },
-    { id: "T10", title: "Cybersecurity", range: "6.36 - 6.50" }
+    { 
+      id: "T01", 
+      title: "Data Structures & Algorithms",
+      range: "5.01 - 5.20",
+      description: "Solving problems using arrays, linked lists, trees, graphs, sorting, searching, and dynamic programming"
+    },
+    { 
+      id: "T02", 
+      title: "Competitive Programming",
+      range: "5.21 - 5.40",
+      description: "Leetcode, Codeforces, HackerRank-style coding challenges"
+    },
+    { 
+      id: "T03", 
+      title: "System Design",
+      range: "5.41 - 5.60",
+      description: "Designing scalable and efficient systems, architecture patterns, and best practices"
+    },
+    { 
+      id: "T04", 
+      title: "Object-Oriented Programming",
+      range: "5.61 - 5.80",
+      description: "Concepts including inheritance, polymorphism, encapsulation, and abstraction"
+    },
+    { 
+      id: "T05", 
+      title: "Code Debugging Challenge",
+      range: "5.81 - 5.99",
+      description: "Debug and fix code issues in your preferred programming language"
+    }
   ],
   psychometric: [
     { id: "P01", title: "Personality Assessment", range: "7.01 - 7.15" },
