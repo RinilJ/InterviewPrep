@@ -1,187 +1,24 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
-import { setupAuth } from "./auth";
 import { storage } from "./storage";
-import { insertTestSchema, insertTestResultSchema } from "@shared/schema";
-import { getUniqueQuestionsForUser, questionBank, validateQuestionBank } from "./questionBank";
 
 export function registerRoutes(app: Express): Server {
-  // Validate question bank during startup - lightweight check
-  console.time('startup-validation');
-  console.log('Starting question bank validation...');
+  console.log('[Routes] Starting route registration...');
 
-  if (!validateQuestionBank()) {
-    console.error('Question bank validation failed');
-    process.exit(1);
-  }
-
-  console.log('Question bank validation successful');
-  console.timeEnd('startup-validation');
-
-  setupAuth(app);
-
-  // Get aptitude topics
-  app.get("/api/aptitude-topics", (req, res) => {
-    if (!req.isAuthenticated()) return res.sendStatus(401);
-
-    try {
-      const topics = {
-        verbal: Object.entries(questionBank.verbal).map(([id, topicData]) => ({
-          id,
-          title: topicData.title,
-          range: "Dynamic questions"
-        })),
-        nonVerbal: Object.entries(questionBank.nonVerbal || {}).map(([id, topicData]) => ({
-          id,
-          title: topicData.title,
-          range: "Dynamic questions"
-        })),
-        mathematical: Object.entries(questionBank.mathematical || {}).map(([id, topicData]) => ({
-          id,
-          title: topicData.title,
-          range: "Dynamic questions"
-        }))
-      };
-
-      res.json(topics);
-    } catch (error) {
-      console.error('Error processing question bank:', error);
-      res.status(500).send('Failed to load topics');
-    }
+  // Simple health check endpoint
+  app.get("/api/health", (req, res) => {
+    res.json({ status: "ok" });
   });
 
-  // Generate test with unique questions
-  app.get("/api/generate-test", async (req, res) => {
-    if (!req.isAuthenticated()) return res.sendStatus(401);
-
-    const topicId = req.query.topicId as string;
-    if (!topicId) return res.status(400).send("Topic ID is required");
-
-    try {
-      // Determine category from topic ID
-      let category: string;
-      if (topicId.startsWith('L')) {
-        category = 'verbal';
-      } else if (topicId.startsWith('N')) {
-        category = 'nonVerbal';
-      } else if (topicId.startsWith('Q')) {
-        category = 'mathematical';
-      } else {
-        return res.status(400).send("Invalid topic ID");
-      }
-
-      console.time('generateTest');
-      console.log(`Generating test for user ${req.user.id}, topic ${topicId}`);
-
-      // Get unique questions for this user and topic
-      const questions = await getUniqueQuestionsForUser(req.user.id, topicId);
-      console.log(`Generated ${questions.length} questions`);
-
-      console.timeEnd('generateTest');
-
-      if (!questions || questions.length === 0) {
-        return res.status(404).send("No questions available for this topic");
-      }
-
-      res.json({
-        topicId,
-        title: questionBank[category][topicId].title,
-        questions: questions
-      });
-    } catch (error) {
-      console.error('Error generating test:', error);
-      res.status(500).send("Failed to generate test questions");
-    }
+  // Minimal test endpoint
+  app.get("/api/test", (req, res) => {
+    res.json({ message: "Server is running" });
   });
 
-  // Remaining routes...
-  app.get("/api/tests", async (req, res) => {
-    if (!req.isAuthenticated()) return res.sendStatus(401);
-    const tests = await storage.getTests();
-    res.json(tests);
-  });
-
-  app.post("/api/tests", async (req, res) => {
-    if (!req.isAuthenticated() || req.user.role !== "teacher") {
-      return res.sendStatus(401);
-    }
-
-    const parsed = insertTestSchema.parse(req.body);
-    const test = await storage.createTest({ ...parsed, createdBy: req.user.id });
-    res.status(201).json(test);
-  });
-
-  app.get("/api/test-results", async (req, res) => {
-    if (!req.isAuthenticated()) return res.sendStatus(401);
-    const results = await storage.getTestResults(req.user.id);
-    res.json(results);
-  });
-
-  app.post("/api/test-results", async (req, res) => {
-    if (!req.isAuthenticated()) return res.sendStatus(401);
-
-    const parsed = insertTestResultSchema.parse(req.body);
-    const result = await storage.createTestResult({
-      ...parsed,
-      userId: req.user.id,
-      completedAt: new Date()
-    });
-    res.status(201).json(result);
-  });
-
-  app.post("/api/logout", (req, res, next) => {
-    req.logout((err) => {
-      if (err) return next(err);
-      res.sendStatus(200);
-    });
-  });
-
-  //Teacher-specific routes
-  app.get("/api/teacher/stats", async (req, res) => {
-    if (!req.isAuthenticated() || req.user.role !== "teacher") {
-      return res.sendStatus(401);
-    }
-
-    // Filter students based on teacher's department
-    const filteredStudents = studentProgress.filter(student =>
-      student.department === req.user.department
-    );
-
-    res.json(teacherStats(filteredStudents));
-  });
-
-  app.get("/api/teacher/students", async (req, res) => {
-    if (!req.isAuthenticated() || req.user.role !== "teacher") {
-      return res.sendStatus(401);
-    }
-
-    // Filter students based on teacher's department
-    const filteredStudents = studentProgress.filter(student =>
-      student.department === req.user.department
-    );
-
-    res.json(filteredStudents);
-  });
-
-
-  app.post("/api/forgot-password", async (req, res) => {
-    const { email } = req.body;
-    const user = await storage.getUserByEmail(email);
-
-    if (!user) {
-      return res.status(404).send("No account found with this email");
-    }
-
-    // In a real application, you would:
-    // 1. Generate a password reset token
-    // 2. Save it to the database with an expiration
-    // 3. Send an email with a reset link
-    // For demo purposes, we'll just send a success response
-
-    res.status(200).send("Password reset instructions sent");
-  });
-
+  console.log('[Routes] Core routes registered');
   const httpServer = createServer(app);
+  console.log('[Routes] HTTP server created');
+
   return httpServer;
 }
 
