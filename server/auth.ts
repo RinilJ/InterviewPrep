@@ -5,7 +5,6 @@ import session from "express-session";
 import { scrypt, randomBytes, timingSafeEqual } from "crypto";
 import { promisify } from "util";
 import { storage } from "./storage";
-import { insertUserSchema } from "@shared/schema";
 import { z } from "zod";
 
 const scryptAsync = promisify(scrypt);
@@ -28,7 +27,7 @@ export function setupAuth(app: Express) {
     secret: process.env.SESSION_SECRET || "development_secret",
     resave: false,
     saveUninitialized: false,
-    store: storage.sessionStore,
+    store: storage.sessionStore
   };
 
   app.use(session(sessionSettings));
@@ -46,10 +45,13 @@ export function setupAuth(app: Express) {
       } catch (error) {
         return done(error);
       }
-    }),
+    })
   );
 
-  passport.serializeUser((user, done) => done(null, user.id));
+  passport.serializeUser((user: any, done) => {
+    done(null, user.id);
+  });
+
   passport.deserializeUser(async (id: number, done) => {
     try {
       const user = await storage.getUser(id);
@@ -59,18 +61,12 @@ export function setupAuth(app: Express) {
     }
   });
 
-  // Registration schema with proper type handling
+  // Simplified registration schema
   const registerSchema = z.object({
     username: z.string().min(1, "Username is required"),
     password: z.string().min(6, "Password must be at least 6 characters"),
-    confirmPassword: z.string(),
     role: z.enum(["student", "teacher"]),
-    department: z.enum(["CS", "IT", "MCA"]).nullable(),
-    batch: z.string().nullable(),
-    year: z.string().nullable()
-  }).refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords don't match",
-    path: ["confirmPassword"],
+    department: z.enum(["CS", "IT", "MCA"]).nullable()
   });
 
   app.post("/api/register", async (req, res, next) => {
@@ -87,9 +83,7 @@ export function setupAuth(app: Express) {
         username: parsed.username,
         password: hashedPassword,
         role: parsed.role,
-        department: parsed.department || null,
-        batch: parsed.batch || null,
-        year: parsed.year || null
+        department: parsed.department
       });
 
       req.login(user, (err) => {
