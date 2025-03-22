@@ -189,10 +189,15 @@ async function startTest(topicId) {
         }
 
         const test = await response.json();
+        
+        if (!test.questions || test.questions.length === 0) {
+            throw new Error('No questions available for this topic');
+        }
 
         // Store the current test in session storage
         sessionStorage.setItem('currentTest', JSON.stringify({
             topicId,
+            title: test.title || 'Practice Test',
             questions: test.questions,
             currentQuestionIndex: 0,
             answers: [],
@@ -204,6 +209,9 @@ async function startTest(topicId) {
     } catch (error) {
         console.error('Error starting test:', error);
         alert('Failed to start test. Please try again.');
+        // Reset button state
+        button.disabled = false;
+        button.innerHTML = originalText;
     }
 }
 
