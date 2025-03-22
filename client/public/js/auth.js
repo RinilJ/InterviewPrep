@@ -34,8 +34,8 @@ registerForm.addEventListener('submit', async (e) => {
             alert(error || 'Registration failed');
         }
     } catch (error) {
-        alert('An error occurred during registration');
         console.error('Registration error:', error);
+        alert('An error occurred during registration');
     }
 });
 
@@ -65,8 +65,8 @@ loginForm.addEventListener('submit', async (e) => {
             alert(error || 'Login failed');
         }
     } catch (error) {
-        alert('An error occurred during login');
         console.error('Login error:', error);
+        alert('An error occurred during login');
     }
 });
 
@@ -116,19 +116,14 @@ document.getElementById('backToLoginLink').addEventListener('click', (e) => {
 // Tab switching
 document.querySelectorAll('.tab').forEach(tab => {
     tab.addEventListener('click', () => {
-        const targetForm = tab.dataset.tab;
-
         // Update active tab
         document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
         tab.classList.add('active');
 
         // Show/hide forms
+        const targetTab = tab.dataset.tab;
         document.querySelectorAll('.auth-form').forEach(form => {
-            if (form.id === `${targetForm}Form`) {
-                form.classList.remove('hidden');
-            } else {
-                form.classList.add('hidden');
-            }
+            form.classList.toggle('hidden', form.id !== `${targetTab}Form`);
         });
     });
 });

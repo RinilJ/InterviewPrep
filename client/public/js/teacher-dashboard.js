@@ -13,12 +13,15 @@ async function checkAuth() {
             return null;
         }
         const user = await response.json();
-        if (user.role !== 'teacher') {
+        console.log('User data:', user); // Debug log
+
+        if (!user || user.role !== 'teacher') {
             window.location.href = '/dashboard.html';
             return null;
         }
         return user;
     } catch (error) {
+        console.error('Auth error:', error);
         window.location.href = '/login.html';
         return null;
     }
@@ -30,8 +33,9 @@ async function initializeDashboard() {
     if (!user) return;
 
     // Update user info
-    document.getElementById('userName').textContent = 
-        `${user.username} (${user.department} - Batch ${user.batch}, Year ${user.year})`;
+    const userInfo = `${user.username} (${user.department || 'N/A'} - Batch ${user.batch || 'N/A'}, Year ${user.year || 'N/A'})`;
+    document.getElementById('userName').textContent = userInfo;
+    console.log('Setting user info:', userInfo); // Debug log
 
     // Fetch statistics
     const stats = await fetch('/api/teacher/stats').then(res => res.json());
@@ -41,24 +45,31 @@ async function initializeDashboard() {
 
     // Fetch and display student progress
     const students = await fetch('/api/teacher/students').then(res => res.json());
-    const studentsList = document.getElementById('studentsList');
-    studentsList.innerHTML = students.map(student => `
-        <div class="student-card">
-            <div class="student-info">
-                <h3><i class="fas fa-user-graduate"></i> ${student.username}</h3>
-                <p><i class="fas fa-clock"></i> Last Active: ${formatDate(student.lastActive)}</p>
-                <p><i class="fas fa-tasks"></i> Tests Completed: ${student.testsCompleted}</p>
-                <p><i class="fas fa-chart-line"></i> Average Score: ${student.averageScore}%</p>
-            </div>
-            <div class="student-actions">
-                <button class="btn-secondary" onclick="viewProgress(${student.id})">
-                    <i class="fas fa-chart-bar"></i> View Progress
-                </button>
-            </div>
-        </div>
-    `).join('');
+    console.log('Fetched students:', students); // Debug log
 
-    // Fetch and display discussion slots
+    const studentsList = document.getElementById('studentsList');
+    if (students.length === 0) {
+        studentsList.innerHTML = '<div class="student-card"><p>No students found for your batch and year.</p></div>';
+    } else {
+        studentsList.innerHTML = students.map(student => `
+            <div class="student-card">
+                <div class="student-info">
+                    <h3><i class="fas fa-user-graduate"></i> ${student.username}</h3>
+                    <p><i class="fas fa-graduation-cap"></i> ${student.department} - Batch ${student.batch}, Year ${student.year}</p>
+                    <p><i class="fas fa-clock"></i> Last Active: ${formatDate(student.lastActive)}</p>
+                    <p><i class="fas fa-tasks"></i> Tests Completed: ${student.testsCompleted}</p>
+                    <p><i class="fas fa-chart-line"></i> Average Score: ${student.averageScore}%</p>
+                </div>
+                <div class="student-actions">
+                    <button class="btn-secondary" onclick="viewProgress(${student.id})">
+                        <i class="fas fa-chart-bar"></i> View Progress
+                    </button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    // Load discussion slots
     await loadDiscussionSlots();
 }
 
@@ -85,7 +96,7 @@ async function loadDiscussionSlots(filter = 'all') {
             <div class="discussion-info">
                 <h3><i class="fas fa-comments"></i> ${slot.topic || 'Open Discussion'}</h3>
                 <p><i class="far fa-clock"></i> ${formatDate(slot.startTime)} - ${new Date(slot.endTime).toLocaleTimeString()}</p>
-                <p><i class="fas fa-users"></i> Participants: ${slot.maxParticipants}</p>
+                <p><i class="fas fa-users"></i> Maximum Participants: ${slot.maxParticipants}</p>
             </div>
             <div class="slot-actions">
                 <button class="btn-secondary" onclick="editSlot(${slot.id})">
@@ -160,11 +171,7 @@ document.querySelectorAll('.tab').forEach(tab => {
 
 // Discussion filters
 document.querySelectorAll('.btn-filter').forEach(button => {
-    button.addEventListener('click', () => {
-        document.querySelectorAll('.btn-filter').forEach(btn => btn.classList.remove('active'));
-        button.classList.add('active');
-        loadDiscussionSlots(button.dataset.filter);
-    });
+    button.addEventListener('click', () => filterDiscussionSlots(button.dataset.filter));
 });
 
 // Event listeners
