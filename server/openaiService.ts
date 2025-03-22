@@ -9,92 +9,116 @@ interface GeneratedQuestion {
   options: string[];
   correctAnswer: number;
   explanation?: string;
+  code?: string; // For technical questions with code snippets
 }
 
-// Fallback questions when OpenAI API fails
+// Fallback questions for each category
 const fallbackQuestions = {
   aptitude: [
     {
-      question: "What is the next number in the sequence: 2, 4, 8, 16, ...?",
-      options: ["24", "32", "28", "30"],
-      correctAnswer: 1,
-      explanation: "The sequence multiplies each number by 2"
+      question: "In a family, A is B's sister, B is C's mother, and D is C's daughter. What is A's relation to D?",
+      options: ["Aunt", "Mother", "Grandmother", "Sister"],
+      correctAnswer: 0,
+      explanation: "A is B's sister, B is C's mother, and D is C's daughter. Therefore, A is C's aunt, making A the aunt of D."
     },
     {
-      question: "If a train travels 300 km in 4 hours, what is its average speed?",
-      options: ["65 km/h", "75 km/h", "80 km/h", "85 km/h"],
-      correctAnswer: 1,
-      explanation: "Speed = Distance/Time = 300/4 = 75 km/h"
+      question: "A person walks 5 km towards north, then turns right and walks 3 km. Again turns right and walks 5 km. How far is he from the starting point?",
+      options: ["3 km", "5 km", "8 km", "13 km"],
+      correctAnswer: 0,
+      explanation: "After walking north and south the same distance (5km), only the eastward distance (3km) remains"
     }
   ],
   technical: [
     {
-      question: "What is the time complexity of QuickSort in the average case?",
-      options: ["O(n)", "O(n log n)", "O(n²)", "O(log n)"],
+      question: "What will be the output of this Python code?\n\ndef func(x=[]):\n    x.append(1)\n    return x\n\nprint(func())\nprint(func())",
+      options: [
+        "[1]\\n[1]", 
+        "[1]\\n[1, 1]", 
+        "[1, 1]\\n[1, 1, 1]", 
+        "Error"
+      ],
       correctAnswer: 1,
-      explanation: "QuickSort has an average time complexity of O(n log n)"
+      explanation: "In Python, default mutable arguments are created once when the function is defined. The same list is used in subsequent calls.",
+      code: `def func(x=[]):
+    x.append(1)
+    return x
+
+print(func())
+print(func())`
     },
     {
-      question: "Which principle states that a class should have only one reason to change?",
-      options: ["DRY", "KISS", "Single Responsibility", "Open/Closed"],
+      question: "What is the time complexity of this algorithm?\n\ndef mystery(n):\n    if n <= 1: return 1\n    return mystery(n-1) + mystery(n-1)",
+      options: ["O(n)", "O(n log n)", "O(2^n)", "O(n^2)"],
       correctAnswer: 2,
-      explanation: "The Single Responsibility Principle (SRP) states that a class should have only one reason to change"
+      explanation: "This is a recursive function making 2 calls for each n, creating a binary tree of height n, resulting in O(2^n).",
+      code: `def mystery(n):
+    if n <= 1: return 1
+    return mystery(n-1) + mystery(n-1)`
     }
   ],
   psychometric: [
     {
-      question: "How do you typically handle tight deadlines?",
+      question: "You notice a colleague taking credit for your work during a team meeting. How do you respond?",
       options: [
-        "Work overtime to complete everything",
-        "Prioritize tasks and communicate with stakeholders",
-        "Delegate all tasks to others",
-        "Ignore less important tasks"
+        "Immediately confront them in front of everyone",
+        "Discuss the matter privately with them after the meeting",
+        "Report them to your supervisor without talking to them",
+        "Say nothing and let it go"
       ],
       correctAnswer: 1,
-      explanation: "Effective deadline management involves prioritization and communication"
+      explanation: "Professional conflict resolution involves direct but private communication"
     },
     {
-      question: "When working in a team, what's your preferred role?",
+      question: "When facing a complex project with a tight deadline, what's your first step?",
       options: [
-        "Always the leader",
-        "Supportive team member",
-        "Independent contributor",
-        "Flexible based on team needs"
+        "Start working immediately without planning",
+        "Create a detailed project plan and timeline",
+        "Ask for an extension immediately",
+        "Delegate all tasks to team members"
       ],
-      correctAnswer: 3,
-      explanation: "Adaptability in team roles shows good collaboration skills"
+      correctAnswer: 1,
+      explanation: "Effective project management starts with proper planning and organization"
     }
   ]
 };
 
 const PROMPTS = {
-  aptitude: (topic: string) => `Generate an aptitude question for ${topic}. 
+  aptitude: (topic: string) => `Generate a unique aptitude question for ${topic}. 
+    Make sure the question tests analytical and logical thinking.
+    For topics like Blood Relations or Direction Sense, create complex scenarios.
+    For numerical topics, focus on application-based problems.
     The response should be in JSON format with the following structure:
     {
-      "question": "the question text",
+      "question": "clear and detailed question text",
       "options": ["option1", "option2", "option3", "option4"],
       "correctAnswer": 0-based index of correct option,
-      "explanation": "explanation of the answer"
+      "explanation": "detailed step-by-step explanation"
     }`,
 
-  technical: (topic: string) => `Generate a technical programming question for ${topic}.
-    For coding problems, include sample input/output.
+  technical: (topic: string) => `Generate a challenging technical programming question for ${topic}.
+    The question should involve actual code snippets and test understanding of programming concepts.
+    Focus on practical scenarios and debugging challenges.
+    For System Design questions, include architectural considerations.
+    For DSA questions, include time/space complexity analysis.
     The response should be in JSON format with the following structure:
     {
-      "question": "the question text with any necessary code snippets",
+      "question": "question text with embedded code snippet",
+      "code": "full code snippet if applicable",
       "options": ["option1", "option2", "option3", "option4"],
       "correctAnswer": 0-based index of correct option,
-      "explanation": "detailed explanation with solution approach"
+      "explanation": "detailed explanation including complexity analysis or design considerations"
     }`,
 
-  psychometric: (topic: string) => `Generate a psychometric test question for ${topic}.
-    The question should assess personality traits or behavioral tendencies.
+  psychometric: (topic: string) => `Generate a situational judgment question for ${topic}.
+    Create realistic workplace scenarios that test behavioral tendencies.
+    Focus on professional situations and decision-making skills.
+    Include scenarios testing leadership, teamwork, and problem-solving.
     The response should be in JSON format with the following structure:
     {
-      "question": "the scenario or question",
-      "options": ["option1", "option2", "option3", "option4"],
+      "question": "detailed scenario description",
+      "options": ["response1", "response2", "response3", "response4"],
       "correctAnswer": 0-based index of best option,
-      "explanation": "explanation of what this choice indicates"
+      "explanation": "detailed explanation of why this response is most appropriate"
     }`
 };
 
@@ -106,6 +130,7 @@ export async function generateQuestions(
   try {
     const prompt = PROMPTS[category](topic);
     const questions: GeneratedQuestion[] = [];
+    const usedQuestions = new Set<string>(); // Track used questions to prevent duplicates
 
     for (let i = 0; i < count; i++) {
       try {
@@ -128,12 +153,23 @@ export async function generateQuestions(
         if (response) {
           try {
             const questionData = JSON.parse(response);
-            questions.push(questionData);
+            // Check if this question is unique
+            if (!usedQuestions.has(questionData.question)) {
+              usedQuestions.add(questionData.question);
+              questions.push(questionData);
+            } else {
+              // If duplicate, try one more time
+              i--;
+            }
           } catch (error) {
             console.error('Failed to parse OpenAI response:', error);
             // Use a fallback question if parsing fails
             if (fallbackQuestions[category] && fallbackQuestions[category].length > 0) {
-              questions.push(fallbackQuestions[category][i % fallbackQuestions[category].length]);
+              const fallbackQuestion = fallbackQuestions[category][i % fallbackQuestions[category].length];
+              if (!usedQuestions.has(fallbackQuestion.question)) {
+                usedQuestions.add(fallbackQuestion.question);
+                questions.push(fallbackQuestion);
+              }
             }
           }
         }
@@ -141,7 +177,11 @@ export async function generateQuestions(
         console.error('OpenAI API error for single question:', error);
         // Use a fallback question if API call fails
         if (fallbackQuestions[category] && fallbackQuestions[category].length > 0) {
-          questions.push(fallbackQuestions[category][i % fallbackQuestions[category].length]);
+          const fallbackQuestion = fallbackQuestions[category][i % fallbackQuestions[category].length];
+          if (!usedQuestions.has(fallbackQuestion.question)) {
+            usedQuestions.add(fallbackQuestion.question);
+            questions.push(fallbackQuestion);
+          }
         }
       }
     }

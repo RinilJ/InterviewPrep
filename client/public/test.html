@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,9 +6,11 @@
     <title>Test - Interview Preparation Platform</title>
     <link rel="stylesheet" href="/css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
     <style>
         .test-container {
-            max-width: 800px;
+            max-width: 900px;
             margin: 0 auto;
             padding: 20px;
         }
@@ -19,6 +20,19 @@
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
             padding: 20px;
             margin-bottom: 20px;
+        }
+        .question-text {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            white-space: pre-wrap;
+        }
+        .code-block {
+            background-color: #f6f8fa;
+            border-radius: 6px;
+            padding: 16px;
+            margin: 16px 0;
+            overflow-x: auto;
         }
         .options-list {
             list-style: none;
@@ -31,6 +45,8 @@
             border-radius: 4px;
             cursor: pointer;
             transition: all 0.2s;
+            font-family: monospace;
+            white-space: pre-wrap;
         }
         .option-item:hover {
             background-color: #f5f5f5;
@@ -79,7 +95,8 @@
         </header>
 
         <div id="questionContainer" class="question-card">
-            <h2 id="questionText">Loading question...</h2>
+            <h2 id="questionText" class="question-text">Loading question...</h2>
+            <div id="codeBlock" class="code-block hidden"></div>
             <ul id="optionsList" class="options-list"></ul>
             <div id="psychometricNote" class="psychometric-note hidden">
                 Note: There are no right or wrong answers for psychometric questions.
@@ -108,7 +125,6 @@
             // Get test data from session storage
             const testData = sessionStorage.getItem('currentTest');
             if (!testData) {
-                // No test in progress, redirect to dashboard
                 window.location.href = '/dashboard.html';
                 return;
             }
@@ -121,7 +137,7 @@
             startTimer();
 
             // Set test title
-            document.getElementById('testTitle').textContent = `Topic: ${getTopicName(currentTest.topicId)}`;
+            document.getElementById('testTitle').textContent = `Topic: ${currentTest.title}`;
 
             // Load the first question
             loadQuestion(currentTest.currentQuestionIndex);
@@ -129,7 +145,7 @@
             // Set up button event handlers
             document.getElementById('prevBtn').addEventListener('click', previousQuestion);
             document.getElementById('nextBtn').addEventListener('click', nextQuestion);
-            
+
             // Show/hide previous button based on current question
             updateNavigationButtons();
         }
@@ -144,21 +160,6 @@
             }, 1000);
         }
 
-        // Get topic name based on ID (placeholder function)
-        function getTopicName(topicId) {
-            // This is a simplified mapping for demo
-            const topicMap = {
-                'L01': 'Direction Sense',
-                'L02': 'Blood Relations',
-                'N01': 'Logical Venn Diagrams',
-                'Q01': 'Percentages',
-                'Q02': 'Profit and Loss',
-                'T01': 'Data Structures',
-                'P01': 'Personality Assessment'
-            };
-            return topicMap[topicId] || 'Unknown Topic';
-        }
-
         // Load a question
         function loadQuestion(index) {
             if (!currentTest || !currentTest.questions || index >= currentTest.questions.length) {
@@ -167,54 +168,58 @@
 
             const question = currentTest.questions[index];
             document.getElementById('questionText').textContent = `${index + 1}. ${question.question}`;
-            
+
+            // Handle code block if present
+            const codeBlock = document.getElementById('codeBlock');
+            if (question.code) {
+                codeBlock.innerHTML = `<pre><code class="language-python">${question.code}</code></pre>`;
+                codeBlock.classList.remove('hidden');
+                hljs.highlightAll();
+            } else {
+                codeBlock.classList.add('hidden');
+            }
+
             // Update progress bar
             const progress = ((index + 1) / currentTest.questions.length) * 100;
             document.getElementById('progressFill').style.width = `${progress}%`;
-            
+
             // Populate options
             const optionsList = document.getElementById('optionsList');
             optionsList.innerHTML = '';
-            
+
             question.options.forEach((option, i) => {
                 const li = document.createElement('li');
                 li.className = 'option-item';
                 li.dataset.index = i.toString();
                 li.textContent = option;
-                
-                // Check if this option was previously selected
+
                 if (currentTest.answers[index] === i) {
                     li.classList.add('selected');
                 }
-                
+
                 li.addEventListener('click', () => selectOption(li, i));
                 optionsList.appendChild(li);
             });
-            
+
             // Show note for psychometric questions
             const isPsychometric = currentTest.topicId.startsWith('P');
             document.getElementById('psychometricNote').classList.toggle('hidden', !isPsychometric);
-            
+
             // Update current question index
             currentTest.currentQuestionIndex = index;
-            
+
             // Save current state
             saveTestState();
-            
+
             // Update navigation buttons
             updateNavigationButtons();
         }
 
         // Select an option
         function selectOption(optionElement, optionIndex) {
-            // Remove selected class from all options
             const options = document.querySelectorAll('.option-item');
             options.forEach(opt => opt.classList.remove('selected'));
-            
-            // Add selected class to chosen option
             optionElement.classList.add('selected');
-            
-            // Save the answer
             currentTest.answers[currentTest.currentQuestionIndex] = optionIndex;
             saveTestState();
         }
@@ -229,10 +234,8 @@
         // Go to next question
         function nextQuestion() {
             if (currentTest.currentQuestionIndex < currentTest.questions.length - 1) {
-                // Go to next question
                 loadQuestion(currentTest.currentQuestionIndex + 1);
             } else {
-                // This was the last question, submit the test
                 submitTest();
             }
         }
@@ -241,11 +244,9 @@
         function updateNavigationButtons() {
             const prevBtn = document.getElementById('prevBtn');
             const nextBtn = document.getElementById('nextBtn');
-            
-            // Hide previous button on first question
+
             prevBtn.disabled = currentTest.currentQuestionIndex === 0;
-            
-            // Change next button text on last question
+
             if (currentTest.currentQuestionIndex === currentTest.questions.length - 1) {
                 nextBtn.innerHTML = 'Submit <i class="fas fa-check"></i>';
             } else {
@@ -261,55 +262,45 @@
         // Submit the test
         async function submitTest() {
             clearInterval(timer);
-            
-            // Calculate score for non-psychometric tests
+
             let score = 0;
             let totalQuestions = currentTest.questions.length;
-            
+
             if (!currentTest.topicId.startsWith('P')) {
-                // For non-psychometric tests, calculate score
                 currentTest.questions.forEach((question, index) => {
                     if (currentTest.answers[index] === question.correctAnswer) {
                         score++;
                     }
                 });
             } else {
-                // For psychometric tests, there's no scoring
                 score = null;
             }
-            
-            // Calculate percentage if applicable
+
             const scorePercentage = score !== null ? Math.round((score / totalQuestions) * 100) : null;
-            
+
             try {
-                // Submit test result to server
                 const response = await fetch('/api/test-results', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        testId: 1, // Placeholder ID for demo
-                        score: scorePercentage || 0, // Use 0 for psychometric tests in this demo
+                        testId: 1,
+                        score: scorePercentage || 0,
                         answers: currentTest.answers
                     })
                 });
-                
+
                 if (response.ok) {
-                    // Test submitted successfully
                     alert(`Test completed! ${scorePercentage !== null ? `Your score: ${scorePercentage}%` : 'Your responses have been recorded.'}`);
-                    
-                    // Clear test data
                     sessionStorage.removeItem('currentTest');
-                    
-                    // Redirect to dashboard
                     window.location.href = '/dashboard.html';
                 } else {
                     throw new Error('Failed to submit test results');
                 }
             } catch (error) {
                 console.error('Error submitting test:', error);
-                alert('There was an error submitting your test. Your progress has been saved, and you can try submitting again.');
+                alert('There was an error submitting your test. Please try again.');
             }
         }
 
@@ -318,12 +309,12 @@
             try {
                 const response = await fetch('/api/user');
                 if (!response.ok) {
-                    window.location.href = '/index.html';
+                    window.location.href = '/login.html';
                     return false;
                 }
                 return true;
             } catch (error) {
-                window.location.href = '/index.html';
+                window.location.href = '/login.html';
                 return false;
             }
         }
