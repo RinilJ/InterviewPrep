@@ -29,6 +29,50 @@ export const questionBank = {
         correctAnswer: 1
       }
     ],
+    "L03": [ // Coding and Decoding
+      {
+        question: "If CHAIR is coded as FKDLU, how will BENCH be coded?",
+        options: ["EHQFK", "EHQFL", "EHQKF", "EHQFM"],
+        correctAnswer: 0
+      },
+      {
+        question: "In a certain code, COMPUTER is written as RGVWRQGS. How will PRINTER be written in that code?",
+        options: ["IVMRGVK", "RGORKTV", "RGVKFGT", "TVKRKTG"],
+        correctAnswer: 2
+      },
+      {
+        question: "If PAPER is coded as 74, how will PENCIL be coded?",
+        options: ["83", "85", "89", "91"],
+        correctAnswer: 1
+      },
+      {
+        question: "In a certain code, MONKEY is written as XDJMNL. How will TIGER be written in that code?",
+        options: ["SHFDQ", "QDFHS", "SFDHS", "UJHFS"],
+        correctAnswer: 3
+      }
+    ],
+    "L04": [ // Number Series
+      {
+        question: "Find the next number in the series: 2, 6, 12, 20, 30, ?",
+        options: ["42", "40", "44", "46"],
+        correctAnswer: 0
+      },
+      {
+        question: "What comes next in the series: 3, 8, 15, 24, 35, ?",
+        options: ["48", "46", "50", "52"],
+        correctAnswer: 0
+      },
+      {
+        question: "Complete the series: 5, 11, 23, 47, ?",
+        options: ["91", "95", "93", "97"],
+        correctAnswer: 1
+      },
+      {
+        question: "What is the next number: 7, 12, 19, 28, 39, ?",
+        options: ["52", "51", "50", "49"],
+        correctAnswer: 0
+      }
+    ],
     "L02": [ // Blood Relations
       {
         question: "If A is the brother of B; B is the sister of C; and C is the father of D, how D is related to A?",
@@ -109,6 +153,45 @@ export const questionBank = {
         ],
         correctAnswer: 1
       }
+    ],
+    "N02": [ // Dice and Cubes
+      {
+        question: "If a dice is numbered 1 to 6 and when 3 is on top, what number will be on the bottom?",
+        options: ["1", "2", "4", "6"],
+        correctAnswer: 3
+      },
+      {
+        question: "In a dice, if 1 is adjacent to 2, 3 and 4, which number must be opposite to 1?",
+        options: ["5", "6", "3", "4"],
+        correctAnswer: 1
+      },
+      {
+        question: "If in a dice sum of opposite faces is 7, and numbers 2, 3, and 4 are showing, what will be the sum of hidden faces?",
+        options: ["12", "15", "18", "21"],
+        correctAnswer: 0
+      }
+    ],
+    "N03": [ // Mirror and Water Images
+      {
+        question: "What will be the mirror image of 'AMBULANCE' written on an emergency vehicle?",
+        options: [
+          "ƎƆИA⅃UꙈMA",
+          "ꙄƆИA⅃UꟼMA",
+          "ƎƆИA⅃UꟼMA",
+          "ꙄƆИA⅃UꙈMA"
+        ],
+        correctAnswer: 2
+      },
+      {
+        question: "What will be the water image of letter 'E'?",
+        options: [
+          "Ǝ",
+          "Ɛ",
+          "E",
+          "ヨ"
+        ],
+        correctAnswer: 2
+      }
     ]
   },
   mathematical: {
@@ -139,6 +222,40 @@ export const questionBank = {
         correctAnswer: 1
       }
     ],
+    "Q03": [ // Simple and Compound Interest
+      {
+        question: "What is the simple interest on $5000 at 8% per annum for 2 years?",
+        options: ["$700", "$800", "$900", "$1000"],
+        correctAnswer: 1
+      },
+      {
+        question: "At what rate of compound interest per annum will a sum double in 8 years?",
+        options: ["8%", "9%", "10%", "12%"],
+        correctAnswer: 1
+      },
+      {
+        question: "The difference between simple and compound interest on a sum for 2 years at 10% per annum is $25. What is the sum?",
+        options: ["$2000", "$2500", "$3000", "$3500"],
+        correctAnswer: 1
+      }
+    ],
+    "Q04": [ // Ratios and Proportions
+      {
+        question: "If 3:5 = x:40, what is the value of x?",
+        options: ["24", "25", "26", "27"],
+        correctAnswer: 0
+      },
+      {
+        question: "In what ratio must a 20% solution of acid be mixed with a 50% solution of acid to get a 30% solution of acid?",
+        options: ["2:3", "3:2", "4:3", "3:4"],
+        correctAnswer: 1
+      },
+      {
+        question: "A sum of money is divided among A, B and C in the ratio 2:3:5. If C gets $50 more than A, what is the total sum?",
+        options: ["$150", "$200", "$250", "$300"],
+        correctAnswer: 1
+      }
+    ]
     "Q02": [ // Profit and Loss
       {
         question: "A shopkeeper bought an item for $800 and sold it for $1000. What is the profit percentage?",
