@@ -39,18 +39,35 @@ export class MemStorage implements IStorage {
   private currentId: number;
 
   constructor() {
-    this.users = new Map();
-    this.tests = new Map();
-    this.testResults = new Map();
-    this.discussionSlots = new Map();
-    this.slotBookings = new Map();
-    this.currentId = 1;
-    this.sessionStore = new MemoryStore({
-      checkPeriod: 86400000 // 24 hours
-    });
+    try {
+      console.log("Initializing MemStorage...");
+      this.users = new Map();
+      this.tests = new Map();
+      this.testResults = new Map();
+      this.discussionSlots = new Map();
+      this.slotBookings = new Map();
+      this.currentId = 1;
 
-    // Initialize an admin user for testing if needed
-    this.createInitialUser();
+      // Initialize session store with error handling
+      try {
+        this.sessionStore = new MemoryStore({
+          checkPeriod: 86400000 // 24 hours
+        });
+        console.log("Session store initialized successfully");
+      } catch (error) {
+        console.error("Failed to initialize session store:", error);
+        // Fallback to a new basic MemoryStore instance
+        this.sessionStore = new MemoryStore();
+        console.log("Using fallback session store");
+      }
+
+      // Initialize an admin user for testing if needed
+      this.createInitialUser();
+      console.log("MemStorage initialization complete");
+    } catch (error) {
+      console.error("Error during MemStorage initialization:", error);
+      throw new Error("Failed to initialize storage system");
+    }
   }
 
   private async createInitialUser() {

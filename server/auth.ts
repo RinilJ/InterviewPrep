@@ -168,6 +168,12 @@ export function setupAuth(app: Express) {
 
   } catch (error) {
     console.error("Error setting up auth:", error);
-    throw error;
+    // Log error but don't throw to prevent server crash
+    app.get("/api/auth-status", (_req, res) => {
+      res.status(503).json({ 
+        status: "error",
+        message: "Authentication system temporarily unavailable"
+      });
+    });
   }
 }
