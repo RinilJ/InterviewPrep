@@ -1,7 +1,7 @@
 // Question bank for aptitude tests
 export const questionBank = {
   verbal: {
-    "L01": [ // Direction Sense
+    "L01": [ // Direction Sense - 100 questions
       {
         question: "If you are facing north and turn 90 degrees clockwise, which direction will you face?",
         options: ["East", "West", "South", "North-East"],

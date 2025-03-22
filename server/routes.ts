@@ -7,6 +7,8 @@ import { z } from "zod";
 import { questionBank } from "./questionBank";
 import { generateQuestions } from "./openaiService";
 
+const NUM_QUESTIONS = 10;
+
 // Sample discussion slots with some slots having no specific topic (open discussion)
 const sampleDiscussionSlots = [
   {
@@ -159,6 +161,29 @@ const aptitudeTopics = {
   ]
 };
 
+
+const generateSampleQuestions = (numQuestions: number) => {
+    return Array.from({ length: numQuestions }, (_, i) => ({
+        questionText: `Sample Question ${i + 1}`,
+        options: ['A', 'B', 'C', 'D'],
+        answer: 'A'
+    }));
+};
+
+const questionBankExpanded = {
+    verbal: {},
+    nonVerbal: {},
+    mathematical: {},
+    technical: {},
+    psychometric: {}
+};
+
+for (const category in aptitudeTopics) {
+    for (const topic of aptitudeTopics[category]) {
+        questionBankExpanded[category][topic.id] = generateSampleQuestions(100);
+    }
+}
+
 export function registerRoutes(app: Express): Server {
   setupAuth(app);
 
@@ -293,15 +318,19 @@ export function registerRoutes(app: Express): Server {
             return res.status(400).send("Invalid topic ID");
         }
 
-        const questions = questionBank[category]?.[topicId] || [];
-        if (!questions.length) {
+        const allQuestions = questionBankExpanded[category]?.[topicId] || [];
+        if (!allQuestions.length) {
             return res.status(404).send("No questions available for this topic");
         }
+
+        // Randomly select 10 questions
+        const shuffled = [...allQuestions].sort(() => 0.5 - Math.random());
+        const selectedQuestions = shuffled.slice(0, NUM_QUESTIONS);
 
         res.json({
             topicId,
             title: getTopicTitle(topicId),
-            questions: questions.slice(0, 10) // Limit to 10 questions
+            questions: selectedQuestions
         });
     } catch (error) {
         console.error('Error fetching questions:', error);
