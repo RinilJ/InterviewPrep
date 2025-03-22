@@ -73,6 +73,110 @@ export const questionBank = {
         correctAnswer: 0
       }
     ],
+    "L05": [ // Letter Series
+      {
+        question: "Complete the series: A, C, F, J, ?",
+        options: ["N", "O", "P", "M"],
+        correctAnswer: 1
+      },
+      {
+        question: "What comes next: B, D, G, K, P, ?",
+        options: ["U", "V", "T", "W"],
+        correctAnswer: 2
+      },
+      {
+        question: "Find the next letter: Z, W, T, Q, ?",
+        options: ["N", "O", "M", "P"],
+        correctAnswer: 0
+      },
+      {
+        question: "Complete the pattern: AC, DF, GI, JL, ?",
+        options: ["MO", "MP", "NO", "NP"],
+        correctAnswer: 0
+      },
+      {
+        question: "What comes next: BCE, CFG, DGH, EHI, ?",
+        options: ["FIJ", "FJK", "FKL", "FJI"],
+        correctAnswer: 0
+      },
+      {
+        question: "Find the next term: AB, DE, HI, MN, ?",
+        options: ["RS", "ST", "QR", "TU"],
+        correctAnswer: 0
+      },
+      {
+        question: "Complete the series: BCD, FGH, JKL, NOP, ?",
+        options: ["RST", "QRS", "STU", "TUV"],
+        correctAnswer: 0
+      },
+      {
+        question: "What's next: YEB, WFD, UHF, SKI, ?",
+        options: ["QMK", "QNL", "RML", "QNM"],
+        correctAnswer: 1
+      },
+      {
+        question: "Find the next pattern: FAG, GAF, HAI, IAH, ?",
+        options: ["JAK", "JAI", "KAJ", "HAK"],
+        correctAnswer: 0
+      },
+      {
+        question: "Complete the series: ZA, YC, XF, WJ, ?",
+        options: ["VN", "VO", "UN", "VM"],
+        correctAnswer: 0
+      }
+    ],
+    "L06": [ // Clocks
+      {
+        question: "If the time is 3:15, what is the angle between the hour and minute hands?",
+        options: ["7.5°", "17.5°", "27.5°", "37.5°"],
+        correctAnswer: 2
+      },
+      {
+        question: "At what time between 4 and 5 o'clock will the hour and minute hands overlap?",
+        options: ["4:21", "4:22", "4:23", "4:24"],
+        correctAnswer: 1
+      },
+      {
+        question: "How many times do the hour and minute hands overlap in 24 hours?",
+        options: ["20", "21", "22", "24"],
+        correctAnswer: 2
+      },
+      {
+        question: "At 6:30, what is the angle between the hour and minute hands?",
+        options: ["15°", "25°", "35°", "45°"],
+        correctAnswer: 0
+      },
+      {
+        question: "How many degrees does the minute hand move in 24 minutes?",
+        options: ["144°", "124°", "134°", "154°"],
+        correctAnswer: 0
+      },
+      {
+        question: "If a clock shows 8:30, what will be the angle between the hands after 20 minutes?",
+        options: ["120°", "130°", "140°", "150°"],
+        correctAnswer: 2
+      },
+      {
+        question: "At what time between 7 and 8 will the hands of a clock be at right angles?",
+        options: ["7:15", "7:30", "7:45", "7:50"],
+        correctAnswer: 0
+      },
+      {
+        question: "How many degrees does the hour hand move in 2 hours?",
+        options: ["50°", "60°", "70°", "80°"],
+        correctAnswer: 1
+      },
+      {
+        question: "What time will it be after 40 minutes when the time is 4:00?",
+        options: ["4:40", "5:20", "4:50", "5:40"],
+        correctAnswer: 0
+      },
+      {
+        question: "At what time between 5 and 6 will the hands make an angle of 120°?",
+        options: ["5:10", "5:20", "5:30", "5:40"],
+        correctAnswer: 3
+      }
+    ],
     "L02": [ // Blood Relations
       {
         question: "If A is the brother of B; B is the sister of C; and C is the father of D, how D is related to A?",
