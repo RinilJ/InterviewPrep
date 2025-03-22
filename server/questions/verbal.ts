@@ -10,20 +10,86 @@ export async function getDirectionSenseQuestions(): Promise<Question[]> {
       explanation: "The North and South movements cancel out (3 km North and 3 km South). Only the 4 km East remains."
     },
     {
-      question: "Mary walks 2 km South, then 3 km East, then 2 km North. What is the shortest distance to her starting point?",
-      options: ["3 km", "4 km", "5 km", "7 km"],
-      correctAnswer: 0,
-      explanation: "The South and North movements cancel out. Only the 3 km East movement remains."
-    },
-    // Add more similar questions with different distances and directions...
-    {
       question: "From his house, Tom walks 6 km West, then 8 km North. What is the direct distance from his house?",
       options: ["10 km", "12 km", "14 km", "16 km"],
       correctAnswer: 0,
       explanation: "Using Pythagorean theorem: √(6² + 8²) = 10 km"
     },
-    // Continue adding more direction sense questions...
-    // Total ~100 questions
+    {
+      question: "Walking from point X, a person goes 5 km East, then 12 km North. How far is he from X?",
+      options: ["13 km", "15 km", "17 km", "11 km"],
+      correctAnswer: 0,
+      explanation: "Using Pythagorean theorem: √(5² + 12²) = 13 km"
+    },
+    {
+      question: "A man walks 2 km North, then 2 km East, then 2 km South, then 2 km West. Where is he now?",
+      options: ["At starting point", "2 km East", "2 km North", "2 km West"],
+      correctAnswer: 0,
+      explanation: "The East and West cancel out, and North and South cancel out, bringing him back to start"
+    },
+    {
+      question: "Starting from school, a student walks 8 km East, then 6 km North, then 8 km West. How far is the student from school?",
+      options: ["6 km North", "8 km East", "6 km South", "8 km West"],
+      correctAnswer: 0,
+      explanation: "The East and West movements cancel out (8 km each way), leaving only 6 km North"
+    },
+    {
+      question: "A person walks 10 km South, then 10 km East, and finally 5 km North. What is the shortest distance back to the starting point?",
+      options: ["11.18 km", "15 km", "25 km", "5 km"],
+      correctAnswer: 0,
+      explanation: "Using Pythagorean theorem with 5 km South and 10 km East: √(5² + 10²) ≈ 11.18 km"
+    },
+    {
+      question: "From point P, a person walks 7 km East to Q, then 24 km North to R. What is the direct distance from P to R?",
+      options: ["25 km", "31 km", "27 km", "29 km"],
+      correctAnswer: 0,
+      explanation: "Using Pythagorean theorem: √(7² + 24²) = 25 km"
+    },
+    {
+      question: "Starting from home, a boy walks 15 meters North, then 20 meters West, then 15 meters South. How far is he from home?",
+      options: ["20 meters West", "15 meters North", "25 meters", "30 meters"],
+      correctAnswer: 0,
+      explanation: "The North and South movements cancel out (15m each), leaving only 20m West"
+    },
+    {
+      question: "A person walks 4 km towards North, turns right and walks 3 km, turns right again and walks 4 km. How far is he from the starting point?",
+      options: ["3 km", "4 km", "5 km", "7 km"],
+      correctAnswer: 0,
+      explanation: "The North movements cancel out, leaving only 3 km East"
+    },
+    {
+      question: "From his office, John walks 5 km North, then 5 km East, then 5 km South. What is the shortest distance to his office?",
+      options: ["5 km", "10 km", "15 km", "7.07 km"],
+      correctAnswer: 0,
+      explanation: "The North and South movements cancel out, leaving only 5 km East"
+    },
+    {
+      question: "A cyclist rides 20 km East, then 15 km North, then 10 km West. What is his displacement from the starting point?",
+      options: ["18.03 km", "25 km", "15 km", "20 km"],
+      correctAnswer: 0,
+      explanation: "Using Pythagorean theorem with 10 km East and 15 km North: √(10² + 15²) ≈ 18.03 km"
+    },
+    {
+      question: "Walking from point A, a person goes 12 km South, then 5 km East, then 9 km North. What is the shortest path back to A?",
+      options: ["5.83 km", "26 km", "14 km", "9 km"],
+      correctAnswer: 0,
+      explanation: "Using Pythagorean theorem with 3 km South and 5 km East: √(3² + 5²) ≈ 5.83 km"
+    },
+    {
+      question: "A delivery person travels 8 km North, 6 km East, then 3 km South. What's the direct distance to the starting point?",
+      options: ["7.81 km", "17 km", "11 km", "9 km"],
+      correctAnswer: 0,
+      explanation: "Using Pythagorean theorem with 5 km North and 6 km East: √(5² + 6²) ≈ 7.81 km"
+    },
+    {
+      question: "Starting from college, a student walks 30 meters East, then 40 meters North, then 30 meters West. What's their distance from college?",
+      options: ["40 meters", "60 meters", "70 meters", "100 meters"],
+      correctAnswer: 0,
+      explanation: "The East and West movements cancel out (30m each), leaving 40m North"
+    },
+    // Add more questions here to reach approximately 100 questions.  This is incomplete.
+    // ... (Add more direction sense questions to reach approximately 100 questions)
+
   ];
 }
 
