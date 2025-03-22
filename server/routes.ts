@@ -37,14 +37,14 @@ const sampleDiscussionSlots = [
   }
 ];
 
-// Sample teacher statistics
-const teacherStats = {
-  totalStudents: 45,
+// Update the teacherStats to be dynamic based on filtered students
+const teacherStats = (filteredStudents) => ({
+  totalStudents: filteredStudents.length,
   activeSessions: 3,
-  totalSlots: sampleDiscussionSlots.length
-};
+  discussionSlots: sampleDiscussionSlots.length
+});
 
-// Update the studentProgress sample data to include batch and year
+// Sample student progress data
 const studentProgress = [
   {
     id: 1,
@@ -146,10 +146,17 @@ export function registerRoutes(app: Express): Server {
     if (!req.isAuthenticated() || req.user.role !== "teacher") {
       return res.sendStatus(401);
     }
-    res.json(teacherStats);
+
+    // Filter students based on teacher's batch and year
+    const filteredStudents = studentProgress.filter(student =>
+      student.batch === req.user.batch &&
+      student.year === req.user.year &&
+      student.department === req.user.department
+    );
+
+    res.json(teacherStats(filteredStudents));
   });
 
-  // Update the teacher stats route to filter students by batch and year
   app.get("/api/teacher/students", async (req, res) => {
     if (!req.isAuthenticated() || req.user.role !== "teacher") {
       return res.sendStatus(401);
