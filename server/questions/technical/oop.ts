@@ -789,679 +789,375 @@ class Circle:
 
     def circumference(self) -> float:
         return 2 * 3.14159 * self._radius`,
-      sampleInput: "circle = Circle(5)",
-      sampleOutput: "circle.area() ≈ 78.54"
+      sampleInput: "circle = Circle(5)\nprint(circle.area())",
+      sampleOutput: "78.53975"
     },
     {
-      question: "Implement a Shape hierarchy using abstract base classes in Python.",
+      question: "How would you implement a Bank Account hierarchy using abstract base classes?",
       options: [
         "Use ABC and abstract methods",
         "Use regular inheritance",
         "Use multiple inheritance",
-        "Use composition"
+        "Use class decorators"
       ],
       correctAnswer: 0,
-      explanation: "ABC provides proper abstraction in Python",
+      explanation: "ABC enforces interface implementation in Python",
       language: 'python',
       category: 'oop',
       difficulty: 'medium',
       code: `
 from abc import ABC, abstractmethod
-import math
 
-class Shape(ABC):
-    def __init__(self, color: str):
-        self._color = color
+class BankAccount(ABC):
+    def __init__(self, balance: float):
+        self._balance = balance
 
     @property
-    def color(self) -> str:
-        return self._color
+    def balance(self) -> float:
+        return self._balance
 
     @abstractmethod
-    def area(self) -> float:
+    def withdraw(self, amount: float) -> bool:
         pass
 
     @abstractmethod
-    def perimeter(self) -> float:
+    def deposit(self, amount: float) -> bool:
         pass
 
-class Circle(Shape):
-    def __init__(self, color: str, radius: float):
-        super().__init__(color)
-        self._radius = radius
+class CheckingAccount(BankAccount):
+    def __init__(self, balance: float, overdraft_limit: float):
+        super().__init__(balance)
+        self._overdraft_limit = overdraft_limit
 
-    def area(self) -> float:
-        return math.pi * self._radius ** 2
+    def withdraw(self, amount: float) -> bool:
+        if self._balance - amount >= -self._overdraft_limit:
+            self._balance -= amount
+            return True
+        return False
 
-    def perimeter(self) -> float:
-        return 2 * math.pi * self._radius
-
-class Rectangle(Shape):
-    def __init__(self, color: str, width: float, height: float):
-        super().__init__(color)
-        self._width = width
-        self._height = height
-
-    def area(self) -> float:
-        return self._width * self._height
-
-    def perimeter(self) -> float:
-        return 2 * (self._width + self._height)
-`,
+    def deposit(self, amount: float) -> bool:
+        self._balance += amount
+        return True`,
       sampleInput: `
-circle = Circle("red", 5)
-rectangle = Rectangle("blue", 4, 6)
-print(circle.area())
-print(rectangle.perimeter())`,
-      sampleOutput: `
-78.53981633974483
-20.0`
+account = CheckingAccount(100.0, 50.0)
+print(account.withdraw(120.0))
+print(account.balance)`,
+      sampleOutput: "True\n-20.0"
     },
     {
-      question: "How would you implement properties and descriptors in Python?",
+      question: "How would you implement a custom container class in Python?",
       options: [
-        "Use @property decorator and property class",
-        "Use public variables",
-        "Use private variables with getters/setters",
+        "Implement __len__, __getitem__, and __iter__",
+        "Inherit from list class",
+        "Use composition with a list",
+        "Use dictionary instead"
+      ],
+      correctAnswer: 0,
+      explanation: "Custom containers need special methods for proper integration",
+      language: 'python',
+      category: 'oop',
+      difficulty: 'medium',
+      code: `
+class CustomList:
+    def __init__(self, items=None):
+        self._items = items if items is not None else []
+
+    def __len__(self) -> int:
+        return len(self._items)
+
+    def __getitem__(self, index: int):
+        return self._items[index]
+
+    def __iter__(self):
+        return iter(self._items)
+
+    def append(self, item):
+        self._items.append(item)
+
+    def __str__(self) -> str:
+        return f"CustomList({self._items})"`,
+      sampleInput: `
+custom = CustomList([1, 2, 3])
+for item in custom:
+    print(item)
+print(len(custom))`,
+      sampleOutput: "1\n2\n3\n3"
+    },
+    {
+      question: "How would you implement a Singleton pattern in Python?",
+      options: [
+        "Use __new__ method and class variable",
+        "Use global variable",
+        "Use class decorator",
+        "Use module-level variable"
+      ],
+      correctAnswer: 0,
+      explanation: "Control instance creation with __new__ method",
+      language: 'python',
+      category: 'oop',
+      difficulty: 'hard',
+      code: `
+class Singleton:
+    _instance = None
+
+    def __new__(cls, *args, **kwargs):
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+        return cls._instance
+
+    def __init__(self, value: str):
+        # Initialize only once
+        if not hasattr(self, 'value'):
+            self.value = value`,
+      sampleInput: `
+s1 = Singleton("first")
+s2 = Singleton("second")
+print(s1.value, s2.value)
+print(s1 is s2)`,
+      sampleOutput: "first first\nTrue"
+    },
+    {
+      question: "How would you implement method chaining in Python?",
+      options: [
+        "Return self from methods",
+        "Use properties",
+        "Use static methods",
+        "Return new instance"
+      ],
+      correctAnswer: 0,
+      explanation: "Return self enables method chaining",
+      language: 'python',
+      category: 'oop',
+      difficulty: 'medium',
+      code: `
+class QueryBuilder:
+    def __init__(self):
+        self._select = "*"
+        self._from = ""
+        self._where = []
+
+    def select(self, columns: str) -> 'QueryBuilder':
+        self._select = columns
+        return self
+
+    def from_table(self, table: str) -> 'QueryBuilder':
+        self._from = table
+        return self
+
+    def where(self, condition: str) -> 'QueryBuilder':
+        self._where.append(condition)
+        return self
+
+    def build(self) -> str:
+        query = f"SELECT {self._select} FROM {self._from}"
+        if self._where:
+            query += " WHERE " + " AND ".join(self._where)
+        return query`,
+      sampleInput: `
+query = QueryBuilder()
+sql = query.select("name, age")\\
+           .from_table("users")\\
+           .where("age > 18")\\
+           .build()
+print(sql)`,
+      sampleOutput: "SELECT name, age FROM users WHERE age > 18"
+    },
+    {
+      question: "How would you implement a descriptor in Python?",
+      options: [
+        "Create class with __get__, __set__, __delete__",
+        "Use property decorator",
+        "Use class methods",
         "Use static methods"
       ],
       correctAnswer: 0,
-      explanation: "Property decorator provides clean syntax for computed attributes",
+      explanation: "Descriptors control attribute access",
+      language: 'python',
+      category: 'oop',
+      difficulty: 'hard',
+      code: `
+class ValidString:
+    def __init__(self, minlen: int = 1):
+        self.minlen = minlen
+        self.data = {}
+
+    def __get__(self, obj, objtype=None):
+        if obj is None:
+            return self
+        return self.data.get(id(obj))
+
+    def __set__(self, obj, value: str):
+        if not isinstance(value, str):
+            raise TypeError("Value must be a string")
+        if len(value) < self.minlen:
+            raise ValueError(
+                f"String must be at least {self.minlen} characters"
+            )
+        self.data[id(obj)] = value
+
+class User:
+    name = ValidString(minlen=2)
+    email = ValidString(minlen=5)`,
+      sampleInput: `
+user = User()
+user.name = "John"
+try:
+    user.name = "A"  # Too short
+except ValueError as e:
+    print(str(e))`,
+      sampleOutput: "String must be at least 2 characters"
+    },
+    {
+      question: "How would you implement multiple inheritance with super()?",
+      options: [
+        "Use super() with explicit parent class",
+        "Call parent methods directly",
+        "Use multiple super() calls",
+        "Skip parent initialization"
+      ],
+      correctAnswer: 0,
+      explanation: "super() handles method resolution order properly",
+      language: 'python',
+      category: 'oop',
+      difficulty: 'hard',
+      code: `
+class SaveMixin:
+    def save(self):
+        print(f"Saving {self.__class__.__name__}")
+        return self
+
+class ValidateMixin:
+    def validate(self):
+        print(f"Validating {self.__class__.__name__}")
+        return self
+
+class Model:
+    def __init__(self, name: str):
+        self.name = name
+
+class User(SaveMixin, ValidateMixin, Model):
+    def __init__(self, name: str, email: str):
+        super().__init__(name)
+        self.email = email
+
+    def save(self):
+        self.validate()
+        return super().save()`,
+      sampleInput: `
+user = User("John", "john@example.com")
+user.save()`,
+      sampleOutput: "Validating User\nSaving User"
+    },
+    {
+      question: "How would you implement a context manager?",
+      options: [
+        "Use __enter__ and __exit__ methods",
+        "Use with statement alone",
+        "Use try/finally blocks",
+        "Use decorator pattern"
+      ],
+      correctAnswer: 0,
+      explanation: "Context managers need __enter__ and __exit__",
+      language: 'python',
+      category: 'oop',
+      difficulty: 'medium',
+      code: `
+class FileManager:
+    def __init__(self, filename: str, mode: str = 'r'):
+        self.filename = filename
+        self.mode = mode
+        self.file = None
+
+    def __enter__(self):
+        self.file = open(self.filename, self.mode)
+        return self.file
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if self.file:
+            self.file.close()
+        return False  # Don't suppress exceptions`,
+      sampleInput: `
+with FileManager('test.txt', 'w') as f:
+    f.write('Hello, World!')`,
+      sampleOutput: "File is automatically closed after writing"
+    },
+    {
+      question: "How would you implement a property with validation?",
+      options: [
+        "Use @property decorator with setter",
+        "Use public variables",
+        "Use __getattr__",
+        "Use instance methods"
+      ],
+      correctAnswer: 0,
+      explanation: "Properties allow validation in setters",
       language: 'python',
       category: 'oop',
       difficulty: 'medium',
       code: `
 class Temperature:
-    def __init__(self, celsius=0):
+    def __init__(self, celsius: float = 0):
         self._celsius = celsius
 
     @property
-    def celsius(self):
+    def celsius(self) -> float:
         return self._celsius
 
     @celsius.setter
-    def celsius(self, value):
+    def celsius(self, value: float):
         if value < -273.15:
             raise ValueError("Temperature below absolute zero!")
         self._celsius = value
 
     @property
-    def fahrenheit(self):
-        return self._celsius * 9/5 + 32
-
-    @fahrenheit.setter
-    def fahrenheit(self, value):
-        self.celsius = (value - 32) * 5/9
-
-# Custom Descriptor Example
-class Positive:
-    def __init__(self):
-        self._name = None
-
-    def __set_name__(self, owner, name):
-        self._name = name
-
-    def __get__(self, instance, owner):
-        if instance is None:
-            return self
-        return instance.__dict__[self._name]
-
-    def __set__(self, instance, value):
-        if value <= 0:
-            raise ValueError(f"{self._name} must be positive!")
-        instance.__dict__[self._name] = value
-
-class Circle:
-    radius = Positive()  # Using descriptor
-
-    def __init__(self, radius):
-        self.radius = radius  # This will validate via descriptor`,
+    def fahrenheit(self) -> float:
+        return (self.celsius * 9/5) + 32`,
       sampleInput: `
 temp = Temperature(25)
-print(temp.fahrenheit)
-temp.celsius = 30
-print(temp.fahrenheit)
-
-circle = Circle(5)  # OK
+print(f"{temp.celsius}°C is {temp.fahrenheit}°F")
 try:
-    circle.radius = -1  # Raises ValueError
+    temp.celsius = -300
 except ValueError as e:
     print(str(e))`,
-      sampleOutput: `
-77.0
-86.0
-radius must be positive!`
+      sampleOutput: "25°C is 77°F\nTemperature below absolute zero!"
     },
     {
-      question: "How would you implement different method types in Python (class, static, instance)?",
+      question: "How would you implement a class factory?",
       options: [
-        "Use @classmethod, @staticmethod, and instance methods appropriately",
-        "Use only instance methods",
-        "Use only static methods",
-        "Use regular functions"
+        "Use classmethod as alternative constructor",
+        "Use static factory method",
+        "Use regular methods",
+        "Use inheritance only"
       ],
       correctAnswer: 0,
-      explanation: "Different method decorators serve different purposes in OOP",
+      explanation: "Class methods provide alternative constructors",
       language: 'python',
       category: 'oop',
       difficulty: 'medium',
       code: `
-class DateParser:
-    def __init__(self, date_str):
-        self.date_str = date_str
-
-    @staticmethod
-    def is_valid_format(date_str):
-        """Static method to validate date format"""
-        try:
-            datetime.strptime(date_str, "%Y-%m-%d")
-            return True
-        except ValueError:
-            return False
+class Date:
+    def __init__(self, year: int, month: int, day: int):
+        self.year = year
+        self.month = month
+        self.day = day
 
     @classmethod
-    def from_timestamp(cls, timestamp):
-        """Class method as alternative constructor"""
-        date_str = datetime.fromtimestamp(timestamp).strftime("%Y-%m-%d")
-        return cls(date_str)
-
-    def parse(self):
-        """Instance method to parse the date"""
-        if not self.is_valid_format(self.date_str):
-            raise ValueError("Invalid date format")
-        return datetime.strptime(self.date_str, "%Y-%m-%d")`,
-      sampleInput: `
-# Static method
-print(DateParser.is_valid_format("2024-03-23"))
-
-# Class method
-parser = DateParser.from_timestamp(1711152000)
-print(parser.date_str)
-
-# Instance method
-parser = DateParser("2024-03-23")
-print(parser.parse())`,
-      sampleOutput: `
-True
-2024-03-23
-2024-03-23 00:00:00`
-    },
-    {
-      question: "How would you implement multiple inheritance and handle method resolution order (MRO)?",
-      options: [
-        "Use super() and understand MRO for proper method resolution",
-        "Call parent methods directly",
-        "Avoid multiple inheritance",
-        "Use mixins only"
-      ],
-      correctAnswer: 0,
-      explanation: "Understanding MRO is crucial for multiple inheritance in Python",
-      language: 'python',
-      category: 'oop',
-      difficulty: 'hard',
-      code: `
-class Loggable:
-    def log(self, message):
-        print(f"Log: {message}")
-
-    def save(self):
-        self.log("Saving in Loggable")
-        return "Loggable Save"
-
-class Serializable:
-    def serialize(self):
-        return "Serialized data"
-
-    def save(self):
-        print("Saving in Serializable")
-        return "Serializable Save"
-
-class Configuration(Loggable, Serializable):
-    def __init__(self, config_data):
-        self.config_data = config_data
-
-    def save(self):
-        self.log("Starting save operation")
-        super().save()  # Calls Loggable.save() due to MRO
-        return self.serialize()
-
-# Helper function to demonstrate MRO
-def show_mro(cls):
-    print(f"MRO for {cls.__name__}:")
-    for c in cls.__mro__:
-        print(f"  {c.__name__}")`,
-      sampleInput: `
-config = Configuration({"key": "value"})
-show_mro(Configuration)
-print(config.save())`,
-      sampleOutput: `
-MRO for Configuration:
-  Configuration
-  Loggable
-  Serializable
-  object
-Log: Starting save operation
-Log: Saving in Loggable
-Serialized data`
-    },
-    {
-      question: "How would you implement a context manager in Python?",
-      options: [
-        "Use __enter__ and __exit__ methods or @contextmanager decorator",
-        "Use try-finally blocks",
-        "Use with statement without context manager",
-        "Use regular methods"
-      ],
-      correctAnswer: 0,
-      explanation: "Context managers provide clean resource management",
-      language: 'python',
-      category: 'oop',
-      difficulty: 'medium',
-      code: `
-class DatabaseConnection:
-    def __init__(self, connection_string):
-        self.connection_string = connection_string
-        self.connection = None
-
-    def __enter__(self):
-        print(f"Connecting to {self.connection_string}")
-        self.connection = "DB Connection"
-        return self.connection
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        print("Closing connection")
-        if self.connection:
-            self.connection = None
-        if exc_type:
-            print(f"Error occurred: {exc_val}")
-            return False  # Propagate exception
-        return True
-
-# Alternative using contextmanager decorator
-from contextlib import contextmanager
-
-@contextmanager
-def file_manager(filename, mode='r'):
-    try:
-        f = open(filename, mode)
-        yield f
-    finally:
-        f.close()`,
-      sampleInput: `
-# Using class-based context manager
-with DatabaseConnection("mysql://localhost") as conn:
-    print(f"Using connection: {conn}")
-
-# Using decorator-based context manager
-with file_manager("example.txt", "w") as f:
-    f.write("Hello, World!")`,
-      sampleOutput: `
-Connecting to mysql://localhost
-Using connection: DB Connection
-Closing connection`
-    },
-    {
-      question: "How would you implement a metaclass in Python?",
-      options: [
-        "Create a class inheriting from type with __new__ or __init__",
-        "Use regular inheritance",
-        "Use class decorators",
-        "Use static methods"
-      ],
-      correctAnswer: 0,
-      explanation: "Metaclasses allow customizing class creation",
-      language: 'python',
-      category: 'oop',
-      difficulty: 'hard',
-      code: `
-class SingletonMeta(type):
-    _instances = {}
-
-    def __call__(cls, *args, **kwargs):
-        if cls not in cls._instances:
-            cls._instances[cls] = super().__call__(*args, **kwargs)
-        return cls._instances[cls]
-
-class ValidatorMeta(type):
-    def __new__(mcs, name, bases, namespace):
-        # Add validation to all public methods
-        for key, value in namespace.items():
-            if not key.startswith('_') and callable(value):
-                namespace[key] = mcs.validate_args(value)
-        return super().__new__(mcs, name, bases, namespace)
-
-    @staticmethod
-    def validate_args(func):
-        def wrapper(*args, **kwargs):
-            for arg in args[1:]:  # Skip self
-                if not isinstance(arg, (int, float, str)):
-                    raise TypeError(f"Invalid argument type: {type(arg)}")
-            return func(*args, **kwargs)
-        return wrapper
-
-# Using metaclasses
-class Database(metaclass=SingletonMeta):
-    def __init__(self):
-        self.connected = False
-
-    def connect(self):
-        self.connected = True
-
-class Calculator(metaclass=ValidatorMeta):
-    def add(self, a, b):
-        return a + b`,
-      sampleInput: `
-# Testing Singleton
-db1 = Database()
-db2 = Database()
-print(db1 is db2)
-
-# Testing Validator
-calc = Calculator()
-try:
-    result = calc.add(1, [2])  # Should raise TypeError
-except TypeError as e:
-    print(str(e))`,
-      sampleOutput: `
-True
-Invalid argument type: <class 'list'>`
-    },
-    {
-      question: "How would you implement SOLID principles in Python?",
-      options: [
-        "Use interfaces, dependency injection, and proper class separation",
-        "Use a single class for all functionality",
-        "Use only static methods",
-        "Use global functions"
-      ],
-      correctAnswer: 0,
-      explanation: "SOLID principles help create maintainable and flexible code",
-      language: 'python',
-      category: 'oop',
-      difficulty: 'hard',
-      code: `
-from abc import ABC, abstractmethod
-from typing import Protocol
-
-# Single Responsibility Principle
-class Logger:
-    def log(self, message: str) -> None:
-        print(f"Log: {message}")
-
-# Open/Closed Principle
-class PaymentMethod(Protocol):
-    def process_payment(self, amount: float) -> bool:
-        ...
-
-# Liskov Substitution Principle
-class Shape(ABC):
-    @abstractmethod
-    def area(self) -> float:
-        pass
-
-# Interface Segregation Principle
-class Printable(Protocol):
-    def print_document(self) -> None:
-        ...
-
-class Scannable(Protocol):
-    def scan_document(self) -> None:
-        ...
-
-# Dependency Inversion Principle
-class PaymentProcessor:
-    def __init__(self, payment_method: PaymentMethod):
-        self.payment_method = payment_method
-
-    def process(self, amount: float) -> bool:
-        return self.payment_method.process_payment(amount)
-
-# Implementation examples
-class CreditCardPayment:
-    def process_payment(self, amount: float) -> bool:
-        print(f"Processing credit card payment: ${amount}")
-        return True
-
-class Circle(Shape):
-    def __init__(self, radius: float):
-        self.radius = radius
-
-    def area(self) -> float:
-        return 3.14 * self.radius ** 2`,
-      sampleInput: `
-# Using Dependency Injection
-payment_method = CreditCardPayment()
-processor = PaymentProcessor(payment_method)
-result = processor.process(100.0)
-
-# Using LSP
-circle = Circle(5)
-print(f"Circle area: {circle.area()}")`,
-      sampleOutput: `
-Processing credit card payment: $100.0
-True
-Circle area: 78.5`
-    },
-    {
-      question: "How would you implement a Factory pattern in Python?",
-      options: [
-        "Use class methods or separate factory classes",
-        "Use regular constructors",
-        "Use global functions",
-        "Use static methods"
-      ],
-      correctAnswer: 0,
-      explanation: "Factory pattern provides flexible object creation",
-      language: 'python',
-      category: 'oop',
-      difficulty: 'medium',
-      code: `
-from abc import ABC, abstractmethod
-from typing import Dict, Type
-
-class Document(ABC):
-    @abstractmethod
-    def create(self) -> None:
-        pass
-
-class PDFDocument(Document):
-    def create(self) -> None:
-        print("Creating PDF document")
-
-class WordDocument(Document):
-    def create(self) -> None:
-        print("Creating Word document")
-
-class DocumentFactory:
-    _creators: Dict[str, Type[Document]] = {
-        "pdf": PDFDocument,
-        "word": WordDocument
-    }
+    def from_string(cls, date_str: str) -> 'Date':
+        year, month, day = map(int, date_str.split('-'))
+        return cls(year, month, day)
 
     @classmethod
-    def register_format(cls, format_type: str, creator: Type[Document]) -> None:
-        cls._creators[format_type] = creator
+    def today(cls) -> 'Date':
+        import datetime
+        today = datetime.date.today()
+        returncls(today.year, today.month, today.day)
 
-    @classmethod
-    def create_document(cls, format_type: str) -> Document:
-        creator = cls._creators.get(format_type)
-        if not creator:
-            raise ValueError(f"Invalid document format: {format_type}")
-        return creator()
-
-# Alternative using class methods
-class Document2(ABC):
-    @classmethod
-    @abstractmethod
-    def create(cls, content: str) -> 'Document2':
-        pass
-
-class JSONDocument(Document2):
-    def __init__(self, data: dict):
-        self.data = data
-
-    @classmethod
-    def create(cls, content: str) -> 'JSONDocument':
-        return cls(json.loads(content))`,
+    def __str__(self) -> str:
+        return f"{self.year}-{self.month:02d}-{self.day:02d}"`,
       sampleInput: `
-# Using factory class
-pdf_doc = DocumentFactory.create_document("pdf")
-pdf_doc.create()
-
-word_doc = DocumentFactory.create_document("word")
-word_doc.create()`,
-      sampleOutput: `
-Creating PDF document
-Creating Word document`
-    },
-    {
-      question: "How would you implement custom exception handling in Python?",
-      options: [
-        "Create custom exception classes and use context managers",
-        "Use only built-in exceptions",
-        "Use assert statements",
-        "Use if-else statements"
-      ],
-      correctAnswer: 0,
-      explanation: "Custom exceptions provide better error handling and debugging",
-      language: 'python',
-      category: 'oop',
-      difficulty: 'medium',
-      code: `
-class DatabaseError(Exception):
-    """Base exception for database errors"""
-    pass
-
-class ConnectionError(DatabaseError):
-    """Raised when database connection fails"""
-    def __init__(self, host: str, port: int):
-        self.host = host
-        self.port = port
-        super().__init__(f"Failed to connect to {host}:{port}")
-
-class QueryError(DatabaseError):
-    """Raised when query execution fails"""
-    def __init__(self, query: str, message: str):
-        self.query = query
-        self.message = message
-        super().__init__(f"Query failed: {message}\nQuery: {query}")
-
-class Database:
-    def __init__(self, host: str, port: int):
-        self.host = host
-        self.port = port
-        self.connected = False
-
-    def connect(self):
-        if not self.test_connection():
-            raise ConnectionError(self.host, self.port)
-        self.connected = True
-
-    def execute(self, query: str):
-        if not self.connected:
-            raise DatabaseError("Not connected")
-        if not self.validate_query(query):
-            raise QueryError(query, "Invalid SQL syntax")
-        return "Query results"
-
-    def test_connection(self):
-        return self.host == "localhost"
-
-    def validate_query(self, query: str):
-        return "SELECT" in query.upper()`,
-      sampleInput: `
-db = Database("remote", 5432)
-try:
-    db.connect()
-except ConnectionError as e:
-    print(f"Connection failed: {e}")
-
-db = Database("localhost", 5432)
-db.connect()
-try:
-    db.execute("INVALID SQL")
-except QueryError as e:
-    print(f"Query failed: {e}")`,
-      sampleOutput: `
-Connection failed: Failed to connect to remote:5432
-Query failed: Query failed: Invalid SQL syntax
-Query: INVALID SQL`
-    },
-    {
-      question: "How would you implement object pooling in Python?",
-      options: [
-        "Use a class to manage object creation and reuse",
-        "Create new objects each time",
-        "Use global variables",
-        "Use static methods"
-      ],
-      correctAnswer: 0,
-      explanation: "Object pooling improves performance by reusing objects",
-      language: 'python',
-      category: 'oop',
-      difficulty: 'hard',
-      code: `
-from typing import List, Optional
-import threading
-
-class Resource:
-    def __init__(self, id: int):
-        self.id = id
-        self.is_busy = False
-
-    def use(self):
-        print(f"Using resource {self.id}")
-
-class ObjectPool:
-    def __init__(self, size: int):
-        self.size = size
-        self.resources: List[Resource] = []
-        self.lock = threading.Lock()
-        self._create_pool()
-
-    def _create_pool(self):
-        for i in range(self.size):
-            self.resources.append(Resource(i))
-
-    def acquire(self) -> Optional[Resource]:
-        with self.lock:
-            for resource in self.resources:
-                if not resource.is_busy:
-                    resource.is_busy = True
-                    return resource
-            return None
-
-    def release(self, resource: Resource):
-        with self.lock:
-            if resource in self.resources:
-                resource.is_busy = False
-
-class DatabaseConnection:
-    def __init__(self, pool: ObjectPool):
-        self.pool = pool
-        self.resource = None
-
-    def __enter__(self):
-        self.resource = self.pool.acquire()
-        return self.resource
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        if self.resource:
-            self.pool.release(self.resource)`,
-      sampleInput: `
-pool = ObjectPool(2)
-with DatabaseConnection(pool) as conn1:
-    if conn1:
-        conn1.use()
-    with DatabaseConnection(pool) as conn2:
-        if conn2:
-            conn2.use()
-        with DatabaseConnection(pool) as conn3:
-            print("Third connection:", conn3)`,
-      sampleOutput: `
-Using resource 0
-Using resource 1
-Third connection: None`
+date = Date.from_string("2024-03-23")
+print(date)`,
+      sampleOutput: "2024-03-23"
     }
   ];
 }
