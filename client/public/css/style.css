@@ -732,3 +732,58 @@ nav {
 .form-links a:hover {
     text-decoration: underline;
 }
+
+/* Add these styles for psychometric tests */
+.category-description {
+    color: var(--text-color);
+    opacity: 0.8;
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+    line-height: 1.4;
+}
+
+.test-categories {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    padding: 1rem 0;
+}
+
+.category-section {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.category-section .category-header {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--primary-color);
+}
+
+.category-header i {
+    font-size: 1.5rem;
+    color: var(--primary-color);
+    margin-right: 0.5rem;
+}
+
+.test-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.test-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .category-section {
+        padding: 1rem;
+    }
+
+    .category-description {
+        font-size: 0.85rem;
+    }
+}
