@@ -20,89 +20,57 @@ async function checkAuth() {
 }
 
 // Technical test selection handling
-let selectedCategory = null;
-let selectedLanguage = null;
-
 function initializeTechnicalTest() {
-    const categoryButtons = document.querySelectorAll('.category-btn');
-    const languageButtons = document.querySelectorAll('.language-btn');
-    const languageSection = document.querySelector('.language-selection');
-    const startTestBtn = document.getElementById('startTestBtn');
+    const testCards = document.querySelectorAll('.test-card');
 
-    // Category selection
-    categoryButtons.forEach(button => {
-        button.addEventListener('click', () => {
-            // Remove active state from all category buttons
-            categoryButtons.forEach(btn => btn.classList.remove('active'));
-            // Add active state to clicked button
-            button.classList.add('active');
-            selectedCategory = button.dataset.category;
-            // Show language selection
-            languageSection.classList.remove('hidden');
-            // Hide start button until language is selected
-            startTestBtn.classList.add('hidden');
+    testCards.forEach(card => {
+        const languageButtons = card.querySelectorAll('.language-btn');
+        const category = card.dataset.category;
+
+        languageButtons.forEach(button => {
+            button.addEventListener('click', async () => {
+                const language = button.dataset.language;
+                const originalText = button.innerHTML;
+
+                try {
+                    button.disabled = true;
+                    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+
+                    const response = await fetch(`/api/technical-test/generate`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            category,
+                            language,
+                        }),
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Failed to generate test');
+                    }
+
+                    const test = await response.json();
+                    sessionStorage.setItem('currentTest', JSON.stringify({
+                        ...test,
+                        category,
+                        language,
+                        currentQuestionIndex: 0,
+                        answers: [],
+                        startTime: new Date().toISOString(),
+                    }));
+
+                    window.location.href = '/test.html';
+                } catch (error) {
+                    console.error('Error starting test:', error);
+                    alert('Failed to start test. Please try again.');
+                    button.disabled = false;
+                    button.innerHTML = originalText;
+                }
+            });
         });
     });
-
-    // Language selection
-    languageButtons.forEach(button => {
-        button.addEventListener('click', () => {
-            // Remove active state from all language buttons
-            languageButtons.forEach(btn => btn.classList.remove('active'));
-            // Add active state to clicked button
-            button.classList.add('active');
-            selectedLanguage = button.dataset.language;
-            // Show start button
-            startTestBtn.classList.remove('hidden');
-        });
-    });
-
-    // Start test button
-    startTestBtn.addEventListener('click', startTechnicalTest);
-}
-
-// Start technical test
-async function startTechnicalTest() {
-    try {
-        const button = event.target;
-        const originalText = button.innerHTML;
-        button.disabled = true;
-        button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
-
-        const response = await fetch(`/api/technical-test/generate`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                category: selectedCategory,
-                language: selectedLanguage,
-            }),
-        });
-
-        if (!response.ok) {
-            throw new Error('Failed to generate test');
-        }
-
-        const test = await response.json();
-        sessionStorage.setItem('currentTest', JSON.stringify({
-            ...test,
-            category: selectedCategory,
-            language: selectedLanguage,
-            currentQuestionIndex: 0,
-            answers: [],
-            startTime: new Date().toISOString(),
-        }));
-
-        window.location.href = '/test.html';
-    } catch (error) {
-        console.error('Error starting test:', error);
-        alert('Failed to start test. Please try again.');
-        if (button) {
-            button.disabled = false;
-            button.innerHTML = originalText;
-        }
-    }
 }
 
 // Function to create test card

@@ -97,43 +97,77 @@
                         <i class="fas fa-laptop-code"></i>
                         <h2>Technical Assessment</h2>
                     </div>
-                    <div class="technical-test-section">
-                        <div class="test-category-selection">
-                            <h3>Select Test Category:</h3>
-                            <div class="category-buttons">
-                                <button class="category-btn" data-category="dsa">
-                                    <i class="fas fa-code"></i>
-                                    Data Structures & Algorithms
-                                </button>
-                                <button class="category-btn" data-category="oop">
-                                    <i class="fas fa-project-diagram"></i>
-                                    Object-Oriented Programming
-                                </button>
-                                <button class="category-btn" data-category="debugging">
-                                    <i class="fas fa-bug"></i>
-                                    Debugging Challenges
-                                </button>
+                    <div class="test-categories">
+                        <div class="category-section">
+                            <div class="category-header">
+                                <i class="fas fa-code"></i>
+                                <h2>Data Structures & Algorithms</h2>
+                            </div>
+                            <div class="test-grid">
+                                <div class="test-card" data-category="dsa">
+                                    <div class="test-info">
+                                        <h3>DSA Practice Test</h3>
+                                        <p>Solve coding challenges covering arrays, linked lists, trees, and algorithms</p>
+                                    </div>
+                                    <div class="language-selection">
+                                        <button class="btn-primary language-btn" data-language="java">
+                                            <i class="fab fa-java"></i> Java
+                                        </button>
+                                        <button class="btn-primary language-btn" data-language="python">
+                                            <i class="fab fa-python"></i> Python
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                        <div class="language-selection hidden">
-                            <h3>Select Programming Language:</h3>
-                            <div class="language-buttons">
-                                <button class="language-btn" data-language="java">
-                                    <i class="fab fa-java"></i>
-                                    Java
-                                </button>
-                                <button class="language-btn" data-language="python">
-                                    <i class="fab fa-python"></i>
-                                    Python
-                                </button>
+
+                        <div class="category-section">
+                            <div class="category-header">
+                                <i class="fas fa-project-diagram"></i>
+                                <h2>Object-Oriented Programming</h2>
+                            </div>
+                            <div class="test-grid">
+                                <div class="test-card" data-category="oop">
+                                    <div class="test-info">
+                                        <h3>OOP Practice Test</h3>
+                                        <p>Test your knowledge of classes, inheritance, polymorphism, and design patterns</p>
+                                    </div>
+                                    <div class="language-selection">
+                                        <button class="btn-primary language-btn" data-language="java">
+                                            <i class="fab fa-java"></i> Java
+                                        </button>
+                                        <button class="btn-primary language-btn" data-language="python">
+                                            <i class="fab fa-python"></i> Python
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                        <div id="startTestBtn" class="hidden">
-                            <button class="btn-primary">
-                                <i class="fas fa-play"></i> Start Test
-                            </button>
+
+                        <div class="category-section">
+                            <div class="category-header">
+                                <i class="fas fa-bug"></i>
+                                <h2>Debugging Challenges</h2>
+                            </div>
+                            <div class="test-grid">
+                                <div class="test-card" data-category="debugging">
+                                    <div class="test-info">
+                                        <h3>Debugging Practice Test</h3>
+                                        <p>Find and fix bugs in code snippets, improve code quality</p>
+                                    </div>
+                                    <div class="language-selection">
+                                        <button class="btn-primary language-btn" data-language="java">
+                                            <i class="fab fa-java"></i> Java
+                                        </button>
+                                        <button class="btn-primary language-btn" data-language="python">
+                                            <i class="fab fa-python"></i> Python
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
+
                 </div>
 
                 <div id="psychometricTab" class="tab-content hidden">
