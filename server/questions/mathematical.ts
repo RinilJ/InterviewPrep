@@ -158,7 +158,61 @@ export async function getInterestQuestions(): Promise<Question[]> {
       correctAnswer: 0,
       explanation: "Simple Interest = (Principal × Rate × Time)/100 = (1000 × 5 × 2)/100 = $100"
     },
-    // Add more interest questions...
+    {
+      question: "Find the compound interest on $5000 at 10% per annum for 2 years if interest is compounded annually.",
+      options: ["$1050", "$1000", "$1100", "$1025"],
+      correctAnswer: 0,
+      explanation: "CI = P(1 + r)^t - P = 5000(1 + 0.1)^2 - 5000 = 1050"
+    },
+    {
+      question: "What principal amount will earn $60 as simple interest in 2 years at 6% per annum?",
+      options: ["$500", "$600", "$400", "$550"],
+      correctAnswer: 0,
+      explanation: "Using SI formula: 60 = P × 6 × 2/100, so P = 500"
+    },
+    {
+      question: "In how many years will $800 double at 12.5% simple interest?",
+      options: ["8 years", "10 years", "6 years", "12 years"],
+      correctAnswer: 0,
+      explanation: "Using SI formula: 800 = 800 × 12.5 × t/100, so t = 8"
+    },
+    {
+      question: "What rate of interest will earn $120 on $400 in 2 years as simple interest?",
+      options: ["15%", "12%", "18%", "20%"],
+      correctAnswer: 0,
+      explanation: "Using SI formula: 120 = 400 × r × 2/100, so r = 15%"
+    },
+    {
+      question: "Calculate the compound interest on $2000 at 8% per annum for 2 years compounded semi-annually.",
+      options: ["$348.32", "$340.25", "$352.64", "$345.86"],
+      correctAnswer: 0,
+      explanation: "CI = P(1 + r/2)^4 - P = 2000(1 + 0.08/2)^4 - 2000 = 348.32"
+    },
+    {
+      question: "What sum will amount to $1331 in 2 years at 10% compound interest?",
+      options: ["$1100", "$1200", "$1000", "$1150"],
+      correctAnswer: 0,
+      explanation: "Using CI formula: 1331 = P(1 + 0.1)^2, so P = 1100"
+    },
+    {
+      question: "If simple interest on a sum for 3 years at 12% per annum is $360, what is the principal?",
+      options: ["$1000", "$1200", "$800", "$1500"],
+      correctAnswer: 0,
+      explanation: "Using SI formula: 360 = P × 12 × 3/100, so P = 1000"
+    },
+    {
+      question: "Find the difference between CI and SI on $5000 at 4% for 2 years.",
+      options: ["$4", "$8", "$6", "$10"],
+      correctAnswer: 0,
+      explanation: "CI = 5000(1.04)² - 5000, SI = 5000 × 0.04 × 2, Difference = 4"
+    },
+    {
+      question: "A sum becomes $6050 in 2 years at 10% compound interest. What is the sum?",
+      options: ["$5000", "$5500", "$4500", "$5250"],
+      correctAnswer: 0,
+      explanation: "Using CI formula: 6050 = P(1 + 0.1)^2, so P = 5000"
+    },
+    // Add 90 more interest questions with increasing complexity...
   ];
 }
 
@@ -170,7 +224,61 @@ export async function getTimeWorkQuestions(): Promise<Question[]> {
       correctAnswer: 0,
       explanation: "Using inverse proportion: (6 × 12)/4 = 18 days"
     },
-    // Add more time and work questions...
+    {
+      question: "If 8 workers can build a wall in 10 days, how many workers are needed to build it in 5 days?",
+      options: ["16", "12", "14", "18"],
+      correctAnswer: 0,
+      explanation: "Using inverse proportion: (8 × 10)/5 = 16 workers"
+    },
+    {
+      question: "A can do a work in 10 days and B in 15 days. In how many days can they do it together?",
+      options: ["6", "8", "5", "7"],
+      correctAnswer: 0,
+      explanation: "Days = (10 × 15)/(10 + 15) = 6 days"
+    },
+    {
+      question: "If 15 men can complete a work in 12 days working 8 hours a day, how many days will 20 men take working 6 hours a day?",
+      options: ["12", "10", "14", "16"],
+      correctAnswer: 0,
+      explanation: "Using M₁D₁H₁ = M₂D₂H₂: 15 × 12 × 8 = 20 × D × 6, so D = 12"
+    },
+    {
+      question: "A can do a piece of work in 6 days and B can do it in 12 days. In how many days can A and B together do 3/4 of the work?",
+      options: ["3", "4", "5", "6"],
+      correctAnswer: 0,
+      explanation: "Time for whole work = (6 × 12)/(6 + 12) = 4 days, for 3/4 work = 3 days"
+    },
+    {
+      question: "12 men complete a work in 9 days. How many more men are needed to complete the work in 6 days?",
+      options: ["6", "8", "4", "10"],
+      correctAnswer: 0,
+      explanation: "Using M₁D₁ = M₂D₂: 12 × 9 = M₂ × 6, M₂ = 18, Extra men = 6"
+    },
+    {
+      question: "A does 4/5 of work in 20 days. B can do 5/6 of the work in 15 days. In how many days can they together do the whole work?",
+      options: ["10", "12", "8", "15"],
+      correctAnswer: 0,
+      explanation: "A's 1 day work = 4/100, B's 1 day work = 1/18, Together = 10 days"
+    },
+    {
+      question: "If 20 men working 8 hours a day can finish a work in 15 days, in how many days will 15 men working 6 hours a day finish it?",
+      options: ["26", "24", "28", "22"],
+      correctAnswer: 0,
+      explanation: "Using M₁D₁H₁ = M₂D₂H₂: 20 × 15 × 8 = 15 × D × 6, so D = 26"
+    },
+    {
+      question: "A can do a piece of work in 20 days. He works at it for 5 days and then B finishes it in 9 days. In how many days can B alone do the whole work?",
+      options: ["12", "15", "18", "20"],
+      correctAnswer: 0,
+      explanation: "B's 1 day work = (3/4)/9 = 1/12, So B alone takes 12 days"
+    },
+    {
+      question: "Three men can complete a piece of work in 6 days. How many men are needed to complete 1/3 of the work in 2 days?",
+      options: ["4", "5", "3", "6"],
+      correctAnswer: 0,
+      explanation: "Using M₁D₁W₁ = M₂D₂W₂: 3 × 6 × 1 = M × 2 × 1/3, so M = 4"
+    },
+    // Add 90 more time and work questions with increasing complexity...
   ];
 }
 
@@ -253,7 +361,61 @@ export async function getAverageQuestions(): Promise<Question[]> {
       correctAnswer: 0,
       explanation: "First 5 multiples: 3,6,9,12,15; Average = (3+6+9+12+15)/5 = 9"
     },
-    // Add more average questions...
+    {
+      question: "Average of 10 numbers is 15. If each number is increased by 3, what is the new average?",
+      options: ["18", "15", "21", "12"],
+      correctAnswer: 0,
+      explanation: "When each number increases by 3, average increases by 3"
+    },
+    {
+      question: "The average weight of 8 people is 65 kg. If two more people weighing 72 kg each join, what is the new average?",
+      options: ["66", "67", "68", "69"],
+      correctAnswer: 0,
+      explanation: "New average = (8×65 + 2×72)/10 = 66"
+    },
+    {
+      question: "The average of 11 numbers is 60. If one number 40 is excluded, what is the new average?",
+      options: ["62", "58", "64", "61"],
+      correctAnswer: 0,
+      explanation: "New sum = (11×60 - 40), New average = (11×60 - 40)/10 = 62"
+    },
+    {
+      question: "Average age of a family of 6 members is 25 years. If grandmother aged 70 years joins, what is the new average?",
+      options: ["30", "28", "32", "35"],
+      correctAnswer: 0,
+      explanation: "New average = (6×25 + 70)/7 = 30"
+    },
+    {
+      question: "Average marks of 30 students is 75. If 5 students with average marks 65 leave, what is the new average?",
+      options: ["77", "73", "75", "79"],
+      correctAnswer: 0,
+      explanation: "New average = (30×75 - 5×65)/25 = 77"
+    },
+    {
+      question: "A batsman scores 87 runs in 18th match making his average 53. How many runs did he score in first 17 matches?",
+      options: ["814", "824", "804", "834"],
+      correctAnswer: 0,
+      explanation: "18×53 = 87 + previous runs, so previous runs = 814"
+    },
+    {
+      question: "Average salary of 60 workers is $5000. If 10 workers with average salary $4000 leave, what is the new average?",
+      options: ["$5200", "$5100", "$5300", "$5400"],
+      correctAnswer: 0,
+      explanation: "New average = (60×5000 - 10×4000)/50 = $5200"
+    },
+    {
+      question: "Average of 5 consecutive even numbers is 50. What is the largest number?",
+      options: ["54", "52", "56", "58"],
+      correctAnswer: 0,
+      explanation: "Numbers are 46,48,50,52,54; largest is 54"
+    },
+    {
+      question: "The average of three numbers is 36. If one number is 45, what is the average of other two numbers?",
+      options: ["31.5", "32.5", "30.5", "33.5"],
+      correctAnswer: 0,
+      explanation: "Sum of other two = (36×3 - 45), their average = (36×3 - 45)/2 = 31.5"
+    },
+    // Add 90 more average questions with increasing complexity...
   ];
 }
 
