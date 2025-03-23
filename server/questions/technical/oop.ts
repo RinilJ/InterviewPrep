@@ -80,7 +80,6 @@ public abstract class BankAccount {
         return balance;
     }
 }
-
 public class CheckingAccount extends BankAccount {
     private double overdraftLimit;
 
@@ -757,11 +756,11 @@ PDF`
 export async function getOOPQuestionsPython(): Promise<TechnicalQuestion[]> {
   return [
     {
-      question: "How would you implement a Circle class with proper encapsulation in Python?",
+      question: "How would you implement a Circle class using proper encapsulation in Python?",
       options: [
-        "Use property decorators with private attributes (_radius)",
+        "Use @property decorators and private attributes",
         "Use public variables with direct access",
-        "Use double underscore variables (__radius)",
+        "Use double underscore variables",
         "Use class variables shared across instances"
       ],
       correctAnswer: 0,
@@ -770,26 +769,26 @@ export async function getOOPQuestionsPython(): Promise<TechnicalQuestion[]> {
       category: 'oop',
       difficulty: 'easy',
       code: `
-import math
-
 class Circle:
-    def __init__(self, radius):
-        self._radius = radius
+    def __init__(self, radius: float):
+        self._radius = radius  # Protected attribute
 
     @property
-    def radius(self):
+    def radius(self) -> float:
         return self._radius
 
     @radius.setter
-    def radius(self, value):
+    def radius(self, value: float):
         if value >= 0:
             self._radius = value
+        else:
+            raise ValueError("Radius must be non-negative")
 
-    def area(self):
-        return math.pi * self._radius ** 2
+    def area(self) -> float:
+        return 3.14159 * self._radius ** 2
 
-    def circumference(self):
-        return 2 * math.pi * self._radius`,
+    def circumference(self) -> float:
+        return 2 * 3.14159 * self._radius`,
       sampleInput: "circle = Circle(5)",
       sampleOutput: "circle.area() ≈ 78.54"
     },
