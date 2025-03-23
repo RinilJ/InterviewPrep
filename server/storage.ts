@@ -66,8 +66,17 @@ export class MemStorage implements IStorage {
 
   async createUser(user: Omit<User, "id" | "createdAt">): Promise<User> {
     const id = this.currentId++;
-    const newUser = { ...user, id, createdAt: new Date() };
+    const newUser = { 
+      ...user, 
+      id, 
+      createdAt: new Date(),
+      department: user.department || "",
+      year: user.year || "",
+      batch: user.batch || "",
+      teacherId: user.teacherId || null
+    };
     this.users.set(id, newUser);
+    console.log('Created user:', newUser); // Debug log
     return newUser;
   }
 
@@ -75,25 +84,18 @@ export class MemStorage implements IStorage {
     console.log('Finding teacher for:', { department, year, batch }); // Debug log
 
     const teachers = Array.from(this.users.values());
-    console.log('All users:', teachers.map(u => ({ 
-      id: u.id, 
-      role: u.role, 
-      department: u.department, 
-      year: u.year, 
-      batch: u.batch 
-    }))); // Debug log
-
     const teacher = teachers.find(
       (user) => 
         user.role === 'teacher' &&
-        user.department === department &&
-        user.year === year &&
-        user.batch === batch
+        String(user.department) === String(department) &&
+        String(user.year) === String(year) &&
+        String(user.batch) === String(batch)
     );
 
     console.log('Found teacher:', teacher ? {
       id: teacher.id,
       username: teacher.username,
+      role: teacher.role,
       department: teacher.department,
       year: teacher.year,
       batch: teacher.batch
@@ -106,34 +108,31 @@ export class MemStorage implements IStorage {
     console.log('Getting students for teacher:', { teacherId, department, year, batch }); // Debug log
 
     const allUsers = Array.from(this.users.values());
-    console.log('All users:', allUsers.map(u => ({ 
-      id: u.id, 
-      role: u.role, 
-      teacherId: u.teacherId, 
-      department: u.department, 
-      year: u.year, 
-      batch: u.batch 
-    }))); // Debug log
-
     const students = allUsers.filter(
       (user) => 
         user.role === 'student' &&
-        user.teacherId === teacherId &&
-        user.department === department &&
-        user.year === year &&
-        user.batch === batch
+        String(user.teacherId) === String(teacherId) &&
+        String(user.department) === String(department) &&
+        String(user.year) === String(year) &&
+        String(user.batch) === String(batch)
     );
 
-    console.log('Found students:', students.map(s => ({
-      id: s.id,
-      username: s.username,
-      teacherId: s.teacherId,
-      department: s.department,
-      year: s.year,
-      batch: s.batch
-    }))); // Debug log
+    // Get test results for each student
+    const studentsWithProgress = await Promise.all(students.map(async (student) => {
+      const results = await this.getTestResults(student.id);
+      const averageScore = results.length > 0
+        ? Math.round(results.reduce((sum, result) => sum + result.score, 0) / results.length)
+        : 0;
 
-    return students;
+      return {
+        ...student,
+        testsCompleted: results.length,
+        averageScore
+      };
+    }));
+
+    console.log('Found students with progress:', studentsWithProgress); // Debug log
+    return studentsWithProgress;
   }
 
   async createTest(test: Omit<Test, "id">): Promise<Test> {
@@ -169,7 +168,7 @@ export class MemStorage implements IStorage {
 
   async getDiscussionSlots(department: string, year: string, batch: string): Promise<DiscussionSlot[]> {
     return Array.from(this.discussionSlots.values()).filter(
-      (slot) =>
+      (slot) => 
         slot.department === department &&
         slot.year === year &&
         slot.batch === batch
