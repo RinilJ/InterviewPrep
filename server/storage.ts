@@ -69,9 +69,9 @@ export class MemStorage implements IStorage {
       ...user, 
       id, 
       createdAt: new Date(),
-      department: String(user.department || "").trim(),
+      department: String(user.department || "").trim().toUpperCase(),
       year: String(user.year || "").trim(),
-      batch: String(user.batch || "").trim(),
+      batch: String(user.batch || "").trim().toUpperCase(),
       teacherId: user.teacherId !== undefined ? Number(user.teacherId) : null
     };
 
@@ -90,6 +90,7 @@ export class MemStorage implements IStorage {
   }
 
   async findTeacher(department: string, year: string, batch: string): Promise<User | undefined> {
+    // Normalize input
     const cleanDepartment = String(department).trim().toUpperCase();
     const cleanYear = String(year).trim();
     const cleanBatch = String(batch).trim().toUpperCase();
@@ -106,12 +107,13 @@ export class MemStorage implements IStorage {
       batch: u.batch
     })));
 
+    // Match teacher with exact matching credentials
     const teacher = teachers.find(
       (user) => 
         user.role === 'teacher' &&
-        String(user.department).trim().toUpperCase() === cleanDepartment &&
-        String(user.year).trim() === cleanYear &&
-        String(user.batch).trim().toUpperCase() === cleanBatch
+        user.department === cleanDepartment &&
+        user.year === cleanYear &&
+        user.batch === cleanBatch
     );
 
     console.log('Found teacher:', teacher ? {
@@ -127,6 +129,7 @@ export class MemStorage implements IStorage {
   }
 
   async getTeacherStudents(teacherId: number, department: string, year: string, batch: string): Promise<User[]> {
+    // Normalize input
     const cleanDepartment = String(department).trim().toUpperCase();
     const cleanYear = String(year).trim();
     const cleanBatch = String(batch).trim().toUpperCase();
@@ -148,10 +151,10 @@ export class MemStorage implements IStorage {
       (user) => {
         const isMatch = 
           user.role === 'student' &&
-          Number(user.teacherId) === Number(teacherId) &&
-          String(user.department).trim().toUpperCase() === cleanDepartment &&
-          String(user.year).trim() === cleanYear &&
-          String(user.batch).trim().toUpperCase() === cleanBatch;
+          user.teacherId === teacherId &&
+          user.department === cleanDepartment &&
+          user.year === cleanYear &&
+          user.batch === cleanBatch;
 
         console.log('Checking user:', {
           userId: user.id,
@@ -159,10 +162,10 @@ export class MemStorage implements IStorage {
           matchResult: isMatch,
           conditions: {
             roleMatch: user.role === 'student',
-            teacherIdMatch: Number(user.teacherId) === Number(teacherId),
-            departmentMatch: String(user.department).trim().toUpperCase() === cleanDepartment,
-            yearMatch: String(user.year).trim() === cleanYear,
-            batchMatch: String(user.batch).trim().toUpperCase() === cleanBatch
+            teacherIdMatch: user.teacherId === teacherId,
+            departmentMatch: user.department === cleanDepartment,
+            yearMatch: user.year === cleanYear,
+            batchMatch: user.batch === cleanBatch
           }
         });
 

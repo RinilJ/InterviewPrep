@@ -66,7 +66,7 @@ export function registerRoutes(app: Express): Server {
         }
       }
 
-      // Create the user with required fields
+      // Create the user with normalized data
       const user = await storage.createUser({
         ...userData,
         role,
