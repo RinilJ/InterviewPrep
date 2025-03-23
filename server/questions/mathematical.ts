@@ -265,7 +265,13 @@ export async function getRatioProportionQuestions(): Promise<Question[]> {
       correctAnswer: 0,
       explanation: "If 3 parts = 30, then 1 part = 10, so 2 parts (girls) = 20"
     },
-    // Add more ratio and proportion questions...
+    {
+      question: "In a mixture of milk and water in the ratio 5:2, if milk is 25 liters, how much water is there?",
+      options: ["10 liters", "12 liters", "8 liters", "15 liters"],
+      correctAnswer: 0,
+      explanation: "If 5 parts = 25 liters, then 1 part = 5 liters, so 2 parts = 10 liters"
+    },
+    // Add more ratio and proportion questions here...
   ];
 }
 
@@ -277,7 +283,13 @@ export async function getGeometryQuestions(): Promise<Question[]> {
       correctAnswer: 0,
       explanation: "Area of rectangle = length × width = 8 × 6 = 48 sq m"
     },
-    // Add more geometry questions...
+    {
+      question: "Find the circumference of a circle with radius 7 cm (use π = 3.14)",
+      options: ["43.96 cm", "44.96 cm", "42.96 cm", "45.96 cm"],
+      correctAnswer: 0,
+      explanation: "Circumference = 2πr = 2 × 3.14 × 7 = 43.96 cm"
+    },
+    // Add more geometry questions here...
   ];
 }
 
@@ -289,24 +301,25 @@ export async function getNumberQuestions(): Promise<Question[]> {
       correctAnswer: 0,
       explanation: "1056 ÷ 23 = 45.91..., so add 2 to make it 1058 (perfectly divisible by 23)"
     },
-    // Add more number system questions...
+    // Add more number system questions here...
   ];
 }
 
 export async function getDataInterpretationQuestions(): Promise<Question[]> {
   return [
     {
-      question: `Study the graph showing sales of a company:
-Jan: 100 units
-Feb: 150 units
-Mar: 200 units
-Apr: 175 units
+      question: `Study the graph showing sales data:
+Monthly Sales (in units):
+Jan: 100
+Feb: 150
+Mar: 200
+Apr: 175
 What was the percentage increase in sales from January to March?`,
       options: ["100%", "75%", "50%", "25%"],
       correctAnswer: 0,
       explanation: "Increase = 100 units, Percentage = (100/100) × 100 = 100%"
     },
-    // Add more data interpretation questions...
+    // Add more data interpretation questions here...
   ];
 }
 
@@ -318,7 +331,7 @@ export async function getPermutationCombinationQuestions(): Promise<Question[]> 
       correctAnswer: 0,
       explanation: "Number of permutations = 4! = 4 × 3 × 2 × 1 = 24"
     },
-    // Add more permutation and combination questions...
+    // Add more permutation and combination questions here...
   ];
 }
 
@@ -330,6 +343,12 @@ export async function getProbabilityQuestions(): Promise<Question[]> {
       correctAnswer: 0,
       explanation: "Probability = Number of favorable outcomes/Total outcomes = 3/5"
     },
-    // Add more probability questions...
+    {
+      question: "Two dice are rolled. What is the probability of getting a sum of 7?",
+      options: ["1/6", "1/8", "1/12", "1/36"],
+      correctAnswer: 0,
+      explanation: "There are 6 ways to get sum 7 out of 36 possible combinations, so probability = 6/36 = 1/6"
+    },
+    // Add more probability questions here...
   ];
 }

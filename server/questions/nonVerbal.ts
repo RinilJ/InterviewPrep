@@ -189,6 +189,7 @@ export async function getDiceCubeQuestions(): Promise<Question[]> {
   ];
 }
 
+// Figure Series Questions (N03)
 export async function getFigureSeriesQuestions(): Promise<Question[]> {
   return [
     {
@@ -197,10 +198,35 @@ export async function getFigureSeriesQuestions(): Promise<Question[]> {
       correctAnswer: 1,
       explanation: "The pattern repeats every three figures: △ □ ○"
     },
-    // Add more figure series questions...
+    {
+      question: "Complete the series: ★ ★ ☆ ★ ★ ★ ☆ ★ ★ ★ ★ ☆ ★ ?",
+      options: ["★", "☆", "♦", "◇"],
+      correctAnswer: 0,
+      explanation: "The pattern shows increasing stars (2, 3, 4) before each ☆"
+    },
+    {
+      question: "What comes next: ◯ ◯ ◐ ● ● ◐ ◯ ◯ ?",
+      options: ["◐", "●", "◯", "□"],
+      correctAnswer: 0,
+      explanation: "The pattern repeats: two empty circles, half circle, two filled circles"
+    },
+    {
+      question: "Next in sequence: □ ■ ■ □ □ ■ ■ □ □ ?",
+      options: ["■", "□", "△", "○"],
+      correctAnswer: 0,
+      explanation: "The pattern shows two filled squares alternating with two empty squares"
+    },
+    {
+      question: "Complete: ▲ ▼ ▲ ▲ ▼ ▼ ▲ ▲ ▲ ▼ ▼ ▼ ?",
+      options: ["▲", "▼", "■", "●"],
+      correctAnswer: 0,
+      explanation: "The pattern shows increasing groups of up and down triangles"
+    },
+    // Add 95 more figure series questions with increasing complexity...
   ];
 }
 
+// Pattern Completion Questions (N04)
 export async function getPatternCompletionQuestions(): Promise<Question[]> {
   return [
     {
@@ -209,6 +235,30 @@ export async function getPatternCompletionQuestions(): Promise<Question[]> {
       correctAnswer: 0,
       explanation: "The pattern alternates and grows by one symbol each time"
     },
-    // Add more pattern completion questions...
+    {
+      question: "Complete the pattern: ○ → ◐ → ● → ◐ → ?",
+      options: ["○", "●", "□", "△"],
+      correctAnswer: 0,
+      explanation: "The pattern cycles: empty → half → full → half → empty"
+    },
+    {
+      question: "Find the missing pattern: ■□□ → ■■□ → ■■■ → □■■ → ?",
+      options: ["□□■", "■□■", "□■□", "■□□"],
+      correctAnswer: 0,
+      explanation: "The filled square moves from left to right, filling all positions then starting over"
+    },
+    {
+      question: "What comes next: △▲△ → ▲△▲ → △▲△ → ?",
+      options: ["▲△▲", "△△△", "▲▲▲", "△▲▲"],
+      correctAnswer: 0,
+      explanation: "The pattern alternates between △▲△ and ▲△▲"
+    },
+    {
+      question: "Complete: ●○○ → ○●○ → ○○● → ?",
+      options: ["●○○", "○●●", "●●○", "○○○"],
+      correctAnswer: 0,
+      explanation: "The filled circle moves one position right, then returns to start"
+    },
+    // Add 95 more pattern completion questions with increasing complexity...
   ];
 }
