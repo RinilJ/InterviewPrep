@@ -13,7 +13,7 @@ async function checkAuth() {
             return null;
         }
         const user = await response.json();
-        console.log('User data:', user); // Debug log
+        console.log('User data:', user);
 
         if (!user || user.role !== 'teacher') {
             window.location.href = '/dashboard.html';
@@ -32,37 +32,48 @@ async function initializeDashboard() {
     const user = await checkAuth();
     if (!user) return;
 
-    // Update user info
-    const userInfo = `${user.username} (${user.department} - Batch ${user.batch}, Year ${user.year})`;
+    // Update user info with batch details
+    const userInfo = `${user.username} (${user.department} - Year ${user.year}, Batch ${user.batch})`;
     document.getElementById('userName').textContent = userInfo;
-    console.log('Setting user info:', userInfo); // Debug log
 
-    // Fetch statistics
-    const stats = await fetch('/api/teacher/stats').then(res => res.json());
-    document.getElementById('totalStudents').textContent = stats.totalStudents;
-    document.getElementById('activeSessions').textContent = stats.activeSessions;
-    document.getElementById('discussionSlots').textContent = stats.discussionSlots;
-
-    // Fetch and display student progress
+    // Fetch students for the teacher's batch
     const students = await fetch('/api/teacher/students').then(res => res.json());
-    console.log('Fetched students:', students); // Debug log
+    console.log('Fetched students:', students);
 
     const studentsList = document.getElementById('studentsList');
     if (students.length === 0) {
-        studentsList.innerHTML = '<div class="student-card"><p>No students found for your batch and year.</p></div>';
+        studentsList.innerHTML = '<div class="student-card"><p>No students found in your batch.</p></div>';
     } else {
         studentsList.innerHTML = students.map(student => `
             <div class="student-card">
                 <div class="student-info">
                     <h3><i class="fas fa-user-graduate"></i> ${student.username}</h3>
-                    <p><i class="fas fa-graduation-cap"></i> ${student.department} - Batch ${student.batch}, Year ${student.year}</p>
+                    <p><i class="fas fa-graduation-cap"></i> ${student.department} - Year ${student.year}, Batch ${student.batch}</p>
                     <p><i class="fas fa-clock"></i> Last Active: ${formatDate(student.lastActive)}</p>
-                    <p><i class="fas fa-tasks"></i> Tests Completed: ${student.testsCompleted}</p>
-                    <p><i class="fas fa-chart-line"></i> Average Score: ${student.averageScore}%</p>
+                    <div class="test-progress">
+                        <h4>Test Progress</h4>
+                        <div class="progress-grid">
+                            <div class="progress-item">
+                                <span>Technical Tests:</span>
+                                <span class="count">${student.technicalTestsCompleted || 0}</span>
+                            </div>
+                            <div class="progress-item">
+                                <span>Aptitude Tests:</span>
+                                <span class="count">${student.aptitudeTestsCompleted || 0}</span>
+                            </div>
+                            <div class="progress-item">
+                                <span>Psychometric Tests:</span>
+                                <span class="count">${student.psychometricTestsCompleted || 0}</span>
+                            </div>
+                        </div>
+                        <p class="average-score">
+                            <i class="fas fa-chart-line"></i> Average Score: ${student.averageScore || 0}%
+                        </p>
+                    </div>
                 </div>
                 <div class="student-actions">
-                    <button class="btn-secondary" onclick="viewProgress(${student.id})">
-                        <i class="fas fa-chart-bar"></i> View Progress
+                    <button class="btn-secondary" onclick="viewStudentProgress(${student.id})">
+                        <i class="fas fa-chart-bar"></i> Detailed Progress
                     </button>
                 </div>
             </div>
@@ -97,6 +108,7 @@ async function loadDiscussionSlots(filter = 'all') {
                 <h3><i class="fas fa-comments"></i> ${slot.topic || 'Open Discussion'}</h3>
                 <p><i class="far fa-clock"></i> ${formatDate(slot.startTime)} - ${new Date(slot.endTime).toLocaleTimeString()}</p>
                 <p><i class="fas fa-users"></i> Maximum Participants: ${slot.maxParticipants}</p>
+                <p><i class="fas fa-graduation-cap"></i> For: ${slot.department} - Year ${slot.year}, Batch ${slot.batch}</p>
             </div>
             <div class="slot-actions">
                 <button class="btn-secondary" onclick="editSlot(${slot.id})">
@@ -108,11 +120,6 @@ async function loadDiscussionSlots(filter = 'all') {
             </div>
         </div>
     `).join('');
-}
-
-// Filter discussion slots
-function filterDiscussionSlots(filter) {
-    loadDiscussionSlots(filter);
 }
 
 // Create new discussion slot
@@ -132,22 +139,58 @@ async function createSlot(e) {
                 topic: form.slotTopic.value || null,
                 startTime,
                 endTime,
-                maxParticipants: parseInt(form.maxParticipants.value)
+                maxParticipants: parseInt(form.maxParticipants.value),
+                // Add batch information from the teacher's data
+                department: form.department.value,
+                year: form.year.value,
+                batch: form.batch.value
             })
         });
 
         if (response.ok) {
             closeModal();
             loadDiscussionSlots();
-            alert('Slot created successfully!');
+            showSuccessMessage('Slot created successfully!');
         } else {
             const error = await response.text();
-            alert(error || 'Failed to create slot');
+            showErrorMessage(error || 'Failed to create slot');
         }
     } catch (error) {
         console.error('Create slot error:', error);
-        alert('Failed to create slot');
+        showErrorMessage('Failed to create slot');
     }
+}
+
+// View detailed student progress
+async function viewStudentProgress(studentId) {
+    try {
+        const response = await fetch(`/api/teacher/student-progress/${studentId}`);
+        if (!response.ok) throw new Error('Failed to fetch student progress');
+
+        const progress = await response.json();
+        // Implementation for showing detailed progress modal
+        // This would be implemented based on your UI requirements
+    } catch (error) {
+        console.error('Error viewing student progress:', error);
+        showErrorMessage('Failed to load student progress');
+    }
+}
+
+// Utility functions for showing messages
+function showSuccessMessage(message) {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = 'success-message';
+    messageDiv.textContent = message;
+    document.body.appendChild(messageDiv);
+    setTimeout(() => messageDiv.remove(), 3000);
+}
+
+function showErrorMessage(message) {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = 'error-message';
+    messageDiv.textContent = message;
+    document.body.appendChild(messageDiv);
+    setTimeout(() => messageDiv.remove(), 3000);
 }
 
 // Modal functions
@@ -159,7 +202,6 @@ function closeModal() {
     document.getElementById('createSlotModal').classList.add('hidden');
     document.getElementById('createSlotForm').reset();
 }
-
 
 // Tab switching
 document.querySelectorAll('.tab').forEach(tab => {
@@ -176,6 +218,7 @@ document.querySelectorAll('.tab').forEach(tab => {
 
 
 // Event listeners
+document.addEventListener('DOMContentLoaded', initializeDashboard);
 document.getElementById('createSlotBtn').addEventListener('click', openModal);
 document.querySelector('.close-modal').addEventListener('click', closeModal);
 document.getElementById('createSlotForm').addEventListener('submit', createSlot);
@@ -185,12 +228,9 @@ document.getElementById('logoutBtn').addEventListener('click', async () => {
         window.location.href = '/login.html';
     } catch (error) {
         console.error('Logout error:', error);
-        alert('Failed to logout');
+        showErrorMessage('Failed to logout');
     }
 });
-
-// Initialize dashboard when page loads
-document.addEventListener('DOMContentLoaded', initializeDashboard);
 
 // Add event listeners for discussion filters
 document.querySelectorAll('.btn-filter').forEach(button => {

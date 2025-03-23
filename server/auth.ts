@@ -62,31 +62,59 @@ export function setupAuth(app: Express) {
     done(null, user);
   });
 
-  const extendedInsertUserSchema = insertUserSchema.extend({
-    confirmPassword: z.string().optional(),
-  }).refine((data) => !data.confirmPassword || data.password === data.confirmPassword, {
-    message: "Passwords don't match",
-    path: ["confirmPassword"],
-  });
-
   app.post("/api/register", async (req, res, next) => {
-    const parsed = extendedInsertUserSchema.parse(req.body);
-    
-    const existingUser = await storage.getUserByUsername(parsed.username);
-    if (existingUser) {
-      return res.status(400).send("Username already exists");
+    try {
+      const userData = insertUserSchema.parse(req.body);
+
+      // Check if username already exists
+      const existingUser = await storage.getUserByUsername(userData.username);
+      if (existingUser) {
+        return res.status(400).send("Username already exists");
+      }
+
+      // For teacher registration, check if a teacher already exists for this batch
+      if (userData.role === "teacher") {
+        const existingTeacher = await storage.getTeacherByBatch(
+          userData.department,
+          userData.year,
+          userData.batch
+        );
+        if (existingTeacher) {
+          return res.status(400).send("Class teacher for this batch already exists");
+        }
+      }
+
+      // For student registration, find and link to the class teacher
+      let classTeacherId: number | null = null;
+      if (userData.role === "student") {
+        const classTeacher = await storage.getTeacherByBatch(
+          userData.department,
+          userData.year,
+          userData.batch
+        );
+        if (classTeacher) {
+          classTeacherId = classTeacher.id;
+        }
+      }
+
+      // Create the user with hashed password
+      const user = await storage.createUser({
+        ...userData,
+        password: await hashPassword(userData.password),
+        classTeacherId
+      });
+
+      // Log the user in
+      req.login(user, (err) => {
+        if (err) return next(err);
+        res.status(201).json(user);
+      });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ errors: error.errors });
+      }
+      next(error);
     }
-
-    const user = await storage.createUser({
-      username: parsed.username,
-      password: await hashPassword(parsed.password),
-      role: parsed.role,
-    });
-
-    req.login(user, (err) => {
-      if (err) return next(err);
-      res.status(201).json(user);
-    });
   });
 
   app.post("/api/login", passport.authenticate("local"), (req, res) => {
@@ -103,5 +131,33 @@ export function setupAuth(app: Express) {
   app.get("/api/user", (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
     res.json(req.user);
+  });
+
+  // New endpoint to get students for a teacher
+  app.get("/api/teacher/students", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    if (req.user.role !== "teacher") return res.sendStatus(403);
+
+    const students = await storage.getStudentsByTeacher(req.user.id);
+    res.json(students);
+  });
+
+  // New endpoint to get filtered discussion slots for students
+  app.get("/api/discussion-slots", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+
+    let slots;
+    if (req.user.role === "student") {
+      // Students only see slots for their batch
+      slots = await storage.getDiscussionSlotsByBatch(
+        req.user.department,
+        req.user.year,
+        req.user.batch
+      );
+    } else {
+      // Teachers see all slots they created
+      slots = await storage.getDiscussionSlots();
+    }
+    res.json(slots);
   });
 }
