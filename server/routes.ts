@@ -24,6 +24,11 @@ export function registerRoutes(app: Express): Server {
       const { role, department, year, batch, ...userData } = req.body;
       console.log('Registration attempt:', { role, department, year, batch, ...userData }); // Debug log
 
+      // Validate required fields
+      if (!department || !year || !batch) {
+        return res.status(400).send("Department, year, and batch are required");
+      }
+
       // Ensure values are strings
       const cleanDepartment = String(department);
       const cleanYear = String(year);
@@ -47,6 +52,7 @@ export function registerRoutes(app: Express): Server {
           teacherId = classTeacher.id;
         } else {
           console.log('No teacher found for:', { cleanDepartment, cleanYear, cleanBatch });
+          return res.status(400).send("No teacher found for this batch. Please ensure a teacher is registered first.");
         }
       }
 

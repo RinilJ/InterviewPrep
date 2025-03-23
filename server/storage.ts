@@ -1,9 +1,36 @@
-import { IStorage } from "./storage";
 import session from "express-session";
 import createMemoryStore from "memorystore";
 import { User, Test, TestResult, DiscussionSlot, SlotBooking } from "@shared/schema";
 
 const MemoryStore = createMemoryStore(session);
+
+export interface IStorage {
+  // Auth
+  getUser(id: number): Promise<User | undefined>;
+  getUserByUsername(username: string): Promise<User | undefined>;
+  createUser(user: Omit<User, "id" | "createdAt">): Promise<User>;
+
+  // Teacher-Student Relationship
+  findTeacher(department: string, year: string, batch: string): Promise<User | undefined>;
+  getTeacherStudents(teacherId: number, department: string, year: string, batch: string): Promise<User[]>;
+
+  // Tests
+  createTest(test: Omit<Test, "id">): Promise<Test>;
+  getTests(): Promise<Test[]>;
+
+  // Test Results
+  createTestResult(result: Omit<TestResult, "id" | "completedAt">): Promise<TestResult>;
+  getTestResults(userId: number): Promise<TestResult[]>;
+
+  // Discussion Slots
+  createDiscussionSlot(slot: Omit<DiscussionSlot, "id">): Promise<DiscussionSlot>;
+  getDiscussionSlots(department: string, year: string, batch: string): Promise<DiscussionSlot[]>;
+
+  // Slot Bookings
+  createSlotBooking(booking: Omit<SlotBooking, "id" | "bookedAt">): Promise<SlotBooking>;
+
+  sessionStore: session.Store;
+}
 
 export class MemStorage implements IStorage {
   private users: Map<number, User>;
@@ -11,8 +38,8 @@ export class MemStorage implements IStorage {
   private testResults: Map<number, TestResult>;
   private discussionSlots: Map<number, DiscussionSlot>;
   private slotBookings: Map<number, SlotBooking>;
-  sessionStore: session.Store;
   private currentId: number;
+  sessionStore: session.Store;
 
   constructor() {
     this.users = new Map();
