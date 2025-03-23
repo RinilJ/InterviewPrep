@@ -34,13 +34,19 @@ async function initializeDashboard() {
     const userElement = document.getElementById('userName');
     if (user.department && user.year && user.batch) {
         userElement.textContent = `${user.username} (${user.department} - Year ${user.year}, Batch ${user.batch})`;
+    } else {
+        userElement.textContent = user.username;
     }
     console.log('Teacher Info:', user); // Debug log
 
     try {
-        // Show loading state
+        // Show student list with teacher's name immediately
         const studentsList = document.getElementById('studentsList');
-        studentsList.innerHTML = `<div class="loading">Welcome ${user.username}, loading student data...</div>`;
+        studentsList.innerHTML = `<div class="empty-state">
+            <i class="fas fa-users"></i>
+            <p>Welcome ${user.username}</p>
+            <p>Loading student data...</p>
+        </div>`;
 
         // Fetch and display student progress
         const studentsResponse = await fetch('/api/teacher/students');
@@ -106,9 +112,6 @@ async function initializeDashboard() {
                 <p>Failed to load student data. Please try refreshing the page.</p>
             </div>`;
     }
-
-    // Load discussion slots
-    await loadDiscussionSlots();
 }
 
 // Load discussion slots
