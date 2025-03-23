@@ -34,8 +34,6 @@ async function initializeDashboard() {
     const userElement = document.getElementById('userName');
     if (user.department && user.year && user.batch) {
         userElement.textContent = `${user.username} (${user.department} - Year ${user.year}, Batch ${user.batch})`;
-    } else {
-        userElement.textContent = user.username;
     }
     console.log('Teacher Info:', user); // Debug log
 
@@ -64,21 +62,17 @@ async function initializeDashboard() {
                     <div class="student-info">
                         <h3><i class="fas fa-user-graduate"></i> ${student.username}</h3>
                         <p><i class="fas fa-graduation-cap"></i> ${student.department} - Year ${student.year}, Batch ${student.batch}</p>
-                        <p><i class="fas fa-clock"></i> Last Active: ${formatDate(student.createdAt)}</p>
+                        <p><i class="fas fa-clock"></i> Registered: ${formatDate(student.createdAt)}</p>
                         <div class="progress-section">
                             <h4>Test Progress</h4>
                             <div class="progress-stats">
                                 <div class="stat">
-                                    <span class="label">Aptitude Tests</span>
-                                    <span class="value">${student.aptitudeProgress || 0}%</span>
+                                    <span class="label">Tests Completed</span>
+                                    <span class="value">${student.testsCompleted || 0}</span>
                                 </div>
                                 <div class="stat">
-                                    <span class="label">Technical Tests</span>
-                                    <span class="value">${student.technicalProgress || 0}%</span>
-                                </div>
-                                <div class="stat">
-                                    <span class="label">Psychometric Tests</span>
-                                    <span class="value">${student.psychometricProgress || 0}%</span>
+                                    <span class="label">Average Score</span>
+                                    <span class="value">${student.averageScore || 0}%</span>
                                 </div>
                             </div>
                         </div>

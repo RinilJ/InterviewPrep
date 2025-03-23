@@ -24,9 +24,14 @@ export function registerRoutes(app: Express): Server {
       const { role, department, year, batch, ...userData } = req.body;
       console.log('Registration attempt:', { role, department, year, batch, ...userData }); // Debug log
 
+      // Ensure values are strings
+      const cleanDepartment = String(department);
+      const cleanYear = String(year);
+      const cleanBatch = String(batch);
+
       // Check if a teacher already exists for this batch
       if (role === 'teacher') {
-        const existingTeacher = await storage.findTeacher(department, year, batch);
+        const existingTeacher = await storage.findTeacher(cleanDepartment, cleanYear, cleanBatch);
         console.log('Existing teacher check:', existingTeacher); // Debug log
         if (existingTeacher) {
           return res.status(400).send("Class teacher for this batch already exists");
@@ -36,12 +41,12 @@ export function registerRoutes(app: Express): Server {
       // For students, find their teacher
       let teacherId = null;
       if (role === 'student') {
-        const classTeacher = await storage.findTeacher(department, year, batch);
+        const classTeacher = await storage.findTeacher(cleanDepartment, cleanYear, cleanBatch);
         console.log('Found teacher for student:', classTeacher); // Debug log
         if (classTeacher) {
           teacherId = classTeacher.id;
         } else {
-          console.log('No teacher found for:', { department, year, batch });
+          console.log('No teacher found for:', { cleanDepartment, cleanYear, cleanBatch });
         }
       }
 
@@ -49,9 +54,9 @@ export function registerRoutes(app: Express): Server {
       const user = await storage.createUser({
         ...userData,
         role,
-        department,
-        year,
-        batch,
+        department: cleanDepartment,
+        year: cleanYear,
+        batch: cleanBatch,
         teacherId
       });
 

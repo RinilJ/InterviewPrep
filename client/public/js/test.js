@@ -141,14 +141,10 @@ function startTimer(seconds) {
 }
 
 async function submitTest() {
-    if (!confirm('Are you sure you want to submit the test?')) {
-        return;
-    }
-
-    saveCurrentAnswer();
     clearInterval(timer);
+    saveCurrentAnswer();
 
-    // Calculate score and store results
+    // Store results
     let correctAnswers = 0;
     const results = {
         questions: currentTest.questions.map((question, index) => ({
@@ -195,7 +191,6 @@ async function submitTest() {
         window.location.href = '/test-results.html';
     } catch (error) {
         console.error('Error submitting test:', error);
-        // Show error in a less intrusive way
         const errorDiv = document.createElement('div');
         errorDiv.className = 'error-message';
         errorDiv.textContent = 'Failed to submit test results. Please try again.';
