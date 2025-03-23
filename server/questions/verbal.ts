@@ -652,8 +652,8 @@ async function getSentenceCompletionQuestions(): Promise<Question[]> {
 async function getReadingComprehensionQuestions(): Promise<Question[]> {
   return [// Science Passage
     {
-      question: `Read the following passage:
-The process ofphotosynthesis is crucial for life on Earth. Plants use sunlight, water, and carbon dioxide to produce glucose and oxygen. The sunlight is absorbed by chlorophyll in the leaves, which converts light energy into chemical energy. This energy is used to split water molecules and combine them with carbon dioxide to form glucose. Oxygen is released as a byproduct of this process. The glucose can either be used immediately by the plant for energy or stored as starch for later use.
+      question: `Read thefollowing passage:
+The process ofphotosynthesis is crucial for life on Earth. Plants use sunlight, water,and carbon dioxide to produce glucose and oxygen. The sunlight is absorbed by chlorophyll in the leaves, which converts light energy into chemical energy. This energy is used to split water molecules and combine them with carbon dioxide to form glucose. Oxygen is released as a byproduct of this process. The glucose can either be used immediately by the plant for energy or stored as starch for later use.
 
 Questions based on this passage:`,
       options: [
@@ -829,7 +829,255 @@ Questions based on this passage:`,
   ];
 }
 
-// Export only the required sections
+// Verbal Reasoning Questions (L10)
+async function getVerbalReasoningQuestions(): Promise<Question[]> {
+  return [
+    {
+      question: "If all cats are animals, and some animals are pets, which statement is definitely true?",
+      options: [
+        "Some cats may be pets",
+        "All cats are pets",
+        "No cats are pets",
+        "All pets are cats"
+      ],
+      correctAnswer: 0,
+      explanation: "Since all cats are animals and some animals are pets, it follows that some cats may be pets"
+    },
+    {
+      question: "If no heroes are cowards, and John is a hero, what can we conclude?",
+      options: [
+        "John is not a coward",
+        "John is brave",
+        "All heroes are brave",
+        "Cowards can't be heroes"
+      ],
+      correctAnswer: 0,
+      explanation: "Given that no heroes are cowards and John is a hero, we can definitively conclude that John is not a coward"
+    },
+    {
+      question: "All flowers are plants. Some plants need sunlight. Which conclusion is valid?",
+      options: [
+        "Some flowers may need sunlight",
+        "All flowers need sunlight",
+        "No flowers need sunlight",
+        "Plants are flowers"
+      ],
+      correctAnswer: 0,
+      explanation: "Since all flowers are plants and some plants need sunlight, some flowers may need sunlight"
+    },
+    {
+      question: "If all doctors are graduates, and Sarah is a doctor, what must be true?",
+      options: [
+        "Sarah is a graduate",
+        "Sarah is intelligent",
+        "Sarah likes studying",
+        "Sarah teaches others"
+      ],
+      correctAnswer: 0,
+      explanation: "Given all doctors are graduates and Sarah is a doctor, Sarah must be a graduate"
+    },
+    {
+      question: "No fish can fly. A tuna is a fish. Therefore:",
+      options: [
+        "A tuna cannot fly",
+        "Some fish can fly",
+        "Flying fish can fly",
+        "Birds can swim"
+      ],
+      correctAnswer: 0,
+      explanation: "Since no fish can fly and a tuna is a fish, a tuna cannot fly"
+    },
+    {
+      question: "All students in the class speak English. John is in the class. What can we conclude?",
+      options: [
+        "John speaks English",
+        "John only speaks English",
+        "John teaches English",
+        "The class only has English speakers"
+      ],
+      correctAnswer: 0,
+      explanation: "Given all students in the class speak English and John is in the class, John must speak English"
+    },
+    {
+      question: "Some birds can swim. All penguins are birds. Which statement is possible?",
+      options: [
+        "Some penguins can swim",
+        "No penguins can swim",
+        "All birds can swim",
+        "Penguins can fly"
+      ],
+      correctAnswer: 0,
+      explanation: "Since some birds can swim and all penguins are birds, it's possible that some penguins can swim"
+    },
+    {
+      question: "All metals conduct electricity. Gold is a metal. Therefore:",
+      options: [
+        "Gold conducts electricity",
+        "Only gold conducts electricity",
+        "Electricity is metal",
+        "Metals are gold"
+      ],
+      correctAnswer: 0,
+      explanation: "Since all metals conduct electricity and gold is a metal, gold must conduct electricity"
+    },
+    {
+      question: "If all squares are rectangles, and all rectangles have four sides, what must be true about squares?",
+      options: [
+        "Squares have four sides",
+        "All rectangles are squares",
+        "Squares are circles",
+        "Rectangles are triangles"
+      ],
+      correctAnswer: 0,
+      explanation: "Since all squares are rectangles and all rectangles have four sides, squares must have four sides"
+    },
+    {
+      question: "No mammals can breathe underwater. Dolphins are mammals. What can we conclude?",
+      options: [
+        "Dolphins cannot breathe underwater",
+        "Dolphins can swim",
+        "Dolphins are fish",
+        "Mammals live on land"
+      ],
+      correctAnswer: 0,
+      explanation: "Given no mammals can breathe underwater and dolphins are mammals, dolphins cannot breathe underwater"
+    },
+  ];
+}
+
+// Word Order Questions (L11)
+async function getWordOrderQuestions(): Promise<Question[]> {
+  return [
+    {
+      question: "Arrange the words in a meaningful sequence: 1. Water 2. Crop 3. Seed 4. Plant 5. Harvest",
+      options: ["3,4,1,2,5", "3,1,4,2,5", "2,3,4,1,5", "4,3,1,2,5"],
+      correctAnswer: 1,
+      explanation: "Logical sequence: Seed → Water → Plant → Crop → Harvest"
+    },
+    {
+      question: "Arrange in order: 1. Infant 2. Adult 3. Child 4. Teenager",
+      options: ["1,3,4,2", "1,2,3,4", "1,4,3,2", "2,1,3,4"],
+      correctAnswer: 0,
+      explanation: "Life stages sequence: Infant → Child → Teenager → Adult"
+    },
+    {
+      question: "Order these words: 1. Mix 2. Pour 3. Drink 4. Fill 5. Stir",
+      options: ["4,2,1,5,3", "2,4,1,3,5", "4,1,5,2,3", "1,2,3,4,5"],
+      correctAnswer: 0,
+      explanation: "Logical sequence: Fill → Pour → Mix → Stir → Drink"
+    },
+    {
+      question: "Arrange in cooking order: 1. Serve 2. Cook 3. Prepare 4. Buy 5. Eat",
+      options: ["4,3,2,1,5", "3,4,2,1,5", "4,2,3,1,5", "1,2,3,4,5"],
+      correctAnswer: 0,
+      explanation: "Logical sequence: Buy → Prepare → Cook → Serve → Eat"
+    },
+    {
+      question: "Order these actions: 1. Win 2. Practice 3. Learn 4. Master 5. Start",
+      options: ["5,3,2,4,1", "3,2,1,4,5", "5,2,3,1,4", "1,2,3,4,5"],
+      correctAnswer: 0,
+      explanation: "Logical sequence: Start → Learn → Practice → Master → Win"
+    },
+    {
+      question: "Arrange in time sequence: 1. Night 2. Evening 3. Morning 4. Afternoon",
+      options: ["3,4,2,1", "1,2,3,4", "2,3,4,1", "4,3,2,1"],
+      correctAnswer: 0,
+      explanation: "Time sequence: Morning → Afternoon → Evening → Night"
+    },
+    {
+      question: "Order the education stages: 1. College 2. School 3. Kindergarten 4. University",
+      options: ["3,2,1,4", "2,3,1,4", "3,1,2,4", "4,3,2,1"],
+      correctAnswer: 0,
+      explanation: "Education sequence: Kindergarten → School → College → University"
+    },
+    {
+      question: "Arrange the process: 1. Results 2. Experiment 3. Hypothesis 4. Research 5. Conclusion",
+      options: ["4,3,2,1,5", "3,4,2,1,5", "4,2,3,1,5", "1,2,3,4,5"],
+      correctAnswer: 0,
+      explanation: "Scientific method: Research → Hypothesis → Experiment → Results → Conclusion"
+    },
+    {
+      question: "Order these events: 1. Graduate 2. Study 3. Enroll 4. Apply 5. Celebrate",
+      options: ["4,3,2,1,5", "3,2,4,1,5", "4,2,3,1,5", "1,2,3,4,5"],
+      correctAnswer: 0,
+      explanation: "Logical sequence: Apply → Enroll → Study → Graduate → Celebrate"
+    },
+    {
+      question: "Arrange in building order: 1. Paint 2. Plan 3. Foundation 4. Walls 5. Roof",
+      options: ["2,3,4,5,1", "3,2,4,1,5", "4,2,3,1,5", "1,2,3,4,5"],
+      correctAnswer: 0,
+      explanation: "Construction sequence: Plan → Foundation → Walls → Roof → Paint"
+    },
+  ];
+}
+
+// Logical Sequence Questions (L12)
+async function getLogicalSequenceQuestions(): Promise<Question[]> {
+  return [
+    {
+      question: "Complete the sequence: XY15, WX13, UV11, ?",
+      options: ["ST9", "TS9", "ST8", "TS10"],
+      correctAnswer: 0,
+      explanation: "Pattern: Letters shift 2 positions back, numbers decrease by 2"
+    },
+    {
+      question: "Next in the series: 1, 4, 9, 16, ?",
+      options: ["25", "20", "22", "28"],
+      correctAnswer: 0,
+      explanation: "Squares: 1², 2², 3², 4², 5²"
+    },
+    {
+      question: "Complete: A2Z, B4Y, C6X, ?",
+      options: ["D8W", "E8W", "D6W", "E6W"],
+      correctAnswer: 0,
+      explanation: "Pattern: Letters move forward from start and backward from end, numbers increase by 2"
+    },
+    {
+      question: "What comes next: RED5, ORG4, YEL3, ?",
+      options: ["GRN2", "BLU2", "GRN1", "BLU3"],
+      correctAnswer: 0,
+      explanation: "Pattern: Color abbreviations with decreasing numbers"
+    },
+    {
+      question: "Next in sequence: 3Z, 6Y, 9X, ?",
+      options: ["12W", "12X", "9W", "15W"],
+      correctAnswer: 0,
+      explanation: "Pattern: Numbers increase by 3, letters move backward"
+    },
+    {
+      question: "Complete the pattern: AB12, CD34, EF56, ?",
+      options: ["GH78", "GH87", "HG78", "GH67"],
+      correctAnswer: 0,
+      explanation: "Pattern: Letters continue alphabetically, numbers increase by 22"
+    },
+    {
+      question: "Next term: 2P4, 4R8, 6T16, ?",
+      options: ["8V32", "8U32", "6U32", "8V24"],
+      correctAnswer: 0,
+      explanation: "Pattern: Numbers: 2→4→6→8, Letters: P→R→T→V, Last number doubles"
+    },
+    {
+      question: "Find next: M3N, N4P, O5R, ?",
+      options: ["P6T", "P7T", "Q6T", "P6S"],
+      correctAnswer: 0,
+      explanation: "Pattern: First letter +1, number +1, last letter +2"
+    },
+    {
+      question: "Complete: 1A3, 2B6, 3C9, ?",
+      options: ["4D12", "4C12", "3D12", "4D9"],
+      correctAnswer: 0,
+      explanation: "Pattern: First number +1, letters alphabetical, last number +3"
+    },
+    {
+      question: "Next in series: JAM2, KBN4, LCO6, ?",
+      options: ["MDP8", "MCP8", "MDQ8", "MDP10"],
+      correctAnswer: 0,
+      explanation: "Pattern: First letter +1, second letter +1, third letter +1, number ×2"
+    },
+  ];
+}
+
+// Export all sections
 export {
   getDirectionSenseQuestions,
   getBloodRelationQuestions,
@@ -839,5 +1087,8 @@ export {
   getSynonymQuestions,
   getAntonymQuestions,
   getSentenceCompletionQuestions,
-  getReadingComprehensionQuestions
+  getReadingComprehensionQuestions,
+  getVerbalReasoningQuestions,
+  getWordOrderQuestions,
+  getLogicalSequenceQuestions
 };
