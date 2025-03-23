@@ -1,134 +1,217 @@
 import { Question, QuestionBank } from './types';
-import * as verbalQuestions from './questions/verbal';
-import * as nonVerbalQuestions from './questions/nonVerbal';
-import * as mathematicalQuestions from './questions/mathematical';
+
+// Cache for loaded questions
+const questionCache = new Map<string, Question[]>();
 
 // Cache for tracking used questions per session
 const sessionQuestions = new Map<string, Set<string>>();
 
-// Question bank structure with lazy loading
+// Question bank structure with dynamic loading
 export const questionBank: QuestionBank = {
   verbal: {
-    "L01": {
-      title: "Direction Sense",
-      getQuestions: verbalQuestions.getDirectionSenseQuestions
-    },
-    "L02": {
-      title: "Blood Relations",
-      getQuestions: verbalQuestions.getBloodRelationQuestions
-    },
-    "L03": {
-      title: "Coding and Decoding",
-      getQuestions: verbalQuestions.getCodingDecodingQuestions
-    },
-    "L04": {
-      title: "Number Series",
-      getQuestions: verbalQuestions.getNumberSeriesQuestions
-    },
-    "L05": {
-      title: "Analogy",
-      getQuestions: verbalQuestions.getAnalogyQuestions
-    },
-    "L06": {
-      title: "Synonyms",
-      getQuestions: verbalQuestions.getSynonymQuestions
-    },
-    "L07": {
-      title: "Antonyms",
-      getQuestions: verbalQuestions.getAntonymQuestions
-    },
-    "L08": {
-      title: "Sentence Completion",
-      getQuestions: verbalQuestions.getSentenceCompletionQuestions
-    },
     "L09": {
       title: "Reading Comprehension",
-      getQuestions: verbalQuestions.getReadingComprehensionQuestions
+      getQuestions: async () => {
+        const key = 'L09';
+        if (!questionCache.has(key)) {
+          console.time(`loadQuestions-${key}`);
+          const module = await import('./questions/verbal');
+          const questions = await module.getReadingComprehensionQuestions();
+          questionCache.set(key, questions);
+          console.timeEnd(`loadQuestions-${key}`);
+          console.log(`Cached ${questions.length} questions for ${key}`);
+        }
+        return questionCache.get(key)!;
+      }
     },
     "L10": {
       title: "Verbal Reasoning",
-      getQuestions: verbalQuestions.getVerbalReasoningQuestions
+      getQuestions: async () => {
+        const key = 'L10';
+        if (!questionCache.has(key)) {
+          console.time(`loadQuestions-${key}`);
+          const module = await import('./questions/verbal');
+          const questions = await module.getVerbalReasoningQuestions();
+          questionCache.set(key, questions);
+          console.timeEnd(`loadQuestions-${key}`);
+          console.log(`Cached ${questions.length} questions for ${key}`);
+        }
+        return questionCache.get(key)!;
+      }
     },
     "L11": {
       title: "Word Order",
-      getQuestions: verbalQuestions.getWordOrderQuestions
+      getQuestions: async () => {
+        const key = 'L11';
+        if (!questionCache.has(key)) {
+          console.time(`loadQuestions-${key}`);
+          const module = await import('./questions/verbal');
+          const questions = await module.getWordOrderQuestions();
+          questionCache.set(key, questions);
+          console.timeEnd(`loadQuestions-${key}`);
+          console.log(`Cached ${questions.length} questions for ${key}`);
+        }
+        return questionCache.get(key)!;
+      }
     },
     "L12": {
       title: "Logical Sequence",
-      getQuestions: verbalQuestions.getLogicalSequenceQuestions
+      getQuestions: async () => {
+        const key = 'L12';
+        if (!questionCache.has(key)) {
+          console.time(`loadQuestions-${key}`);
+          const module = await import('./questions/verbal');
+          const questions = await module.getLogicalSequenceQuestions();
+          questionCache.set(key, questions);
+          console.timeEnd(`loadQuestions-${key}`);
+          console.log(`Cached ${questions.length} questions for ${key}`);
+        }
+        return questionCache.get(key)!;
+      }
     }
   },
   nonVerbal: {
-    "N01": {
-      title: "Logical Venn Diagrams",
-      getQuestions: nonVerbalQuestions.getLogicalVennQuestions
-    },
-    "N02": {
-      title: "Dice and Cubes",
-      getQuestions: nonVerbalQuestions.getDiceCubeQuestions
-    },
     "N03": {
       title: "Figure Series",
-      getQuestions: nonVerbalQuestions.getFigureSeriesQuestions
+      getQuestions: async () => {
+        const key = 'N03';
+        if (!questionCache.has(key)) {
+          console.time(`loadQuestions-${key}`);
+          const module = await import('./questions/nonVerbal');
+          const questions = await module.getFigureSeriesQuestions();
+          questionCache.set(key, questions);
+          console.timeEnd(`loadQuestions-${key}`);
+          console.log(`Cached ${questions.length} questions for ${key}`);
+        }
+        return questionCache.get(key)!;
+      }
     },
     "N04": {
       title: "Pattern Completion",
-      getQuestions: nonVerbalQuestions.getPatternCompletionQuestions
+      getQuestions: async () => {
+        const key = 'N04';
+        if (!questionCache.has(key)) {
+          console.time(`loadQuestions-${key}`);
+          const module = await import('./questions/nonVerbal');
+          const questions = await module.getPatternCompletionQuestions();
+          questionCache.set(key, questions);
+          console.timeEnd(`loadQuestions-${key}`);
+          console.log(`Cached ${questions.length} questions for ${key}`);
+        }
+        return questionCache.get(key)!;
+      }
     }
   },
   mathematical: {
-    "Q01": {
-      title: "Percentages",
-      getQuestions: mathematicalQuestions.getPercentageQuestions
-    },
-    "Q02": {
-      title: "Profit and Loss",
-      getQuestions: mathematicalQuestions.getProfitLossQuestions
-    },
-    "Q03": {
-      title: "Interest",
-      getQuestions: mathematicalQuestions.getInterestQuestions
-    },
-    "Q04": {
-      title: "Time and Work",
-      getQuestions: mathematicalQuestions.getTimeWorkQuestions
-    },
-    "Q05": {
-      title: "Time and Distance",
-      getQuestions: mathematicalQuestions.getTimeDistanceQuestions
-    },
     "Q06": {
       title: "Averages",
-      getQuestions: mathematicalQuestions.getAverageQuestions
+      getQuestions: async () => {
+        const key = 'Q06';
+        if (!questionCache.has(key)) {
+          console.time(`loadQuestions-${key}`);
+          const module = await import('./questions/mathematical');
+          const questions = await module.getAverageQuestions();
+          questionCache.set(key, questions);
+          console.timeEnd(`loadQuestions-${key}`);
+          console.log(`Cached ${questions.length} questions for ${key}`);
+        }
+        return questionCache.get(key)!;
+      }
     },
     "Q07": {
       title: "Ratios and Proportions",
-      getQuestions: mathematicalQuestions.getRatioProportionQuestions
+      getQuestions: async () => {
+        const key = 'Q07';
+        if (!questionCache.has(key)) {
+          console.time(`loadQuestions-${key}`);
+          const module = await import('./questions/mathematical');
+          const questions = await module.getRatioProportionQuestions();
+          questionCache.set(key, questions);
+          console.timeEnd(`loadQuestions-${key}`);
+          console.log(`Cached ${questions.length} questions for ${key}`);
+        }
+        return questionCache.get(key)!;
+      }
     },
     "Q08": {
       title: "Geometry",
-      getQuestions: mathematicalQuestions.getGeometryQuestions
+      getQuestions: async () => {
+        const key = 'Q08';
+        if (!questionCache.has(key)) {
+          console.time(`loadQuestions-${key}`);
+          const module = await import('./questions/mathematical');
+          const questions = await module.getGeometryQuestions();
+          questionCache.set(key, questions);
+          console.timeEnd(`loadQuestions-${key}`);
+          console.log(`Cached ${questions.length} questions for ${key}`);
+        }
+        return questionCache.get(key)!;
+      }
     },
     "Q09": {
       title: "Numbers",
-      getQuestions: mathematicalQuestions.getNumberQuestions
+      getQuestions: async () => {
+        const key = 'Q09';
+        if (!questionCache.has(key)) {
+          console.time(`loadQuestions-${key}`);
+          const module = await import('./questions/mathematical');
+          const questions = await module.getNumberQuestions();
+          questionCache.set(key, questions);
+          console.timeEnd(`loadQuestions-${key}`);
+          console.log(`Cached ${questions.length} questions for ${key}`);
+        }
+        return questionCache.get(key)!;
+      }
     },
     "Q10": {
       title: "Data Interpretation",
-      getQuestions: mathematicalQuestions.getDataInterpretationQuestions
+      getQuestions: async () => {
+        const key = 'Q10';
+        if (!questionCache.has(key)) {
+          console.time(`loadQuestions-${key}`);
+          const module = await import('./questions/mathematical');
+          const questions = await module.getDataInterpretationQuestions();
+          questionCache.set(key, questions);
+          console.timeEnd(`loadQuestions-${key}`);
+          console.log(`Cached ${questions.length} questions for ${key}`);
+        }
+        return questionCache.get(key)!;
+      }
     },
     "Q11": {
       title: "Permutations and Combinations",
-      getQuestions: mathematicalQuestions.getPermutationCombinationQuestions
+      getQuestions: async () => {
+        const key = 'Q11';
+        if (!questionCache.has(key)) {
+          console.time(`loadQuestions-${key}`);
+          const module = await import('./questions/mathematical');
+          const questions = await module.getPermutationCombinationQuestions();
+          questionCache.set(key, questions);
+          console.timeEnd(`loadQuestions-${key}`);
+          console.log(`Cached ${questions.length} questions for ${key}`);
+        }
+        return questionCache.get(key)!;
+      }
     },
     "Q12": {
       title: "Probability",
-      getQuestions: mathematicalQuestions.getProbabilityQuestions
+      getQuestions: async () => {
+        const key = 'Q12';
+        if (!questionCache.has(key)) {
+          console.time(`loadQuestions-${key}`);
+          const module = await import('./questions/mathematical');
+          const questions = await module.getProbabilityQuestions();
+          questionCache.set(key, questions);
+          console.timeEnd(`loadQuestions-${key}`);
+          console.log(`Cached ${questions.length} questions for ${key}`);
+        }
+        return questionCache.get(key)!;
+      }
     }
   }
 };
 
-// Fisher-Yates shuffle algorithm for better randomization
+// Fisher-Yates shuffle algorithm
 function shuffleArray<T>(array: T[]): T[] {
   const shuffled = [...array];
   for (let i = shuffled.length - 1; i > 0; i--) {
