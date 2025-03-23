@@ -17,7 +17,6 @@ function initializeTest() {
 
     currentTest = JSON.parse(testData);
     if (!currentTest || !currentTest.questions || currentTest.questions.length === 0) {
-        alert('No questions available for this test');
         window.location.href = '/dashboard.html';
         return;
     }
@@ -191,13 +190,20 @@ async function submitTest() {
         // Store results for the results page
         sessionStorage.setItem('testResults', JSON.stringify(results));
 
-        // Clear current test data
+        // Clear current test data and redirect to results page
         sessionStorage.removeItem('currentTest');
-
-        // Redirect to results page
         window.location.href = '/test-results.html';
     } catch (error) {
         console.error('Error submitting test:', error);
-        alert('Failed to submit test results. Please try again.');
+        // Show error in a less intrusive way
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'error-message';
+        errorDiv.textContent = 'Failed to submit test results. Please try again.';
+        document.querySelector('.test-container').prepend(errorDiv);
+
+        // Remove error message after 5 seconds
+        setTimeout(() => {
+            errorDiv.remove();
+        }, 5000);
     }
 }
