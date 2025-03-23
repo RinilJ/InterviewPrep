@@ -22,7 +22,7 @@ export function registerRoutes(app: Express): Server {
   app.post("/api/register", async (req, res, next) => {
     try {
       const { role, department, year, batch, ...userData } = req.body;
-      console.log('Registration attempt:', { role, department, year, batch }); // Debug log
+      console.log('Registration attempt:', { role, department, year, batch, ...userData }); // Debug log
 
       // Check if a teacher already exists for this batch
       if (role === 'teacher') {
@@ -40,6 +40,8 @@ export function registerRoutes(app: Express): Server {
         console.log('Found teacher for student:', classTeacher); // Debug log
         if (classTeacher) {
           teacherId = classTeacher.id;
+        } else {
+          console.log('No teacher found for:', { department, year, batch });
         }
       }
 
@@ -53,7 +55,15 @@ export function registerRoutes(app: Express): Server {
         teacherId
       });
 
-      console.log('Created user:', user); // Debug log
+      console.log('Created user:', {
+        id: user.id,
+        username: user.username,
+        role: user.role,
+        department: user.department,
+        year: user.year,
+        batch: user.batch,
+        teacherId: user.teacherId
+      }); // Debug log
 
       // Log in the new user
       req.login(user, (err) => {

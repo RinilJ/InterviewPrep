@@ -73,28 +73,66 @@ export class MemStorage implements IStorage {
 
   async findTeacher(department: string, year: string, batch: string): Promise<User | undefined> {
     console.log('Finding teacher for:', { department, year, batch }); // Debug log
-    const teacher = Array.from(this.users.values()).find(
-      (user) =>
+
+    const teachers = Array.from(this.users.values());
+    console.log('All users:', teachers.map(u => ({ 
+      id: u.id, 
+      role: u.role, 
+      department: u.department, 
+      year: u.year, 
+      batch: u.batch 
+    }))); // Debug log
+
+    const teacher = teachers.find(
+      (user) => 
         user.role === 'teacher' &&
         user.department === department &&
         user.year === year &&
         user.batch === batch
     );
-    console.log('Found teacher:', teacher); // Debug log
+
+    console.log('Found teacher:', teacher ? {
+      id: teacher.id,
+      username: teacher.username,
+      department: teacher.department,
+      year: teacher.year,
+      batch: teacher.batch
+    } : null); // Debug log
+
     return teacher;
   }
 
   async getTeacherStudents(teacherId: number, department: string, year: string, batch: string): Promise<User[]> {
     console.log('Getting students for teacher:', { teacherId, department, year, batch }); // Debug log
-    const students = Array.from(this.users.values()).filter(
-      (user) =>
+
+    const allUsers = Array.from(this.users.values());
+    console.log('All users:', allUsers.map(u => ({ 
+      id: u.id, 
+      role: u.role, 
+      teacherId: u.teacherId, 
+      department: u.department, 
+      year: u.year, 
+      batch: u.batch 
+    }))); // Debug log
+
+    const students = allUsers.filter(
+      (user) => 
         user.role === 'student' &&
         user.teacherId === teacherId &&
         user.department === department &&
         user.year === year &&
         user.batch === batch
     );
-    console.log('Found students:', students.length, 'students for teacher', teacherId); // Debug log
+
+    console.log('Found students:', students.map(s => ({
+      id: s.id,
+      username: s.username,
+      teacherId: s.teacherId,
+      department: s.department,
+      year: s.year,
+      batch: s.batch
+    }))); // Debug log
+
     return students;
   }
 
