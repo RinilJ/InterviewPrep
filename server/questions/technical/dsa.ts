@@ -39,6 +39,112 @@ class Solution {
       ]
     },
     {
+      question: "How would you find the longest substring without repeating characters?",
+      options: [
+        "Use sliding window with HashSet",
+        "Use dynamic programming",
+        "Use brute force approach",
+        "Use HashMap with character counting"
+      ],
+      correctAnswer: 0,
+      explanation: "Sliding window with HashSet provides optimal O(n) solution",
+      language: 'java',
+      category: 'dsa',
+      difficulty: 'medium',
+      code: `
+class Solution {
+    public int lengthOfLongestSubstring(String s) {
+        Set<Character> set = new HashSet<>();
+        int maxLength = 0;
+        int left = 0;
+        int right = 0;
+
+        while (right < s.length()) {
+            if (!set.contains(s.charAt(right))) {
+                set.add(s.charAt(right));
+                maxLength = Math.max(maxLength, right - left + 1);
+                right++;
+            } else {
+                set.remove(s.charAt(left));
+                left++;
+            }
+        }
+        return maxLength;
+    }
+}`,
+      sampleInput: "s = \"abcabcbb\"",
+      sampleOutput: "3",
+      testCases: [
+        "s = \"bbbbb\"",
+        "s = \"pwwkew\"",
+        "s = \"\"" 
+      ]
+    },
+    {
+      question: "How would you implement a Queue using two Stacks?",
+      options: [
+        "Move elements between stacks during push/pop operations",
+        "Use a single stack with extra memory",
+        "Use linked list instead",
+        "Use array rotation"
+      ],
+      correctAnswer: 0,
+      explanation: "Using two stacks allows O(1) amortized time complexity for queue operations",
+      language: 'java',
+      category: 'dsa',
+      difficulty: 'medium',
+      code: `
+class MyQueue {
+    private Stack<Integer> s1;
+    private Stack<Integer> s2;
+
+    public MyQueue() {
+        s1 = new Stack<>();
+        s2 = new Stack<>();
+    }
+
+    public void push(int x) {
+        s1.push(x);
+    }
+
+    public int pop() {
+        if (s2.isEmpty()) {
+            while (!s1.isEmpty()) {
+                s2.push(s1.pop());
+            }
+        }
+        return s2.pop();
+    }
+
+    public int peek() {
+        if (s2.isEmpty()) {
+            while (!s1.isEmpty()) {
+                s2.push(s1.pop());
+            }
+        }
+        return s2.peek();
+    }
+
+    public boolean empty() {
+        return s1.isEmpty() && s2.isEmpty();
+    }
+}`,
+      sampleInput: `
+MyQueue queue = new MyQueue();
+queue.push(1);
+queue.push(2);
+queue.peek();
+queue.pop();`,
+      sampleOutput: `
+1
+1`,
+      testCases: [
+        "push(1), push(2), peek(), pop(), empty()",
+        "push(1), pop(), empty()",
+        "push(1), push(2), push(3), pop(), pop(), pop()"
+      ]
+    },
+    {
       question: "How would you implement bracket matching to check if a string of brackets is valid?",
       options: [
         "Use a stack to track opening brackets and match with closing brackets",
@@ -80,48 +186,6 @@ class Solution {
       ]
     },
     {
-      question: "Given two sorted linked lists, what's the most efficient way to merge them into one sorted list?",
-      options: [
-        "Use two pointers to compare and link nodes in order",
-        "Convert both lists to arrays, merge and convert back",
-        "Use recursion to merge from end to start",
-        "Create a min heap with all nodes"
-      ],
-      correctAnswer: 0,
-      explanation: "Two pointer approach allows merging in O(n+m) time without extra space",
-      language: 'java',
-      category: 'dsa',
-      difficulty: 'easy',
-      code: `
-class Solution {
-    public ListNode mergeTwoLists(ListNode l1, ListNode l2) {
-        ListNode dummy = new ListNode(0);
-        ListNode current = dummy;
-
-        while (l1 != null && l2 != null) {
-            if (l1.val <= l2.val) {
-                current.next = l1;
-                l1 = l1.next;
-            } else {
-                current.next = l2;
-                l2 = l2.next;
-            }
-            current = current.next;
-        }
-
-        current.next = l1 != null ? l1 : l2;
-        return dummy.next;
-    }
-}`,
-      sampleInput: "l1 = [1,2,4], l2 = [1,3,4]",
-      sampleOutput: "[1,1,2,3,4,4]",
-      testCases: [
-        "l1 = [], l2 = []",
-        "l1 = [], l2 = [0]",
-        "l1 = [1], l2 = [2]"
-      ]
-    },
-    {
       question: "Maximum Subarray: Find the contiguous subarray with the largest sum.",
       options: [
         "Use Kadane's Algorithm",
@@ -155,7 +219,6 @@ class Solution {
         "nums = [-1,-2,-3,-4]"
       ]
     }
-    // Add 95 more DSA questions for Java...
   ];
 }
 
@@ -193,6 +256,93 @@ class Solution:
       ]
     },
     {
+      question: "How would you find the longest substring without repeating characters in Python?",
+      options: [
+        "Use sliding window with set",
+        "Use dictionary to store last positions",
+        "Use string slicing",
+        "Use list comprehension"
+      ],
+      correctAnswer: 0,
+      explanation: "Sliding window with set provides optimal O(n) solution",
+      language: 'python',
+      category: 'dsa',
+      difficulty: 'medium',
+      code: `
+class Solution:
+    def lengthOfLongestSubstring(self, s: str) -> int:
+        char_set = set()
+        max_length = 0
+        left = 0
+
+        for right in range(len(s)):
+            while s[right] in char_set:
+                char_set.remove(s[left])
+                left += 1
+            char_set.add(s[right])
+            max_length = max(max_length, right - left + 1)
+
+        return max_length`,
+      sampleInput: "s = \"abcabcbb\"",
+      sampleOutput: "3",
+      testCases: [
+        "s = \"bbbbb\"",
+        "s = \"pwwkew\"",
+        "s = \"\""
+      ]
+    },
+    {
+      question: "How would you implement a Queue using two Stacks in Python?",
+      options: [
+        "Use two lists as stacks",
+        "Use collections.deque",
+        "Use queue.Queue",
+        "Use single list"
+      ],
+      correctAnswer: 0,
+      explanation: "Two lists can be used as stacks to implement queue operations",
+      language: 'python',
+      category: 'dsa',
+      difficulty: 'medium',
+      code: `
+class MyQueue:
+    def __init__(self):
+        self.s1 = []
+        self.s2 = []
+
+    def push(self, x: int) -> None:
+        self.s1.append(x)
+
+    def pop(self) -> int:
+        if not self.s2:
+            while self.s1:
+                self.s2.append(self.s1.pop())
+        return self.s2.pop()
+
+    def peek(self) -> int:
+        if not self.s2:
+            while self.s1:
+                self.s2.append(self.s1.pop())
+        return self.s2[-1]
+
+    def empty(self) -> bool:
+        return not self.s1 and not self.s2`,
+      sampleInput: `
+queue = MyQueue()
+queue.push(1)
+queue.push(2)
+queue.peek()
+queue.pop()`,
+      sampleOutput: `
+1
+1`,
+      testCases: [
+        "push(1), push(2), peek(), pop(), empty()",
+        "push(1), pop(), empty()",
+        "push(1), push(2), push(3), pop(), pop(), pop()"
+      ]
+    },
+    {
       question: "How would you implement bracket matching to check if a string of brackets is valid?",
       options: [
         "Use a stack to track opening brackets and match with closing brackets",
@@ -227,6 +377,5 @@ class Solution:
         "s = \"{[]}\"",
       ]
     }
-    // Add more Python DSA questions here...
   ];
 }

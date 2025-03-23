@@ -120,14 +120,27 @@ export function registerRoutes(app: Express): Server {
           return res.status(400).send("Invalid category");
       }
 
-      // Randomly select questions
-      const selectedQuestions = questions
-        .sort(() => Math.random() - 0.5)
+      // Create a shuffle function for random selection
+      function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+      }
+
+      // Get unique random questions
+      const shuffledQuestions = shuffleArray([...questions]);
+      const selectedQuestions = shuffledQuestions.slice(0, numQuestions);
+
+      // Remove any duplicate questions if they exist
+      const uniqueQuestions = Array.from(new Set(selectedQuestions.map(q => q.question)))
+        .map(question => selectedQuestions.find(q => q.question === question))
         .slice(0, numQuestions);
 
       res.json({
         title: `${category.toUpperCase()} Test (${language})`,
-        questions: selectedQuestions,
+        questions: uniqueQuestions,
         timeLimit: 60 * 60, // 60 minutes
         category,
         language
