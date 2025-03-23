@@ -3,15 +3,15 @@ import { TechnicalQuestion } from '../../types';
 export async function getOOPQuestionsJava(): Promise<TechnicalQuestion[]> {
   return [
     {
-      question: "Implement a Circle class with encapsulation that calculates area and circumference.",
+      question: "How would you implement a Circle class that follows proper encapsulation principles?",
       options: [
-        "Use public variables for radius",
-        "Use private variables with getters/setters",
-        "Use protected variables",
-        "Use package-private variables"
+        "Make radius private with getters/setters and validate in setter",
+        "Use public variables for direct access to radius",
+        "Make radius protected and accessible to subclasses only",
+        "Use static variables shared across all instances"
       ],
-      correctAnswer: 1,
-      explanation: "Proper encapsulation uses private variables with public getters/setters",
+      correctAnswer: 0,
+      explanation: "Proper encapsulation requires private fields with controlled access through methods",
       language: 'java',
       category: 'oop',
       difficulty: 'easy',
@@ -45,15 +45,15 @@ public class Circle {
       sampleOutput: "circle.getArea() ≈ 78.54"
     },
     {
-      question: "Implement a bank account system using inheritance with checking and savings accounts.",
+      question: "How would you design a bank account system with different account types?",
       options: [
-        "Use separate unrelated classes",
-        "Use composition only",
-        "Use inheritance with abstract base class",
-        "Use interfaces only"
+        "Create abstract BankAccount class with concrete CheckingAccount/SavingsAccount implementations",
+        "Use separate unrelated classes for each account type",
+        "Create a single BankAccount class with type parameter",
+        "Use only interfaces without any abstract classes"
       ],
-      correctAnswer: 2,
-      explanation: "Abstract base class provides common functionality while allowing specific implementations",
+      correctAnswer: 0,
+      explanation: "Abstract class provides common functionality while allowing specific implementations",
       language: 'java',
       category: 'oop',
       difficulty: 'medium',
@@ -126,7 +126,6 @@ public abstract class Shape {
         return color;
     }
 }
-
 public class Circle extends Shape {
     private double radius;
 
@@ -229,15 +228,15 @@ Log: Test message
 export async function getOOPQuestionsPython(): Promise<TechnicalQuestion[]> {
   return [
     {
-      question: "Implement a Circle class with encapsulation that calculates area and circumference.",
+      question: "How would you implement a Circle class with proper encapsulation in Python?",
       options: [
-        "Use public variables for radius",
-        "Use private variables with properties",
-        "Use protected variables",
-        "Use no access modifiers"
+        "Use property decorators with private attributes (_radius)",
+        "Use public variables with direct access",
+        "Use double underscore variables (__radius)",
+        "Use class variables shared across instances"
       ],
-      correctAnswer: 1,
-      explanation: "Python properties provide clean encapsulation",
+      correctAnswer: 0,
+      explanation: "Property decorators provide clean encapsulation in Python",
       language: 'python',
       category: 'oop',
       difficulty: 'easy',

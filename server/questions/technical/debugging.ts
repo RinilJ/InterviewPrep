@@ -3,12 +3,12 @@ import { TechnicalQuestion } from '../../types';
 export async function getDebuggingQuestionsJava(): Promise<TechnicalQuestion[]> {
   return [
     {
-      question: "Debug this code that should reverse a string but has errors:",
+      question: "What's wrong with this string reversal implementation?",
       options: [
-        "Loop condition is incorrect",
-        "Array indexing is wrong",
-        "StringBuilder is used incorrectly",
-        "Return statement is missing"
+        "Loop iterates full length causing double reversal of characters",
+        "Array bounds checking is missing causing potential overflow",
+        "Temporary variable is unnecessary for swapping",
+        "String to char array conversion is inefficient"
       ],
       correctAnswer: 0,
       explanation: "The loop should run until i < length/2 to avoid re-reversing the string",
@@ -33,12 +33,12 @@ public String reverseString(String str) {
       sampleOutput: '"olleh"'
     },
     {
-      question: "Find and fix the bug in this binary search implementation:",
+      question: "What's the bug in this binary search implementation?",
       options: [
-        "Mid calculation can overflow",
-        "Base case is wrong",
-        "Array bounds are incorrect",
-        "Return value is wrong"
+        "Mid calculation can cause integer overflow with large arrays",
+        "Loop condition should be left < right",
+        "Array bounds checking is missing",
+        "Return value for not found case is incorrect"
       ],
       correctAnswer: 0,
       explanation: "Using (left + right) / 2 can cause integer overflow with large arrays",
@@ -75,32 +75,12 @@ public int binarySearch(int[] nums, int target) {
 export async function getDebuggingQuestionsPython(): Promise<TechnicalQuestion[]> {
   return [
     {
-      question: "Debug this code that should reverse a string but has errors:",
+      question: "What's the bug in this binary search implementation?",
       options: [
-        "Slice syntax is wrong",
-        "String concatenation is inefficient",
-        "Loop condition is incorrect",
-        "Return statement is missing"
-      ],
-      correctAnswer: 0,
-      explanation: "The slice step should be -1 to reverse the string",
-      language: 'python',
-      category: 'debugging',
-      difficulty: 'easy',
-      code: `
-def reverse_string(s: str) -> str:
-    # Bug: Step should be -1
-    return s[::-2]`,
-      sampleInput: '"hello"',
-      sampleOutput: '"olleh"'
-    },
-    {
-      question: "Find and fix the bug in this binary search implementation:",
-      options: [
-        "Missing base case for empty list",
-        "Mid calculation is wrong",
-        "List bounds are incorrect",
-        "Return value is wrong"
+        "Missing check for empty list at the start",
+        "Mid calculation should use floor division",
+        "List indices are incorrect",
+        "Return value for not found case is missing"
       ],
       correctAnswer: 0,
       explanation: "Need to check if list is empty before searching",
@@ -124,7 +104,7 @@ def binary_search(nums: List[int], target: int) -> int:
     return -1`,
       sampleInput: "nums = [1,2,3,4,5], target = 3",
       sampleOutput: "2"
-    },
-    // Add 98 more debugging questions for Python...
+    }
+    // Continue with more Python debugging questions...
   ];
 }
