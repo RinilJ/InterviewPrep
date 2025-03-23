@@ -62,35 +62,52 @@ export function setupAuth(app: Express) {
     done(null, user);
   });
 
+  // Extended registration schema with required fields
+  const extendedRegistrationSchema = z.object({
+    username: z.string().min(1, "Username is required"),
+    password: z.string().min(6, "Password must be at least 6 characters"),
+    confirmPassword: z.string().min(1, "Password confirmation is required"),
+    role: z.enum(["student", "teacher"]),
+    department: z.enum(["CS", "IT", "MCA"]),
+    year: z.enum(["1", "2", "3", "4"]),
+    batch: z.enum(["A", "B", "C", "D"])
+  }).refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ["confirmPassword"],
+  });
+
   app.post("/api/register", async (req, res, next) => {
     try {
-      const userData = insertUserSchema.parse(req.body);
+      // Validate all fields including confirmPassword
+      const validatedData = extendedRegistrationSchema.parse(req.body);
 
       // Check if username already exists
-      const existingUser = await storage.getUserByUsername(userData.username);
+      const existingUser = await storage.getUserByUsername(validatedData.username);
       if (existingUser) {
-        return res.status(400).send("Username already exists");
+        return res.status(400).json({ error: "Username already exists" });
       }
 
       // For teacher registration, check if a teacher already exists for this batch
-      if (userData.role === "teacher") {
+      if (validatedData.role === "teacher") {
         const existingTeacher = await storage.getTeacherByBatch(
-          userData.department,
-          userData.year,
-          userData.batch
+          validatedData.department,
+          validatedData.year,
+          validatedData.batch
         );
         if (existingTeacher) {
-          return res.status(400).send("Class teacher for this batch already exists");
+          return res.status(400).json({ 
+            error: "Class teacher for this batch already exists" 
+          });
         }
       }
 
       // For student registration, find and link to the class teacher
       let classTeacherId: number | null = null;
-      if (userData.role === "student") {
+      if (validatedData.role === "student") {
         const classTeacher = await storage.getTeacherByBatch(
-          userData.department,
-          userData.year,
-          userData.batch
+          validatedData.department,
+          validatedData.year,
+          validatedData.batch
         );
         if (classTeacher) {
           classTeacherId = classTeacher.id;
@@ -99,8 +116,12 @@ export function setupAuth(app: Express) {
 
       // Create the user with hashed password
       const user = await storage.createUser({
-        ...userData,
-        password: await hashPassword(userData.password),
+        username: validatedData.username,
+        password: await hashPassword(validatedData.password),
+        role: validatedData.role,
+        department: validatedData.department,
+        year: validatedData.year,
+        batch: validatedData.batch,
         classTeacherId
       });
 
@@ -111,7 +132,12 @@ export function setupAuth(app: Express) {
       });
     } catch (error) {
       if (error instanceof z.ZodError) {
-        return res.status(400).json({ errors: error.errors });
+        return res.status(400).json({ 
+          errors: error.errors.map(err => ({
+            field: err.path.join('.'),
+            message: err.message
+          }))
+        });
       }
       next(error);
     }
