@@ -650,13 +650,23 @@ async function getSentenceCompletionQuestions(): Promise<Question[]> {
 
 // Reading Comprehension Questions (L09)
 async function getReadingComprehensionQuestions(): Promise<Question[]> {
-  return [
-    // Science Passage
+  return [// Science Passage
     {
       question: `Read the following passage:
 The process ofphotosynthesis is crucial for life on Earth. Plants use sunlight, water, and carbon dioxide to produce glucose and oxygen. The sunlight is absorbed by chlorophyll in the leaves, which converts light energy into chemical energy. This energy is used to split water molecules and combine them with carbon dioxide to form glucose. Oxygen is released as a byproduct of this process. The glucose can either be used immediately by the plant for energy or stored as starch for later use.
 
-What is the primary function of chlorophyll in photosynthesis?`,
+Questions based on this passage:`,
+      options: [
+        "Continue reading for questions",
+        "",
+        "",
+        ""
+      ],
+      correctAnswer: 0,
+      explanation: "This is the passage introduction"
+    },
+    {
+      question: "What is the primary function of chlorophyll in photosynthesis?",
       options: [
         "To absorb sunlight and convert it to chemical energy",
         "To split water molecules",
@@ -690,13 +700,23 @@ What happens to the glucose produced during photosynthesis?`,
       correctAnswer: 0,
       explanation: "The passage mentions that glucose can either be used immediately for energy or stored as starch"
     },
-
     // Historical Passage
     {
       question: `Read the following passage:
 The Industrial Revolution, which began in the late 18th century in Great Britain, marked a major turning point in human history. This period saw the transition from manual production methods to machine manufacturing processes. The development of steam power and the increased use of coal were crucial drivers of this change. Factories emerged, leading to urbanization as people moved from rural areas to cities in search of work. This transformation had profound social, economic, and environmental impacts that continue to influence our world today.
 
-When did the Industrial Revolution begin?`,
+Questions based on this passage:`,
+      options: [
+        "Continue reading for questions",
+        "",
+        "",
+        ""
+      ],
+      correctAnswer: 0,
+      explanation: "This is the passage introduction"
+    },
+    {
+      question: "When did the Industrial Revolution begin?",
       options: [
         "Late 18th century",
         "Early 18th century",
@@ -730,13 +750,23 @@ What social change occurred during this period?`,
       correctAnswer: 0,
       explanation: "The passage states that urbanization occurred as people moved from rural areas to cities for work"
     },
-
     // Environmental Passage
     {
       question: `Read the following passage:
 Climate change is causing significant alterations to Earth's ecosystems. Rising global temperatures are leading to melting polar ice caps and rising sea levels. This affects not only coastal communities but also wildlife habitats and migration patterns. Extreme weather events, such as hurricanes and droughts, are becoming more frequent and intense. Scientists warn that without significant reduction in greenhouse gas emissions, these changes will accelerate in the coming decades.
 
-What is the primary effect of rising global temperatures mentioned in the passage?`,
+Questions based on this passage:`,
+      options: [
+        "Continue reading for questions",
+        "",
+        "",
+        ""
+      ],
+      correctAnswer: 0,
+      explanation: "This is the passage introduction"
+    },
+    {
+      question: "What is the primary effect of rising global temperatures mentioned in the passage?",
       options: [
         "Melting polar ice caps and rising sea levels",
         "Changes in wildlife migration",
@@ -770,13 +800,23 @@ What do scientists suggest is necessary to prevent acceleration of these changes
       correctAnswer: 0,
       explanation: "Scientists warn that reducing greenhouse gas emissions is necessary to prevent acceleration of changes"
     },
-
     // Technology Passage
     {
       question: `Read the following passage:
 Artificial Intelligence (AI) is revolutionizing various sectors of society. Machine learning algorithms can now process vast amounts of data to identify patterns and make predictions. In healthcare, AI assists in disease diagnosis and drug development. In transportation, it enables the development of self-driving vehicles. However, the increasing reliance on AI also raises concerns about privacy, job displacement, and ethical decision-making.
 
-What is the main capability of machine learning algorithms mentioned in the passage?`,
+Questions based on this passage:`,
+      options: [
+        "Continue reading for questions",
+        "",
+        "",
+        ""
+      ],
+      correctAnswer: 0,
+      explanation: "This is the passage introduction"
+    },
+    {
+      question: "What is the main capability of machine learning algorithms mentioned in the passage?",
       options: [
         "Processing data to identify patterns and make predictions",
         "Creating self-driving vehicles",
@@ -789,71 +829,7 @@ What is the main capability of machine learning algorithms mentioned in the pass
   ];
 }
 
-// Verbal Reasoning Questions (L10)
-async function getVerbalReasoningQuestions(): Promise<Question[]> {
-  return [
-    {
-      question: "If all cats are animals, and some animals are pets, which statement is definitely true?",
-      options: [
-        "Some cats may be pets",
-        "All cats are pets",
-        "No cats are pets",
-        "All pets are cats"
-      ],
-      correctAnswer: 0,
-      explanation: "Since all cats are animals and some animals are pets, it follows that some cats may be pets"
-    },
-    {
-      question: "If no heroes are cowards, and John is a hero, what can we conclude?",
-      options: [
-        "John is not a coward",
-        "John is brave",
-        "All heroes are brave",
-        "Cowards can't be heroes"
-      ],
-      correctAnswer: 0,
-      explanation: "Given that no heroes are cowards and John is a hero, we can definitively conclude that John is not a coward"
-    },
-  ];
-}
-
-// Word Order Questions (L11)
-async function getWordOrderQuestions(): Promise<Question[]> {
-  return [
-    {
-      question: "Arrange the words in a meaningful sequence: 1. Water 2. Crop 3. Seed 4. Plant 5. Harvest",
-      options: ["3,4,1,2,5", "3,1,4,2,5", "2,3,4,1,5", "4,3,1,2,5"],
-      correctAnswer: 1,
-      explanation: "Logical sequence: Seed → Water → Plant → Crop → Harvest"
-    },
-    {
-      question: "Arrange in order: 1. Infant 2. Adult 3. Child 4. Teenager",
-      options: ["1,3,4,2", "1,2,3,4", "1,4,3,2", "2,1,3,4"],
-      correctAnswer: 0,
-      explanation: "Life stages sequence: Infant → Child → Teenager → Adult"
-    },
-  ];
-}
-
-// Logical Sequence Questions (L12)
-async function getLogicalSequenceQuestions(): Promise<Question[]> {
-  return [
-    {
-      question: "Complete the sequence: XY15, WX13, UV11, ?",
-      options: ["ST9", "TS9", "ST8", "TS10"],
-      correctAnswer: 0,
-      explanation: "Pattern: Letters shift 2 positions back, numbers decrease by 2"
-    },
-    {
-      question: "Next in the series: 1, 4, 9, 16, ?",
-      options: ["25", "20", "22", "28"],
-      correctAnswer: 0,
-      explanation: "Squares: 1², 2², 3², 4², 5²"
-    },
-  ];
-}
-
-// Single export statement at the bottom
+// Export only the required sections
 export {
   getDirectionSenseQuestions,
   getBloodRelationQuestions,
@@ -863,8 +839,5 @@ export {
   getSynonymQuestions,
   getAntonymQuestions,
   getSentenceCompletionQuestions,
-  getReadingComprehensionQuestions,
-  getVerbalReasoningQuestions,
-  getWordOrderQuestions,
-  getLogicalSequenceQuestions
+  getReadingComprehensionQuestions
 };

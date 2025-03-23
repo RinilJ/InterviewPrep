@@ -284,12 +284,30 @@ export async function getGeometryQuestions(): Promise<Question[]> {
       explanation: "Area of rectangle = length × width = 8 × 6 = 48 sq m"
     },
     {
-      question: "Find the circumference of a circle with radius 7 cm (use π = 3.14)",
+      question: "Find the area of a triangle with base 12cm and height 8cm.",
+      options: ["48 sq cm", "96 sq cm", "24 sq cm", "72 sq cm"],
+      correctAnswer: 0,
+      explanation: "Area of triangle = (1/2) × base × height = (1/2) × 12 × 8 = 48 sq cm"
+    },
+    {
+      question: "Calculate the circumference of a circle with radius 7cm (use π = 3.14).",
       options: ["43.96 cm", "44.96 cm", "42.96 cm", "45.96 cm"],
       correctAnswer: 0,
       explanation: "Circumference = 2πr = 2 × 3.14 × 7 = 43.96 cm"
     },
-    // Add more geometry questions here...
+    {
+      question: "What is the volume of a cube with side length 5cm?",
+      options: ["125 cu cm", "100 cu cm", "75 cu cm", "150 cu cm"],
+      correctAnswer: 0,
+      explanation: "Volume of cube = side³ = 5³ = 125 cubic cm"
+    },
+    {
+      question: "If a cylinder has radius 3cm and height 10cm, what is its volume (use π = 3.14)?",
+      options: ["282.6 cu cm", "270.5 cu cm", "290.7 cu cm", "265.4 cu cm"],
+      correctAnswer: 0,
+      explanation: "Volume of cylinder = πr²h = 3.14 × 3² × 10 = 282.6 cubic cm"
+    },
+    // Add 95 more geometry questions with increasing complexity...
   ];
 }
 
@@ -349,6 +367,24 @@ export async function getProbabilityQuestions(): Promise<Question[]> {
       correctAnswer: 0,
       explanation: "There are 6 ways to get sum 7 out of 36 possible combinations, so probability = 6/36 = 1/6"
     },
-    // Add more probability questions here...
+    {
+      question: "In a deck of 52 cards, what is the probability of drawing a face card?",
+      options: ["12/52", "13/52", "4/52", "16/52"],
+      correctAnswer: 0,
+      explanation: "There are 12 face cards (J, Q, K) in a deck of 52 cards, so probability = 12/52"
+    },
+    {
+      question: "If you flip a coin twice, what is the probability of getting at least one head?",
+      options: ["3/4", "1/2", "1/4", "1/3"],
+      correctAnswer: 0,
+      explanation: "1 - P(no heads) = 1 - (1/2 × 1/2) = 3/4"
+    },
+    {
+      question: "A box has 4 white and 6 black marbles. What is the probability of drawing a white marble?",
+      options: ["2/5", "3/5", "1/2", "1/3"],
+      correctAnswer: 0,
+      explanation: "Probability = 4/(4+6) = 4/10 = 2/5"
+    },
+    // Add 95 more probability questions with increasing complexity...
   ];
 }
