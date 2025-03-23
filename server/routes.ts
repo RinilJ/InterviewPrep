@@ -28,7 +28,7 @@ export function registerRoutes(app: Express): Server {
         return res.status(400).send("Department, year, and batch are required");
       }
 
-      // Enforce specific values
+      // Enforce specific values and normalize
       const cleanDepartment = String(department).trim().toUpperCase();
       if (!['CS', 'IT', 'MCA'].includes(cleanDepartment)) {
         return res.status(400).send("Department must be CS, IT, or MCA");
@@ -44,11 +44,12 @@ export function registerRoutes(app: Express): Server {
         return res.status(400).send("Batch must be A, B, or C");
       }
 
-      console.log('Cleaned registration data:', { cleanDepartment, cleanYear, cleanBatch });
+      console.log('Normalized registration data:', { cleanDepartment, cleanYear, cleanBatch });
 
       // For students, find their teacher first
       let teacherId = null;
       if (role === 'student') {
+        console.log('Looking for teacher with credentials:', { cleanDepartment, cleanYear, cleanBatch });
         const classTeacher = await storage.findTeacher(cleanDepartment, cleanYear, cleanBatch);
         console.log('Found teacher for student:', classTeacher);
 
@@ -57,6 +58,7 @@ export function registerRoutes(app: Express): Server {
           return res.status(400).send("No teacher found for this batch. Please ensure a teacher is registered first.");
         }
         teacherId = classTeacher.id;
+        console.log('Setting teacherId for student:', teacherId);
       } else if (role === 'teacher') {
         // Check if a teacher already exists for this batch
         const existingTeacher = await storage.findTeacher(cleanDepartment, cleanYear, cleanBatch);

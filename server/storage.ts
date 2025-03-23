@@ -156,22 +156,34 @@ export class MemStorage implements IStorage {
           user.year === cleanYear &&
           user.batch === cleanBatch;
 
-        console.log('Checking user:', {
+        // Add detailed logging for each potential student match
+        console.log('Evaluating user for match:', {
           userId: user.id,
           username: user.username,
-          matchResult: isMatch,
-          conditions: {
-            roleMatch: user.role === 'student',
-            teacherIdMatch: user.teacherId === teacherId,
-            departmentMatch: user.department === cleanDepartment,
-            yearMatch: user.year === cleanYear,
-            batchMatch: user.batch === cleanBatch
-          }
+          role: user.role,
+          actualTeacherId: user.teacherId,
+          expectedTeacherId: teacherId,
+          actualDepartment: user.department,
+          expectedDepartment: cleanDepartment,
+          actualYear: user.year,
+          expectedYear: cleanYear,
+          actualBatch: user.batch,
+          expectedBatch: cleanBatch,
+          isMatch: isMatch
         });
 
         return isMatch;
       }
     );
+
+    console.log('Found matching students:', students.map(s => ({
+      id: s.id,
+      username: s.username,
+      teacherId: s.teacherId,
+      department: s.department,
+      year: s.year,
+      batch: s.batch
+    })));
 
     const studentsWithProgress = await Promise.all(students.map(async (student) => {
       const results = await this.getTestResults(student.id);
@@ -186,7 +198,7 @@ export class MemStorage implements IStorage {
       };
     }));
 
-    console.log('Found students with progress:', studentsWithProgress);
+    console.log('Final students with progress:', studentsWithProgress);
     return studentsWithProgress;
   }
 
