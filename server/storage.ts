@@ -72,17 +72,21 @@ export class MemStorage implements IStorage {
   }
 
   async findTeacher(department: string, year: string, batch: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
+    console.log('Finding teacher for:', { department, year, batch }); // Debug log
+    const teacher = Array.from(this.users.values()).find(
       (user) => 
         user.role === 'teacher' &&
         user.department === department &&
         user.year === year &&
         user.batch === batch
     );
+    console.log('Found teacher:', teacher); // Debug log
+    return teacher;
   }
 
   async getTeacherStudents(teacherId: number, department: string, year: string, batch: string): Promise<User[]> {
-    return Array.from(this.users.values()).filter(
+    console.log('Getting students for teacher:', { teacherId, department, year, batch }); // Debug log
+    const students = Array.from(this.users.values()).filter(
       (user) => 
         user.role === 'student' &&
         user.teacherId === teacherId &&
@@ -90,6 +94,8 @@ export class MemStorage implements IStorage {
         user.year === year &&
         user.batch === batch
     );
+    console.log('Found students:', students); // Debug log
+    return students;
   }
 
   async createTest(test: Omit<Test, "id">): Promise<Test> {

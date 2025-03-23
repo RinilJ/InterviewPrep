@@ -30,9 +30,10 @@ async function initializeDashboard() {
     const user = await checkAuth();
     if (!user) return;
 
-    // Update user info
-    document.getElementById('userName').textContent = 
-        `${user.username} (${user.department} - Year ${user.year}, Batch ${user.batch})`;
+    // Update user info with correct formatting
+    const userElement = document.getElementById('userName');
+    userElement.textContent = `${user.username} (${user.department} - Year ${user.year}, Batch ${user.batch})`;
+    console.log('Teacher Info:', user); // Debug log
 
     try {
         // Show loading state
@@ -40,10 +41,12 @@ async function initializeDashboard() {
         studentsList.innerHTML = '<div class="loading">Loading students data...</div>';
 
         // Fetch and display student progress
-        const students = await fetch('/api/teacher/students').then(res => {
-            if (!res.ok) throw new Error('Failed to fetch students');
-            return res.json();
-        });
+        const studentsResponse = await fetch('/api/teacher/students');
+        if (!studentsResponse.ok) {
+            throw new Error('Failed to fetch students');
+        }
+        const students = await studentsResponse.json();
+        console.log('Fetched students:', students); // Debug log
 
         if (students.length === 0) {
             studentsList.innerHTML = `
@@ -86,12 +89,14 @@ async function initializeDashboard() {
         }
 
         // Update statistics
-        const stats = await fetch('/api/teacher/stats').then(res => {
-            if (!res.ok) throw new Error('Failed to fetch stats');
-            return res.json();
-        });
+        const statsResponse = await fetch('/api/teacher/stats');
+        if (!statsResponse.ok) {
+            throw new Error('Failed to fetch stats');
+        }
+        const stats = await statsResponse.json();
+        console.log('Teacher stats:', stats); // Debug log
 
-        document.getElementById('totalStudents').textContent = students.length;
+        document.getElementById('totalStudents').textContent = stats.totalStudents;
         document.getElementById('activeSessions').textContent = stats.activeSessions || 0;
         document.getElementById('discussionSlots').textContent = stats.discussionSlots || 0;
 
