@@ -21,6 +21,14 @@ import { format } from "date-fns";
 import { Test, TestResult, DiscussionSlot } from "@shared/schema";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useState } from "react";
 
 export default function DashboardPage() {
   const { user } = useAuth();
@@ -80,6 +88,46 @@ export default function DashboardPage() {
   const upcomingSlots = slots?.filter(
     (slot) => new Date(slot.startTime) > new Date()
   );
+
+  const [selectedCategory, setSelectedCategory] = useState<string>("");
+  const [selectedLanguage, setSelectedLanguage] = useState<string>("");
+
+  const startTechnicalTest = async (category: string, language: string) => {
+    try {
+      const response = await fetch(`/api/technical-test/generate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          category,
+          language,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to generate test');
+      }
+
+      const test = await response.json();
+      sessionStorage.setItem('currentTest', JSON.stringify({
+        ...test,
+        category,
+        language,
+        currentQuestionIndex: 0,
+        answers: [],
+        startTime: new Date().toISOString(),
+      }));
+
+      window.location.href = '/test.html';
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to start technical test. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
     <div className="min-h-screen bg-slate-50 pb-8">
@@ -191,20 +239,59 @@ export default function DashboardPage() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {testsByType?.technical?.map((test) => (
-                    <div
-                      key={test.id}
-                      className="flex justify-between items-center p-3 bg-slate-50 rounded-lg"
-                    >
+                  <div className="space-y-4">
+                    <div className="grid gap-4">
                       <div>
-                        <p className="font-medium">{test.title}</p>
-                        <p className="text-sm text-slate-600">
-                          {test.questions.length} questions
-                        </p>
+                        <h3 className="text-sm font-medium mb-2">Select Test Category:</h3>
+                        <Select onValueChange={setSelectedCategory}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Choose a category" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="dsa">Data Structures & Algorithms</SelectItem>
+                            <SelectItem value="oop">Object-Oriented Programming</SelectItem>
+                            <SelectItem value="debugging">Debugging Challenges</SelectItem>
+                          </SelectContent>
+                        </Select>
                       </div>
-                      <Button size="sm">Start</Button>
+
+                      {selectedCategory && (
+                        <div>
+                          <h3 className="text-sm font-medium mb-2">Select Programming Language:</h3>
+                          <Select onValueChange={setSelectedLanguage}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Choose a language" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="java">Java</SelectItem>
+                              <SelectItem value="python">Python</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      )}
+
+                      {selectedCategory && selectedLanguage && (
+                        <Button
+                          onClick={() => startTechnicalTest(selectedCategory, selectedLanguage)}
+                          className="w-full"
+                        >
+                          Start Test
+                        </Button>
+                      )}
                     </div>
-                  ))}
+
+                    <div className="text-sm text-slate-600">
+                      {selectedCategory === 'dsa' && (
+                        <p>Test your knowledge of data structures and algorithms with practical coding challenges.</p>
+                      )}
+                      {selectedCategory === 'oop' && (
+                        <p>Demonstrate your understanding of object-oriented programming principles through code implementation.</p>
+                      )}
+                      {selectedCategory === 'debugging' && (
+                        <p>Find and fix bugs in code snippets to improve your debugging skills.</p>
+                      )}
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
 
