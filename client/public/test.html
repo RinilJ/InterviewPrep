@@ -25,7 +25,6 @@
             font-size: 1.1rem;
             line-height: 1.6;
             margin-bottom: 20px;
-            white-space: pre-wrap;
         }
         .code-block {
             background-color: #f6f8fa;
@@ -38,20 +37,18 @@
             list-style: none;
             padding: 0;
         }
-        .option-item {
+        .option {
             padding: 12px 15px;
             margin: 8px 0;
             border: 1px solid #ddd;
             border-radius: 4px;
             cursor: pointer;
             transition: all 0.2s;
-            font-family: monospace;
-            white-space: pre-wrap;
         }
-        .option-item:hover {
+        .option:hover {
             background-color: #f5f5f5;
         }
-        .option-item.selected {
+        .option.selected {
             background-color: #e3f2fd;
             border-color: #2196f3;
         }
@@ -76,11 +73,28 @@
             font-size: 1.2rem;
             text-align: right;
             margin-bottom: 15px;
+            color: #333;
+            font-weight: bold;
         }
-        .psychometric-note {
-            font-style: italic;
-            color: #666;
-            margin-top: 10px;
+        .button-container {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        #submitButton {
+            display: none;
+            width: 100%;
+            background-color: #4caf50;
+            color: white;
+            padding: 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1.1rem;
+        }
+        #submitButton:hover {
+            background-color: #45a049;
         }
     </style>
 </head>
@@ -88,260 +102,29 @@
     <div class="test-container">
         <header>
             <h1 id="testTitle">Loading Test...</h1>
-            <div class="timer" id="timer">Time: 00:00</div>
+            <div class="timer" id="timer">Time Remaining: 00:00</div>
             <div class="progress-bar">
                 <div class="progress-fill" id="progressFill" style="width: 0%"></div>
             </div>
         </header>
 
         <div id="questionContainer" class="question-card">
-            <h2 id="questionText" class="question-text">Loading question...</h2>
-            <div id="codeBlock" class="code-block hidden"></div>
-            <ul id="optionsList" class="options-list"></ul>
-            <div id="psychometricNote" class="psychometric-note hidden">
-                Note: There are no right or wrong answers for psychometric questions.
-            </div>
+            <!-- Question content will be dynamically inserted here -->
         </div>
 
-        <div class="test-controls">
-            <button id="prevBtn" class="btn-secondary">
+        <div class="button-container">
+            <button id="prevButton" class="btn-secondary">
                 <i class="fas fa-arrow-left"></i> Previous
             </button>
-            <button id="nextBtn" class="btn-primary">
+            <button id="nextButton" class="btn-primary">
                 Next <i class="fas fa-arrow-right"></i>
+            </button>
+            <button id="submitButton" class="btn-success">
+                Submit Test <i class="fas fa-check"></i>
             </button>
         </div>
     </div>
 
-    <script>
-        // Variables to track test state
-        let currentTest = null;
-        let timer = null;
-        let startTime = null;
-        let secondsElapsed = 0;
-
-        // Initialize test
-        function initializeTest() {
-            // Get test data from session storage
-            const testData = sessionStorage.getItem('currentTest');
-            if (!testData) {
-                window.location.href = '/dashboard.html';
-                return;
-            }
-
-            currentTest = JSON.parse(testData);
-            startTime = new Date(currentTest.startTime);
-            secondsElapsed = Math.floor((new Date() - startTime) / 1000);
-
-            // Start timer
-            startTimer();
-
-            // Set test title
-            document.getElementById('testTitle').textContent = `Topic: ${currentTest.title}`;
-
-            // Load the first question
-            loadQuestion(currentTest.currentQuestionIndex);
-
-            // Set up button event handlers
-            document.getElementById('prevBtn').addEventListener('click', previousQuestion);
-            document.getElementById('nextBtn').addEventListener('click', nextQuestion);
-
-            // Show/hide previous button based on current question
-            updateNavigationButtons();
-        }
-
-        // Start timer
-        function startTimer() {
-            timer = setInterval(() => {
-                secondsElapsed++;
-                const minutes = Math.floor(secondsElapsed / 60).toString().padStart(2, '0');
-                const seconds = (secondsElapsed % 60).toString().padStart(2, '0');
-                document.getElementById('timer').textContent = `Time: ${minutes}:${seconds}`;
-            }, 1000);
-        }
-
-        // Load a question
-        function loadQuestion(index) {
-            if (!currentTest || !currentTest.questions || index >= currentTest.questions.length) {
-                return;
-            }
-
-            const question = currentTest.questions[index];
-            document.getElementById('questionText').textContent = `${index + 1}. ${question.question}`;
-
-            // Handle code block if present
-            const codeBlock = document.getElementById('codeBlock');
-            if (question.code) {
-                codeBlock.innerHTML = `<pre><code class="language-python">${question.code}</code></pre>`;
-                codeBlock.classList.remove('hidden');
-                hljs.highlightAll();
-            } else {
-                codeBlock.classList.add('hidden');
-            }
-
-            // Update progress bar
-            const progress = ((index + 1) / currentTest.questions.length) * 100;
-            document.getElementById('progressFill').style.width = `${progress}%`;
-
-            // Populate options
-            const optionsList = document.getElementById('optionsList');
-            optionsList.innerHTML = '';
-
-            question.options.forEach((option, i) => {
-                const li = document.createElement('li');
-                li.className = 'option-item';
-                li.dataset.index = i.toString();
-                li.textContent = option;
-
-                if (currentTest.answers[index] === i) {
-                    li.classList.add('selected');
-                }
-
-                li.addEventListener('click', () => selectOption(li, i));
-                optionsList.appendChild(li);
-            });
-
-            // Show note for psychometric questions
-            const isPsychometric = currentTest.topicId.startsWith('P');
-            document.getElementById('psychometricNote').classList.toggle('hidden', !isPsychometric);
-
-            // Update current question index
-            currentTest.currentQuestionIndex = index;
-
-            // Save current state
-            saveTestState();
-
-            // Update navigation buttons
-            updateNavigationButtons();
-        }
-
-        // Select an option
-        function selectOption(optionElement, optionIndex) {
-            const options = document.querySelectorAll('.option-item');
-            options.forEach(opt => opt.classList.remove('selected'));
-            optionElement.classList.add('selected');
-            currentTest.answers[currentTest.currentQuestionIndex] = optionIndex;
-            saveTestState();
-        }
-
-        // Go to previous question
-        function previousQuestion() {
-            if (currentTest.currentQuestionIndex > 0) {
-                loadQuestion(currentTest.currentQuestionIndex - 1);
-            }
-        }
-
-        // Go to next question
-        function nextQuestion() {
-            if (currentTest.currentQuestionIndex < currentTest.questions.length - 1) {
-                loadQuestion(currentTest.currentQuestionIndex + 1);
-            } else {
-                submitTest();
-            }
-        }
-
-        // Update navigation buttons
-        function updateNavigationButtons() {
-            const prevBtn = document.getElementById('prevBtn');
-            const nextBtn = document.getElementById('nextBtn');
-
-            prevBtn.disabled = currentTest.currentQuestionIndex === 0;
-
-            if (currentTest.currentQuestionIndex === currentTest.questions.length - 1) {
-                nextBtn.innerHTML = 'Submit <i class="fas fa-check"></i>';
-            } else {
-                nextBtn.innerHTML = 'Next <i class="fas fa-arrow-right"></i>';
-            }
-        }
-
-        // Save current test state
-        function saveTestState() {
-            sessionStorage.setItem('currentTest', JSON.stringify(currentTest));
-        }
-
-        // Submit the test
-        async function submitTest() {
-            clearInterval(timer);
-
-            let score = 0;
-            let totalQuestions = currentTest.questions.length;
-
-            // Calculate score for non-psychometric tests
-            if (!currentTest.topicId.startsWith('P')) {
-                currentTest.questions.forEach((question, index) => {
-                    if (currentTest.answers[index] === question.correctAnswer) {
-                        score++;
-                    }
-                });
-            } else {
-                score = null;
-            }
-
-            const scorePercentage = score !== null ? Math.round((score / totalQuestions) * 100) : null;
-            const endTime = new Date().toISOString();
-
-            try {
-                const response = await fetch('/api/test-results', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        testId: 1,
-                        score: scorePercentage || 0,
-                        answers: currentTest.answers
-                    })
-                });
-
-                if (response.ok) {
-                    // Store test results for results page
-                    const testResults = {
-                        score: score,
-                        totalQuestions: totalQuestions,
-                        questions: currentTest.questions,
-                        userAnswers: currentTest.answers,
-                        startTime: currentTest.startTime,
-                        endTime: endTime,
-                        topic: currentTest.title
-                    };
-                    sessionStorage.setItem('testResults', JSON.stringify(testResults));
-
-                    // Clean up current test data
-                    sessionStorage.removeItem('currentTest');
-
-                    // Redirect to results page
-                    window.location.href = '/test-results.html';
-                } else {
-                    throw new Error('Failed to submit test results');
-                }
-            } catch (error) {
-                console.error('Error submitting test:', error);
-                alert('There was an error submitting your test. Please try again.');
-            }
-        }
-
-        // Check authentication
-        async function checkAuth() {
-            try {
-                const response = await fetch('/api/user');
-                if (!response.ok) {
-                    window.location.href = '/login.html';
-                    return false;
-                }
-                return true;
-            } catch (error) {
-                window.location.href = '/login.html';
-                return false;
-            }
-        }
-
-        // Initialize on page load
-        document.addEventListener('DOMContentLoaded', async () => {
-            const isAuthenticated = await checkAuth();
-            if (isAuthenticated) {
-                initializeTest();
-            }
-        });
-    </script>
+    <script src="/js/test.js"></script>
 </body>
 </html>
