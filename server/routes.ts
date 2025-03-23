@@ -4,6 +4,9 @@ import { setupAuth } from "./auth";
 import { storage } from "./storage";
 import { insertTestSchema, insertTestResultSchema } from "@shared/schema";
 import { getUniqueQuestionsForUser, questionBank } from "./questionBank";
+import { getArrayQuestionsJava, getArrayQuestionsPython } from './questions/technical/dsa';
+import { getOOPQuestionsJava, getOOPQuestionsPython } from './questions/technical/oop';
+import { getDebuggingQuestionsJava, getDebuggingQuestionsPython } from './questions/technical/debugging';
 
 export function registerRoutes(app: Express): Server {
   setupAuth(app);
@@ -80,6 +83,58 @@ export function registerRoutes(app: Express): Server {
     } catch (error) {
       console.error('Error generating test:', error);
       res.status(500).send("Failed to generate test questions: " + error.message);
+    }
+  });
+
+  // Technical test generation
+  app.post("/api/technical-test/generate", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+
+    const { category, language } = req.body;
+    if (!category || !language) {
+      return res.status(400).send("Category and language are required");
+    }
+
+    try {
+      let questions;
+      const numQuestions = 10; // Number of questions per test
+
+      // Get questions based on category and language
+      switch(category) {
+        case 'dsa':
+          questions = language === 'java' ? 
+            await getArrayQuestionsJava() : 
+            await getArrayQuestionsPython();
+          break;
+        case 'oop':
+          questions = language === 'java' ? 
+            await getOOPQuestionsJava() : 
+            await getOOPQuestionsPython();
+          break;
+        case 'debugging':
+          questions = language === 'java' ? 
+            await getDebuggingQuestionsJava() : 
+            await getDebuggingQuestionsPython();
+          break;
+        default:
+          return res.status(400).send("Invalid category");
+      }
+
+      // Randomly select questions
+      const selectedQuestions = questions
+        .sort(() => Math.random() - 0.5)
+        .slice(0, numQuestions);
+
+      res.json({
+        title: `${category.toUpperCase()} Test (${language})`,
+        questions: selectedQuestions,
+        timeLimit: 60 * 60, // 60 minutes
+        category,
+        language
+      });
+    } catch (error) {
+      console.error('Error generating technical test:', error);
+      res.status(500).send("Failed to generate test questions");
     }
   });
 
