@@ -271,7 +271,55 @@ export async function getRatioProportionQuestions(): Promise<Question[]> {
       correctAnswer: 0,
       explanation: "If 5 parts = 25 liters, then 1 part = 5 liters, so 2 parts = 10 liters"
     },
-    // Add more ratio and proportion questions here...
+    {
+      question: "If 2 men can complete a work in 6 days, how many days will 3 men take to complete the same work?",
+      options: ["4", "5", "3", "6"],
+      correctAnswer: 0,
+      explanation: "Using inverse proportion: (2 × 6)/3 = 4 days"
+    },
+    {
+      question: "The ratio of ages of two people is 4:5, and their sum is 54. Find the younger person's age.",
+      options: ["24", "30", "20", "28"],
+      correctAnswer: 0,
+      explanation: "Total parts = 9, one part = 54/9 = 6, younger age = 4 × 6 = 24"
+    },
+    {
+      question: "A car travels 240 km in 4 hours. How long will it take to travel 360 km at the same speed?",
+      options: ["6 hours", "5 hours", "7 hours", "8 hours"],
+      correctAnswer: 0,
+      explanation: "Using direct proportion: (4 × 360)/240 = 6 hours"
+    },
+    {
+      question: "If 15 workers can build a wall in 12 days, how many workers are needed to build it in 9 days?",
+      options: ["20", "18", "22", "16"],
+      correctAnswer: 0,
+      explanation: "Using inverse proportion: (15 × 12)/9 = 20 workers"
+    },
+    {
+      question: "In a map, 2 cm represents 1 km. What is the actual distance for 5 cm on the map?",
+      options: ["2.5 km", "5 km", "1.5 km", "3 km"],
+      correctAnswer: 0,
+      explanation: "Using ratio: 2 cm : 1 km = 5 cm : x km, so x = 2.5 km"
+    },
+    {
+      question: "If the ratio of red to blue marbles is 3:4 and there are 28 blue marbles, how many red marbles are there?",
+      options: ["21", "24", "18", "20"],
+      correctAnswer: 0,
+      explanation: "If 4 parts = 28, then 1 part = 7, so 3 parts = 21"
+    },
+    {
+      question: "A recipe requires 2 cups of flour for 3 servings. How many cups of flour are needed for 9 servings?",
+      options: ["6", "4", "8", "5"],
+      correctAnswer: 0,
+      explanation: "Using direct proportion: (2 × 9)/3 = 6 cups"
+    },
+    {
+      question: "In a class, the ratio of students who passed to failed is 5:1. If 60 students passed, how many failed?",
+      options: ["12", "15", "10", "8"],
+      correctAnswer: 0,
+      explanation: "If 5 parts = 60, then 1 part = 12 students failed"
+    },
+    // Add 90 more questions here with increasing complexity...
   ];
 }
 
@@ -349,25 +397,172 @@ export async function getNumberQuestions(): Promise<Question[]> {
       correctAnswer: 0,
       explanation: "1056 ÷ 23 = 45.91..., so add 2 to make it 1058 (perfectly divisible by 23)"
     },
-    // Add more number system questions here...
+    {
+      question: "Find the next number in the sequence: 2, 6, 12, 20, 30, ?",
+      options: ["42", "40", "38", "44"],
+      correctAnswer: 0,
+      explanation: "Each number increases by 4, 6, 8, 10, so next increase is 12"
+    },
+    {
+      question: "What is the LCM of 12, 18, and 24?",
+      options: ["72", "36", "48", "96"],
+      correctAnswer: 0,
+      explanation: "Prime factorization method: 72 is the least common multiple"
+    },
+    {
+      question: "Find the HCF of 54 and 81.",
+      options: ["27", "18", "9", "36"],
+      correctAnswer: 0,
+      explanation: "Using prime factorization: 27 is the highest common factor"
+    },
+    {
+      question: "Which number when divided by 7 gives remainder 3 and when divided by 4 gives remainder 2?",
+      options: ["23", "27", "19", "31"],
+      correctAnswer: 0,
+      explanation: "23 when divided by 7 gives remainder 3 and by 4 gives remainder 2"
+    },
+    {
+      question: "What is the square root of 1296?",
+      options: ["36", "34", "38", "32"],
+      correctAnswer: 0,
+      explanation: "36 × 36 = 1296"
+    },
+    {
+      question: "Find the missing number: 3, 9, 27, ?, 243",
+      options: ["81", "72", "90", "108"],
+      correctAnswer: 0,
+      explanation: "Each number is multiplied by 3: 3 × 3 = 9, 9 × 3 = 27, 27 × 3 = 81"
+    },
+    {
+      question: "What is the sum of first 15 natural numbers?",
+      options: ["120", "105", "135", "150"],
+      correctAnswer: 0,
+      explanation: "Using formula n(n+1)/2 where n=15: 15 × 16/2 = 120"
+    },
+    {
+      question: "If a number is increased by 20% and then decreased by 20%, what is the net change?",
+      options: ["-4%", "0%", "+4%", "-2%"],
+      correctAnswer: 0,
+      explanation: "After increase: 120%, after decrease: (120 × 80)/100 = 96%, net change = -4%"
+    },
+    {
+      question: "What is the smallest 3-digit number exactly divisible by 8?",
+      options: ["104", "100", "108", "112"],
+      correctAnswer: 0,
+      explanation: "104 is the first 3-digit number divisible by 8"
+    },
+    // Add 90 more questions here with increasing complexity...
   ];
 }
 
 export async function getDataInterpretationQuestions(): Promise<Question[]> {
   return [
     {
-      question: `Study the graph showing sales data:
+      question: `Study the following sales data:
 Monthly Sales (in units):
 Jan: 100
 Feb: 150
 Mar: 200
 Apr: 175
+May: 225
+
 What was the percentage increase in sales from January to March?`,
       options: ["100%", "75%", "50%", "25%"],
       correctAnswer: 0,
       explanation: "Increase = 100 units, Percentage = (100/100) × 100 = 100%"
     },
-    // Add more data interpretation questions here...
+    {
+      question: `Based on the same sales data:
+What was the average monthly sales for the first quarter (Jan-Mar)?`,
+      options: ["150 units", "175 units", "125 units", "200 units"],
+      correctAnswer: 0,
+      explanation: "Average = (100 + 150 + 200)/3 = 150 units"
+    },
+    {
+      question: `Based on the same sales data:
+In which month was the highest month-over-month growth recorded?`,
+      options: ["February", "March", "April", "May"],
+      correctAnswer: 0,
+      explanation: "Feb growth = 50 units, Mar = 50 units, Apr = -25 units, May = 50 units. Feb had earliest highest growth"
+    },
+    {
+      question: `Study the following temperature data:
+City Temperatures (°C):
+Monday: 25
+Tuesday: 28
+Wednesday: 24
+Thursday: 27
+Friday: 26
+
+What was the average temperature for the week?`,
+      options: ["26°C", "25°C", "27°C", "28°C"],
+      correctAnswer: 0,
+      explanation: "Average = (25 + 28 + 24 + 27 + 26)/5 = 26°C"
+    },
+    {
+      question: `Based on the same temperature data:
+What was the temperature range for the week?`,
+      options: ["4°C", "3°C", "5°C", "2°C"],
+      correctAnswer: 0,
+      explanation: "Range = Highest - Lowest = 28 - 24 = 4°C"
+    },
+    {
+      question: `Study the following expense data:
+Monthly Expenses:
+Rent: $800
+Food: $400
+Transport: $200
+Entertainment: $100
+Utilities: $300
+
+What percentage of total expenses is spent on rent?`,
+      options: ["44.4%", "40%", "45%", "42%"],
+      correctAnswer: 0,
+      explanation: "Total = $1800, Rent percentage = (800/1800) × 100 = 44.4%"
+    },
+    {
+      question: `Based on the same expense data:
+What is the ratio of Food to Transport expenses?`,
+      options: ["2:1", "3:1", "4:1", "5:2"],
+      correctAnswer: 0,
+      explanation: "Food:Transport = 400:200 = 2:1"
+    },
+    {
+      question: `Study the following test scores:
+Subject Scores (out of 100):
+Math: 85
+Science: 92
+English: 78
+History: 88
+Art: 95
+
+Which subject had the second-highest score?`,
+      options: ["Science", "Math", "History", "Art"],
+      correctAnswer: 0,
+      explanation: "Scores in descending order: Art(95), Science(92), History(88), Math(85), English(78)"
+    },
+    {
+      question: `Based on the same test scores:
+What is the difference between the highest and lowest scores?`,
+      options: ["17", "15", "20", "10"],
+      correctAnswer: 0,
+      explanation: "Difference = Highest - Lowest = 95 - 78 = 17"
+    },
+    {
+      question: `Study the following production data:
+Daily Production (units):
+Machine A: 150
+Machine B: 200
+Machine C: 175
+Machine D: 225
+Machine E: 250
+
+What is the total daily production?`,
+      options: ["1000 units", "950 units", "1050 units", "900 units"],
+      correctAnswer: 0,
+      explanation: "Total = 150 + 200 + 175 + 225 + 250 = 1000 units"
+    },
+    // Add 90 more questions here with increasing complexity...
   ];
 }
 
@@ -403,7 +598,37 @@ export async function getPermutationCombinationQuestions(): Promise<Question[]> 
       correctAnswer: 0,
       explanation: "This is 6C3 = (6 × 5 × 4)/(3 × 2 × 1) = 20"
     },
-    // Continue with 95 more permutation and combination questions...
+    {
+      question: "In how many ways can 5 different colored balls be arranged in a line?",
+      options: ["120", "60", "24", "720"],
+      correctAnswer: 0,
+      explanation: "This is a permutation of 5 items: 5! = 5 × 4 × 3 × 2 × 1 = 120"
+    },
+    {
+      question: "How many different 4-letter words can be formed from the word 'BOOK'?",
+      options: ["12", "24", "4", "6"],
+      correctAnswer: 0,
+      explanation: "4!/(2!) = 12 (as O appears twice)"
+    },
+    {
+      question: "In how many ways can 4 cards be selected from a deck of 52 cards?",
+      options: ["270725", "270724", "270726", "270723"],
+      correctAnswer: 0,
+      explanation: "This is 52C4 = (52 × 51 × 50 × 49)/(4 × 3 × 2 × 1) = 270725"
+    },
+    {
+      question: "How many 3-digit even numbers can be formed using digits 1, 2, 3, 4 without repetition?",
+      options: ["12", "6", "8", "10"],
+      correctAnswer: 0,
+      explanation: "Last digit must be 2 or 4, then arrange remaining digits: 3 × 2 × 2 = 12"
+    },
+    {
+      question: "In how many ways can 3 identical red balls and 2 identical blue balls be arranged in a line?",
+      options: ["10", "12", "15", "20"],
+      correctAnswer: 0,
+      explanation: "5!/(3!×2!) = 10 (using repetition formula)"
+    },
+    // Add 90 more questions here with increasing complexity...
   ];
 }
 
