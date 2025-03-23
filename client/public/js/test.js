@@ -30,6 +30,9 @@ function initializeTest() {
     // Set up timer
     startTimer(currentTest.timeLimit || 3600); // Default 1 hour if not specified
 
+    // Set test title
+    document.getElementById('testTitle').textContent = currentTest.title;
+
     // Display first question
     displayQuestion(currentTest.currentQuestionIndex || 0);
 
@@ -67,9 +70,18 @@ function displayQuestion(index) {
     // Update navigation button states
     updateNavigationButtons(index);
 
+    // Update progress bar
+    const progress = ((index + 1) / currentTest.questions.length) * 100;
+    document.getElementById('progressFill').style.width = `${progress}%`;
+
     // Save current index
     currentTest.currentQuestionIndex = index;
     sessionStorage.setItem('currentTest', JSON.stringify(currentTest));
+
+    // Highlight code if present
+    if (question.code) {
+        hljs.highlightAll();
+    }
 }
 
 function setupNavigation() {
@@ -137,15 +149,26 @@ async function submitTest() {
     saveCurrentAnswer();
     clearInterval(timer);
 
-    // Calculate score
+    // Calculate score and store results
     let correctAnswers = 0;
-    currentTest.questions.forEach((question, index) => {
-        if (currentTest.answers[index] === question.correctAnswer) {
-            correctAnswers++;
-        }
+    const results = {
+        questions: currentTest.questions.map((question, index) => ({
+            ...question,
+            userAnswer: currentTest.answers[index],
+            isCorrect: currentTest.answers[index] === question.correctAnswer
+        })),
+        startTime: currentTest.startTime,
+        endTime: new Date().toISOString(),
+        category: currentTest.category,
+        language: currentTest.language
+    };
+
+    results.questions.forEach(question => {
+        if (question.isCorrect) correctAnswers++;
     });
 
     const score = Math.round((correctAnswers / currentTest.questions.length) * 100);
+    results.score = score;
 
     try {
         // Submit test result
@@ -165,12 +188,14 @@ async function submitTest() {
             throw new Error('Failed to submit test results');
         }
 
-        // Clear test data
+        // Store results for the results page
+        sessionStorage.setItem('testResults', JSON.stringify(results));
+
+        // Clear current test data
         sessionStorage.removeItem('currentTest');
 
-        // Show result and redirect
-        alert(`Test completed! Your score: ${score}%`);
-        window.location.href = '/dashboard.html';
+        // Redirect to results page
+        window.location.href = '/test-results.html';
     } catch (error) {
         console.error('Error submitting test:', error);
         alert('Failed to submit test results. Please try again.');
