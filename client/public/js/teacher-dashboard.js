@@ -13,8 +13,6 @@ async function checkAuth() {
             return null;
         }
         const user = await response.json();
-        console.log('User data:', user); // Debug log
-
         if (!user || user.role !== 'teacher') {
             window.location.href = '/dashboard.html';
             return null;
@@ -33,40 +31,77 @@ async function initializeDashboard() {
     if (!user) return;
 
     // Update user info
-    const userInfo = `${user.username} (${user.department} - Batch ${user.batch}, Year ${user.year})`;
-    document.getElementById('userName').textContent = userInfo;
-    console.log('Setting user info:', userInfo); // Debug log
+    document.getElementById('userName').textContent = 
+        `${user.username} (${user.department} - Year ${user.year}, Batch ${user.batch})`;
 
-    // Fetch statistics
-    const stats = await fetch('/api/teacher/stats').then(res => res.json());
-    document.getElementById('totalStudents').textContent = stats.totalStudents;
-    document.getElementById('activeSessions').textContent = stats.activeSessions;
-    document.getElementById('discussionSlots').textContent = stats.discussionSlots;
+    try {
+        // Show loading state
+        const studentsList = document.getElementById('studentsList');
+        studentsList.innerHTML = '<div class="loading">Loading students data...</div>';
 
-    // Fetch and display student progress
-    const students = await fetch('/api/teacher/students').then(res => res.json());
-    console.log('Fetched students:', students); // Debug log
+        // Fetch and display student progress
+        const students = await fetch('/api/teacher/students').then(res => {
+            if (!res.ok) throw new Error('Failed to fetch students');
+            return res.json();
+        });
 
-    const studentsList = document.getElementById('studentsList');
-    if (students.length === 0) {
-        studentsList.innerHTML = '<div class="student-card"><p>No students found for your batch and year.</p></div>';
-    } else {
-        studentsList.innerHTML = students.map(student => `
-            <div class="student-card">
-                <div class="student-info">
-                    <h3><i class="fas fa-user-graduate"></i> ${student.username}</h3>
-                    <p><i class="fas fa-graduation-cap"></i> ${student.department} - Batch ${student.batch}, Year ${student.year}</p>
-                    <p><i class="fas fa-clock"></i> Last Active: ${formatDate(student.lastActive)}</p>
-                    <p><i class="fas fa-tasks"></i> Tests Completed: ${student.testsCompleted}</p>
-                    <p><i class="fas fa-chart-line"></i> Average Score: ${student.averageScore}%</p>
+        if (students.length === 0) {
+            studentsList.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-users"></i>
+                    <p>No students found for ${user.department} - Year ${user.year}, Batch ${user.batch}</p>
+                </div>`;
+        } else {
+            studentsList.innerHTML = students.map(student => `
+                <div class="student-card">
+                    <div class="student-info">
+                        <h3><i class="fas fa-user-graduate"></i> ${student.username}</h3>
+                        <p><i class="fas fa-graduation-cap"></i> ${student.department} - Year ${student.year}, Batch ${student.batch}</p>
+                        <p><i class="fas fa-clock"></i> Last Active: ${formatDate(student.createdAt)}</p>
+                        <div class="progress-section">
+                            <h4>Test Progress</h4>
+                            <div class="progress-stats">
+                                <div class="stat">
+                                    <span class="label">Aptitude Tests</span>
+                                    <span class="value">${student.aptitudeProgress || 0}%</span>
+                                </div>
+                                <div class="stat">
+                                    <span class="label">Technical Tests</span>
+                                    <span class="value">${student.technicalProgress || 0}%</span>
+                                </div>
+                                <div class="stat">
+                                    <span class="label">Psychometric Tests</span>
+                                    <span class="value">${student.psychometricProgress || 0}%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="student-actions">
+                        <button class="btn-secondary" onclick="viewProgress(${student.id})">
+                            <i class="fas fa-chart-bar"></i> View Details
+                        </button>
+                    </div>
                 </div>
-                <div class="student-actions">
-                    <button class="btn-secondary" onclick="viewProgress(${student.id})">
-                        <i class="fas fa-chart-bar"></i> View Progress
-                    </button>
-                </div>
-            </div>
-        `).join('');
+            `).join('');
+        }
+
+        // Update statistics
+        const stats = await fetch('/api/teacher/stats').then(res => {
+            if (!res.ok) throw new Error('Failed to fetch stats');
+            return res.json();
+        });
+
+        document.getElementById('totalStudents').textContent = students.length;
+        document.getElementById('activeSessions').textContent = stats.activeSessions || 0;
+        document.getElementById('discussionSlots').textContent = stats.discussionSlots || 0;
+
+    } catch (error) {
+        console.error('Error initializing dashboard:', error);
+        document.getElementById('studentsList').innerHTML = `
+            <div class="error-state">
+                <i class="fas fa-exclamation-circle"></i>
+                <p>Failed to load student data. Please try refreshing the page.</p>
+            </div>`;
     }
 
     // Load discussion slots
@@ -75,39 +110,66 @@ async function initializeDashboard() {
 
 // Load discussion slots
 async function loadDiscussionSlots(filter = 'all') {
-    const slots = await fetch('/api/discussion-slots').then(res => res.json());
-    const now = new Date();
+    try {
+        const slots = await fetch('/api/discussion-slots').then(res => {
+            if (!res.ok) throw new Error('Failed to fetch discussion slots');
+            return res.json();
+        });
 
-    const filteredSlots = slots.filter(slot => {
-        const slotDate = new Date(slot.startTime);
-        switch(filter) {
-            case 'upcoming':
-                return slotDate > now;
-            case 'past':
-                return slotDate < now;
-            default:
-                return true;
+        const now = new Date();
+        const filteredSlots = slots.filter(slot => {
+            const slotDate = new Date(slot.startTime);
+            switch(filter) {
+                case 'upcoming':
+                    return slotDate > now;
+                case 'past':
+                    return slotDate < now;
+                default:
+                    return true;
+            }
+        });
+
+        const discussionManagement = document.getElementById('discussionManagement');
+        if (filteredSlots.length === 0) {
+            discussionManagement.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-calendar-times"></i>
+                    <p>No discussion slots found</p>
+                </div>`;
+        } else {
+            discussionManagement.innerHTML = filteredSlots.map(slot => `
+                <div class="discussion-card">
+                    <div class="discussion-info">
+                        <h3><i class="fas fa-comments"></i> ${slot.topic || 'Open Discussion'}</h3>
+                        <p><i class="far fa-clock"></i> ${formatDate(slot.startTime)} - ${new Date(slot.endTime).toLocaleTimeString()}</p>
+                        <p><i class="fas fa-users"></i> Maximum Participants: ${slot.maxParticipants}</p>
+                        <p><i class="fas fa-graduation-cap"></i> For: ${slot.department} - Year ${slot.year}, Batch ${slot.batch}</p>
+                    </div>
+                    <div class="slot-actions">
+                        <button class="btn-secondary" onclick="editSlot(${slot.id})">
+                            <i class="fas fa-edit"></i> Edit
+                        </button>
+                        <button class="btn-danger" onclick="cancelSlot(${slot.id})">
+                            <i class="fas fa-times"></i> Cancel
+                        </button>
+                    </div>
+                </div>
+            `).join('');
         }
-    });
+    } catch (error) {
+        console.error('Error loading discussion slots:', error);
+        document.getElementById('discussionManagement').innerHTML = `
+            <div class="error-state">
+                <i class="fas fa-exclamation-circle"></i>
+                <p>Failed to load discussion slots. Please try refreshing the page.</p>
+            </div>`;
+    }
+}
 
-    const discussionManagement = document.getElementById('discussionManagement');
-    discussionManagement.innerHTML = filteredSlots.map(slot => `
-        <div class="discussion-card">
-            <div class="discussion-info">
-                <h3><i class="fas fa-comments"></i> ${slot.topic || 'Open Discussion'}</h3>
-                <p><i class="far fa-clock"></i> ${formatDate(slot.startTime)} - ${new Date(slot.endTime).toLocaleTimeString()}</p>
-                <p><i class="fas fa-users"></i> Maximum Participants: ${slot.maxParticipants}</p>
-            </div>
-            <div class="slot-actions">
-                <button class="btn-secondary" onclick="editSlot(${slot.id})">
-                    <i class="fas fa-edit"></i> Edit
-                </button>
-                <button class="btn-secondary" onclick="cancelSlot(${slot.id})">
-                    <i class="fas fa-times"></i> Cancel
-                </button>
-            </div>
-        </div>
-    `).join('');
+// View student's detailed progress
+async function viewProgress(studentId) {
+    // TODO: Implement detailed progress view
+    alert('Detailed progress view will be implemented soon');
 }
 
 // Filter discussion slots
@@ -119,8 +181,12 @@ function filterDiscussionSlots(filter) {
 async function createSlot(e) {
     e.preventDefault();
     const form = e.target;
+    const submitButton = form.querySelector('button[type="submit"]');
 
     try {
+        submitButton.disabled = true;
+        submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating...';
+
         const startTime = new Date(form.slotDateTime.value);
         const endTime = new Date(startTime.getTime() + parseInt(form.slotDuration.value) * 60000);
 
@@ -128,7 +194,6 @@ async function createSlot(e) {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                mentorName: form.mentorName.value,
                 topic: form.slotTopic.value || null,
                 startTime,
                 endTime,
@@ -136,18 +201,35 @@ async function createSlot(e) {
             })
         });
 
-        if (response.ok) {
-            closeModal();
-            loadDiscussionSlots();
-            alert('Slot created successfully!');
-        } else {
-            const error = await response.text();
-            alert(error || 'Failed to create slot');
+        if (!response.ok) {
+            throw new Error(await response.text());
         }
+
+        closeModal();
+        loadDiscussionSlots();
+        showToast('Success', 'Discussion slot created successfully');
     } catch (error) {
         console.error('Create slot error:', error);
-        alert('Failed to create slot');
+        showToast('Error', 'Failed to create discussion slot');
+    } finally {
+        submitButton.disabled = false;
+        submitButton.innerHTML = 'Create Slot';
     }
+}
+
+// Show toast notification
+function showToast(title, message) {
+    const toast = document.createElement('div');
+    toast.className = `toast ${title.toLowerCase()}`;
+    toast.innerHTML = `
+        <div class="toast-header">
+            <i class="fas fa-${title === 'Success' ? 'check-circle' : 'exclamation-circle'}"></i>
+            <strong>${title}</strong>
+        </div>
+        <div class="toast-body">${message}</div>
+    `;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 5000);
 }
 
 // Modal functions
@@ -159,7 +241,6 @@ function closeModal() {
     document.getElementById('createSlotModal').classList.add('hidden');
     document.getElementById('createSlotForm').reset();
 }
-
 
 // Tab switching
 document.querySelectorAll('.tab').forEach(tab => {
@@ -176,6 +257,10 @@ document.querySelectorAll('.tab').forEach(tab => {
 
 
 // Event listeners
+document.addEventListener('DOMContentLoaded', initializeDashboard);
+document.querySelectorAll('.btn-filter').forEach(button => {
+    button.addEventListener('click', () => filterDiscussionSlots(button.dataset.filter));
+});
 document.getElementById('createSlotBtn').addEventListener('click', openModal);
 document.querySelector('.close-modal').addEventListener('click', closeModal);
 document.getElementById('createSlotForm').addEventListener('submit', createSlot);
@@ -185,14 +270,6 @@ document.getElementById('logoutBtn').addEventListener('click', async () => {
         window.location.href = '/login.html';
     } catch (error) {
         console.error('Logout error:', error);
-        alert('Failed to logout');
+        showToast('Error', 'Failed to logout');
     }
-});
-
-// Initialize dashboard when page loads
-document.addEventListener('DOMContentLoaded', initializeDashboard);
-
-// Add event listeners for discussion filters
-document.querySelectorAll('.btn-filter').forEach(button => {
-    button.addEventListener('click', () => filterDiscussionSlots(button.dataset.filter));
 });
