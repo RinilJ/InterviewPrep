@@ -40,7 +40,7 @@ async function initializeDashboard() {
     try {
         // Show loading state
         const studentsList = document.getElementById('studentsList');
-        studentsList.innerHTML = '<div class="loading">Loading students data...</div>';
+        studentsList.innerHTML = `<div class="loading">Welcome ${user.username}, loading student data...</div>`;
 
         // Fetch and display student progress
         const studentsResponse = await fetch('/api/teacher/students');
