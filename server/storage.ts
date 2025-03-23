@@ -97,7 +97,7 @@ export class MemStorage implements IStorage {
     console.log('Finding teacher for:', { cleanDepartment, cleanYear, cleanBatch });
 
     const teachers = Array.from(this.users.values());
-    console.log('All users:', teachers.map(u => ({
+    console.log('Current users:', teachers.map(u => ({
       id: u.id,
       username: u.username,
       role: u.role,
