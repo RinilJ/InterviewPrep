@@ -42,9 +42,7 @@ export default function DashboardPage() {
     queryKey: ["/api/test-results"],
   });
 
-  const { data: slots, isLoading: slotsLoading } = useQuery<
-    (DiscussionSlot & { mentor?: { username: string } })[]
-  >({
+  const { data: slots, isLoading: slotsLoading } = useQuery<(DiscussionSlot & { mentor?: { username: string } })[]>({
     queryKey: ["/api/discussion-slots"],
   });
 
@@ -244,7 +242,7 @@ export default function DashboardPage() {
                       <div>
                         <h3 className="text-sm font-medium mb-2">Select Test Category:</h3>
                         <Select onValueChange={setSelectedCategory}>
-                          <SelectTrigger>
+                          <SelectTrigger className="w-full">
                             <SelectValue placeholder="Choose a category" />
                           </SelectTrigger>
                           <SelectContent>
@@ -259,7 +257,7 @@ export default function DashboardPage() {
                         <div>
                           <h3 className="text-sm font-medium mb-2">Select Programming Language:</h3>
                           <Select onValueChange={setSelectedLanguage}>
-                            <SelectTrigger>
+                            <SelectTrigger className="w-full">
                               <SelectValue placeholder="Choose a language" />
                             </SelectTrigger>
                             <SelectContent>
@@ -280,15 +278,42 @@ export default function DashboardPage() {
                       )}
                     </div>
 
-                    <div className="text-sm text-slate-600">
+                    <div className="text-sm text-slate-600 p-4 bg-slate-50 rounded-lg">
                       {selectedCategory === 'dsa' && (
-                        <p>Test your knowledge of data structures and algorithms with practical coding challenges.</p>
+                        <div>
+                          <h4 className="font-medium mb-2">Data Structures & Algorithms</h4>
+                          <p>Test your knowledge of data structures and algorithms with practical coding challenges. Includes:</p>
+                          <ul className="list-disc ml-4 mt-2">
+                            <li>Array and String Manipulation</li>
+                            <li>Linked Lists and Trees</li>
+                            <li>Sorting and Searching</li>
+                            <li>Dynamic Programming</li>
+                          </ul>
+                        </div>
                       )}
                       {selectedCategory === 'oop' && (
-                        <p>Demonstrate your understanding of object-oriented programming principles through code implementation.</p>
+                        <div>
+                          <h4 className="font-medium mb-2">Object-Oriented Programming</h4>
+                          <p>Demonstrate your understanding of OOP principles through code implementation. Covers:</p>
+                          <ul className="list-disc ml-4 mt-2">
+                            <li>Encapsulation and Inheritance</li>
+                            <li>Polymorphism and Abstraction</li>
+                            <li>Design Patterns</li>
+                            <li>SOLID Principles</li>
+                          </ul>
+                        </div>
                       )}
                       {selectedCategory === 'debugging' && (
-                        <p>Find and fix bugs in code snippets to improve your debugging skills.</p>
+                        <div>
+                          <h4 className="font-medium mb-2">Debugging Challenges</h4>
+                          <p>Find and fix bugs in code snippets to improve your debugging skills. Includes:</p>
+                          <ul className="list-disc ml-4 mt-2">
+                            <li>Logic Errors</li>
+                            <li>Runtime Errors</li>
+                            <li>Performance Issues</li>
+                            <li>Common Programming Mistakes</li>
+                          </ul>
+                        </div>
                       )}
                     </div>
                   </div>
