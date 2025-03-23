@@ -185,7 +185,7 @@ async function initializeDashboard() {
     }
 }
 
-// Start a test
+// Start a test (for non-psychometric tests)
 async function startTest(topicId) {
     try {
         // Show loading state
@@ -228,6 +228,56 @@ async function startTest(topicId) {
         }
     }
 }
+
+// Add handling for psychometric tests
+async function startPsychometricTest(testType) {
+    try {
+        // Show loading state
+        const button = event.target;
+        const originalText = button.innerHTML;
+        button.disabled = true;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+
+        // Fetch psychometric questions
+        const response = await fetch(`/api/psychometric-test?type=${testType}`);
+        if (!response.ok) {
+            throw new Error(await response.text());
+        }
+
+        const test = await response.json();
+
+        if (!test.questions || test.questions.length === 0) {
+            throw new Error('No questions available for this test');
+        }
+
+        // Store the current test in session storage
+        sessionStorage.setItem('currentTest', JSON.stringify({
+            type: testType,
+            title: test.title,
+            questions: test.questions,
+            currentQuestionIndex: 0,
+            answers: [],
+            startTime: new Date().toISOString()
+        }));
+
+        // Redirect to the test page
+        window.location.href = '/test.html';
+    } catch (error) {
+        console.error('Error starting test:', error);
+        const errorMsg = document.createElement('div');
+        errorMsg.className = 'error-message';
+        errorMsg.textContent = 'Failed to start test. Please try again.';
+        document.body.appendChild(errorMsg);
+        setTimeout(() => errorMsg.remove(), 5000);
+
+        // Reset button state
+        if (button) {
+            button.disabled = false;
+            button.innerHTML = originalText;
+        }
+    }
+}
+
 
 // Tab switching functionality
 document.querySelectorAll('.tab').forEach(tab => {
