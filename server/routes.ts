@@ -2,12 +2,12 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { setupAuth } from "./auth";
 import { storage } from "./storage";
-import { 
+import {
   getBigFiveQuestions,
   getMBTIQuestions,
   getRavensQuestions,
   getSJTQuestions,
-  getEQQuestions 
+  getEQQuestions
 } from './questions/psychometric';
 import { insertTestSchema, insertTestResultSchema } from "@shared/schema";
 import { getUniqueQuestionsForUser, questionBank } from "./questionBank";
@@ -17,6 +17,49 @@ import { getDebuggingQuestionsJava, getDebuggingQuestionsPython } from './questi
 
 export function registerRoutes(app: Express): Server {
   setupAuth(app);
+
+  // Modified registration endpoint
+  app.post("/api/register", async (req, res, next) => {
+    try {
+      const { role, department, year, batch, ...userData } = req.body;
+
+      // Check if a teacher already exists for this batch
+      if (role === 'teacher') {
+        const existingTeacher = await storage.findTeacher(department, year, batch);
+        if (existingTeacher) {
+          return res.status(400).send("Class teacher for this batch already exists");
+        }
+      }
+
+      // For students, find their teacher
+      let teacherId = null;
+      if (role === 'student') {
+        const classTeacher = await storage.findTeacher(department, year, batch);
+        if (classTeacher) {
+          teacherId = classTeacher.id;
+        }
+      }
+
+      // Create the user
+      const user = await storage.createUser({
+        ...userData,
+        role,
+        department,
+        year,
+        batch,
+        teacherId
+      });
+
+      // Log in the new user
+      req.login(user, (err) => {
+        if (err) return next(err);
+        res.status(201).json(user);
+      });
+    } catch (error) {
+      console.error('Registration error:', error);
+      res.status(500).send("Failed to register user");
+    }
+  });
 
   // Get aptitude topics
   app.get("/api/aptitude-topics", (req, res) => {
@@ -109,18 +152,18 @@ export function registerRoutes(app: Express): Server {
       // Get questions based on category and language
       switch(category) {
         case 'dsa':
-          questions = language === 'java' ? 
-            await getArrayQuestionsJava() : 
+          questions = language === 'java' ?
+            await getArrayQuestionsJava() :
             await getArrayQuestionsPython();
           break;
         case 'oop':
-          questions = language === 'java' ? 
-            await getOOPQuestionsJava() : 
+          questions = language === 'java' ?
+            await getOOPQuestionsJava() :
             await getOOPQuestionsPython();
           break;
         case 'debugging':
-          questions = language === 'java' ? 
-            await getDebuggingQuestionsJava() : 
+          questions = language === 'java' ?
+            await getDebuggingQuestionsJava() :
             await getDebuggingQuestionsPython();
           break;
         default:
@@ -201,6 +244,27 @@ export function registerRoutes(app: Express): Server {
     });
   });
 
+  // Add endpoint to get teacher's students
+  app.get("/api/teacher/students", async (req, res) => {
+    if (!req.isAuthenticated() || req.user.role !== "teacher") {
+      return res.sendStatus(401);
+    }
+
+    try {
+      const students = await storage.getTeacherStudents(
+        req.user.id,
+        req.user.department,
+        req.user.year,
+        req.user.batch
+      );
+      res.json(students);
+    } catch (error) {
+      console.error('Error fetching teacher students:', error);
+      res.status(500).send("Failed to fetch students");
+    }
+  });
+
+
   //Teacher-specific routes
   app.get("/api/teacher/stats", async (req, res) => {
     if (!req.isAuthenticated() || req.user.role !== "teacher") {
@@ -213,19 +277,6 @@ export function registerRoutes(app: Express): Server {
     );
 
     res.json(teacherStats(filteredStudents));
-  });
-
-  app.get("/api/teacher/students", async (req, res) => {
-    if (!req.isAuthenticated() || req.user.role !== "teacher") {
-      return res.sendStatus(401);
-    }
-
-    // Filter students based on teacher's department
-    const filteredStudents = studentProgress.filter(student =>
-      student.department === req.user.department
-    );
-
-    res.json(filteredStudents);
   });
 
 
@@ -299,6 +350,44 @@ export function registerRoutes(app: Express): Server {
     } catch (error) {
       console.error('Error generating psychometric test:', error);
       res.status(500).send("Failed to generate test questions");
+    }
+  });
+
+  // Modified discussion slots endpoint
+  app.post("/api/discussion-slots", async (req, res) => {
+    if (!req.isAuthenticated() || req.user.role !== "teacher") {
+      return res.sendStatus(401);
+    }
+
+    try {
+      const slot = await storage.createDiscussionSlot({
+        ...req.body,
+        mentorId: req.user.id,
+        department: req.user.department,
+        year: req.user.year,
+        batch: req.user.batch
+      });
+      res.status(201).json(slot);
+    } catch (error) {
+      console.error('Error creating discussion slot:', error);
+      res.status(500).send("Failed to create discussion slot");
+    }
+  });
+
+  // Get discussion slots for students
+  app.get("/api/discussion-slots", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+
+    try {
+      const slots = await storage.getDiscussionSlots(
+        req.user.department,
+        req.user.year,
+        req.user.batch
+      );
+      res.json(slots);
+    } catch (error) {
+      console.error('Error fetching discussion slots:', error);
+      res.status(500).send("Failed to fetch discussion slots");
     }
   });
 
