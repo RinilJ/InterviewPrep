@@ -19,6 +19,92 @@ async function checkAuth() {
     }
 }
 
+// Technical test selection handling
+let selectedCategory = null;
+let selectedLanguage = null;
+
+function initializeTechnicalTest() {
+    const categoryButtons = document.querySelectorAll('.category-btn');
+    const languageButtons = document.querySelectorAll('.language-btn');
+    const languageSection = document.querySelector('.language-selection');
+    const startTestBtn = document.getElementById('startTestBtn');
+
+    // Category selection
+    categoryButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            // Remove active state from all category buttons
+            categoryButtons.forEach(btn => btn.classList.remove('active'));
+            // Add active state to clicked button
+            button.classList.add('active');
+            selectedCategory = button.dataset.category;
+            // Show language selection
+            languageSection.classList.remove('hidden');
+            // Hide start button until language is selected
+            startTestBtn.classList.add('hidden');
+        });
+    });
+
+    // Language selection
+    languageButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            // Remove active state from all language buttons
+            languageButtons.forEach(btn => btn.classList.remove('active'));
+            // Add active state to clicked button
+            button.classList.add('active');
+            selectedLanguage = button.dataset.language;
+            // Show start button
+            startTestBtn.classList.remove('hidden');
+        });
+    });
+
+    // Start test button
+    startTestBtn.addEventListener('click', startTechnicalTest);
+}
+
+// Start technical test
+async function startTechnicalTest() {
+    try {
+        const button = event.target;
+        const originalText = button.innerHTML;
+        button.disabled = true;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+
+        const response = await fetch(`/api/technical-test/generate`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                category: selectedCategory,
+                language: selectedLanguage,
+            }),
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to generate test');
+        }
+
+        const test = await response.json();
+        sessionStorage.setItem('currentTest', JSON.stringify({
+            ...test,
+            category: selectedCategory,
+            language: selectedLanguage,
+            currentQuestionIndex: 0,
+            answers: [],
+            startTime: new Date().toISOString(),
+        }));
+
+        window.location.href = '/test.html';
+    } catch (error) {
+        console.error('Error starting test:', error);
+        alert('Failed to start test. Please try again.');
+        if (button) {
+            button.disabled = false;
+            button.innerHTML = originalText;
+        }
+    }
+}
+
 // Function to create test card
 function createTestCard(test) {
     return `
@@ -105,7 +191,7 @@ async function initializeDashboard() {
         const results = await fetch('/api/test-results').then(res => res.json());
 
         // Update statistics
-        const averageScore = results.length 
+        const averageScore = results.length
             ? Math.round(results.reduce((acc, r) => acc + r.score, 0) / results.length)
             : 0;
         document.getElementById('averageScore').textContent = `${averageScore}%`;
@@ -202,7 +288,10 @@ document.getElementById('logoutBtn').addEventListener('click', async () => {
 });
 
 // Initialize dashboard when page loads
-document.addEventListener('DOMContentLoaded', initializeDashboard);
+document.addEventListener('DOMContentLoaded', () => {
+    initializeDashboard();
+    initializeTechnicalTest();
+});
 
 // Add event listeners for discussion filters
 document.querySelectorAll('.btn-filter').forEach(button => {
@@ -226,11 +315,11 @@ function filterDiscussionSlots(filter) {
 
         switch(filter) {
             case 'today':
-                slot.style.display = 
+                slot.style.display =
                     slotDate.toDateString() === now.toDateString() ? 'flex' : 'none';
                 break;
             case 'week':
-                slot.style.display = 
+                slot.style.display =
                     slotDate >= now && slotDate <= weekEnd ? 'flex' : 'none';
                 break;
             default:
