@@ -307,7 +307,37 @@ export async function getGeometryQuestions(): Promise<Question[]> {
       correctAnswer: 0,
       explanation: "Volume of cylinder = πr²h = 3.14 × 3² × 10 = 282.6 cubic cm"
     },
-    // Add 95 more geometry questions with increasing complexity...
+    {
+      question: "What is the perimeter of a regular pentagon with side length 6cm?",
+      options: ["30 cm", "36 cm", "24 cm", "42 cm"],
+      correctAnswer: 0,
+      explanation: "Perimeter of regular pentagon = 5 × side length = 5 × 6 = 30 cm"
+    },
+    {
+      question: "Calculate the area of a circle with diameter 14cm (use π = 3.14).",
+      options: ["153.86 sq cm", "146.86 sq cm", "160.86 sq cm", "140.86 sq cm"],
+      correctAnswer: 0,
+      explanation: "Area = πr² = π(d/2)² = 3.14 × 7² = 153.86 sq cm"
+    },
+    {
+      question: "Find the surface area of a cube with edge length 4cm.",
+      options: ["96 sq cm", "64 sq cm", "128 sq cm", "80 sq cm"],
+      correctAnswer: 0,
+      explanation: "Surface area of cube = 6 × side² = 6 × 4² = 96 sq cm"
+    },
+    {
+      question: "What is the area of a rhombus with diagonals 8cm and 6cm?",
+      options: ["24 sq cm", "48 sq cm", "36 sq cm", "30 sq cm"],
+      correctAnswer: 0,
+      explanation: "Area of rhombus = (d₁ × d₂)/2 = (8 × 6)/2 = 24 sq cm"
+    },
+    {
+      question: "Calculate the volume of a rectangular prism with length 5cm, width 4cm, and height 3cm.",
+      options: ["60 cu cm", "50 cu cm", "70 cu cm", "80 cu cm"],
+      correctAnswer: 0,
+      explanation: "Volume = length × width × height = 5 × 4 × 3 = 60 cu cm"
+    },
+    // Add 90 more geometry questions...
   ];
 }
 
@@ -349,7 +379,31 @@ export async function getPermutationCombinationQuestions(): Promise<Question[]> 
       correctAnswer: 0,
       explanation: "Number of permutations = 4! = 4 × 3 × 2 × 1 = 24"
     },
-    // Add more permutation and combination questions here...
+    {
+      question: "How many 3-digit numbers can be formed using digits 1, 2, 3, 4 without repetition?",
+      options: ["24", "12", "36", "48"],
+      correctAnswer: 0,
+      explanation: "This is a permutation: 4P3 = 4 × 3 × 2 = 24"
+    },
+    {
+      question: "In how many ways can a team of 3 be selected from 10 players?",
+      options: ["120", "720", "210", "45"],
+      correctAnswer: 0,
+      explanation: "This is a combination: 10C3 = (10 × 9 × 8)/(3 × 2 × 1) = 120"
+    },
+    {
+      question: "How many ways can 2 boys and 2 girls be arranged in a row if boys must sit together?",
+      options: ["12", "24", "48", "6"],
+      correctAnswer: 0,
+      explanation: "Consider boys as one unit: 3! × 2! = 12 ways"
+    },
+    {
+      question: "From 6 different books, in how many ways can 3 books be selected?",
+      options: ["20", "30", "15", "25"],
+      correctAnswer: 0,
+      explanation: "This is 6C3 = (6 × 5 × 4)/(3 × 2 × 1) = 20"
+    },
+    // Continue with 95 more permutation and combination questions...
   ];
 }
 
@@ -385,6 +439,36 @@ export async function getProbabilityQuestions(): Promise<Question[]> {
       correctAnswer: 0,
       explanation: "Probability = 4/(4+6) = 4/10 = 2/5"
     },
-    // Add 95 more probability questions with increasing complexity...
+    {
+      question: "In a class of 30 students, 18 are girls. If a student is chosen at random, what is the probability of selecting a boy?",
+      options: ["0.4", "0.6", "0.5", "0.3"],
+      correctAnswer: 0,
+      explanation: "Number of boys = 12, Probability = 12/30 = 0.4"
+    },
+    {
+      question: "When rolling a die, what is the probability of getting an even number?",
+      options: ["1/2", "1/3", "2/3", "1/6"],
+      correctAnswer: 0,
+      explanation: "Even numbers on a die: 2,4,6. Probability = 3/6 = 1/2"
+    },
+    {
+      question: "If you draw two cards from a deck, what is the probability of getting two aces?",
+      options: ["1/221", "1/169", "1/121", "1/26"],
+      correctAnswer: 0,
+      explanation: "P(two aces) = (4/52) × (3/51) = 1/221"
+    },
+    {
+      question: "Three coins are tossed. What is the probability of getting exactly two heads?",
+      options: ["3/8", "1/2", "1/4", "1/8"],
+      correctAnswer: 0,
+      explanation: "Favorable outcomes (HHT,HTH,THH) = 3, Total outcomes = 8, P = 3/8"
+    },
+    {
+      question: "In a bag with 5 red, 3 blue, and 2 green marbles, what is the probability of not drawing a red marble?",
+      options: ["1/2", "3/5", "2/5", "1/3"],
+      correctAnswer: 0,
+      explanation: "Non-red marbles = 5, Total = 10, P = 5/10 = 1/2"
+    },
+    // Continue with 90 more probability questions with increasing complexity...
   ];
 }

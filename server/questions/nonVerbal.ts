@@ -222,7 +222,37 @@ export async function getFigureSeriesQuestions(): Promise<Question[]> {
       correctAnswer: 0,
       explanation: "Pattern grows by alternating up and down triangles"
     },
-    // Add 95 more similar questions with increasing complexity...
+    {
+      question: "Find the next figure: ◆ → ◆◇ → ◆◇◆ → ◆◇◆◇ → ?",
+      options: ["◆◇◆◇◆", "◇◆◇◆◇", "◆◆◇◆◇", "◇◇◆◇◆"],
+      correctAnswer: 0,
+      explanation: "Pattern grows by alternating filled and empty diamonds"
+    },
+    {
+      question: "Next in sequence: ● ○ ● ● ○ ○ ● ● ● ○ ○ ○ ?",
+      options: ["●", "○", "▲", "■"],
+      correctAnswer: 0,
+      explanation: "Pattern shows increasing groups: 1-1, 2-2, 3-3"
+    },
+    {
+      question: "Continue the series: ♦ → ♦♥ → ♥♦ → ♦♥♦ → ?",
+      options: ["♥♦♥", "♦♥♦♥", "♥♥♦", "♦♦♥"],
+      correctAnswer: 0,
+      explanation: "Pattern alternates and grows with each step"
+    },
+    {
+      question: "What comes next: □→◇→○→△→□→◇→○→?",
+      options: ["△", "□", "○", "◇"],
+      correctAnswer: 0,
+      explanation: "Pattern cycles through shapes: square, diamond, circle, triangle"
+    },
+    {
+      question: "Complete the sequence: ■□■ → □■□ → ■□■ → □■□ → ?",
+      options: ["■□■", "□■□", "■■□", "□□■"],
+      correctAnswer: 0,
+      explanation: "Pattern alternates between ■□■ and □■□"
+    },
+    // Continue with 90 more similar questions with increasing complexity...
   ];
 }
 
@@ -259,6 +289,36 @@ export async function getPatternCompletionQuestions(): Promise<Question[]> {
       correctAnswer: 0,
       explanation: "Pattern alternates between star arrangements"
     },
-    // Add 95 more pattern completion questions with increasing complexity...
+    {
+      question: "Complete the sequence: ■■□ → □■■ → ■□■ → ?",
+      options: ["■■□", "□■■", "□□■", "■□□"],
+      correctAnswer: 0,
+      explanation: "The filled square rotates through all positions"
+    },
+    {
+      question: "Find the next pattern: ◆◇◆ → ◇◆◇ → ◆◇◆ → ?",
+      options: ["◇◆◇", "◆◆◇", "◇◇◆", "◆◆◆"],
+      correctAnswer: 0,
+      explanation: "Pattern alternates between filled-empty-filled and empty-filled-empty"
+    },
+    {
+      question: "What follows: ●○● → ○●○ → ●○● → ?",
+      options: ["○●○", "●●○", "○○●", "●●●"],
+      correctAnswer: 0,
+      explanation: "Pattern alternates between ●○● and ○●○"
+    },
+    {
+      question: "Complete: ▲■▲ → ■▲■ → ▲■▲ → ?",
+      options: ["■▲■", "▲▲■", "■■▲", "▲▲▲"],
+      correctAnswer: 0,
+      explanation: "Pattern alternates between triangle-square-triangle and square-triangle-square"
+    },
+    {
+      question: "Next in sequence: ♦♥♦ → ♥♦♥ → ♦♥♦ → ?",
+      options: ["♥♦♥", "♦♦♥", "♥♥♦", "♦♦♦"],
+      correctAnswer: 0,
+      explanation: "Pattern alternates between diamond-heart-diamond and heart-diamond-heart"
+    },
+    // Continue with 90 more pattern completion questions with increasing complexity...
   ];
 }
