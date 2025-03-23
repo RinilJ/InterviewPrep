@@ -29,29 +29,29 @@ export function registerRoutes(app: Express): Server {
       }
 
       // Ensure values are strings
-      const cleanDepartment = String(department);
-      const cleanYear = String(year);
-      const cleanBatch = String(batch);
+      const cleanDepartment = String(department).trim();
+      const cleanYear = String(year).trim();
+      const cleanBatch = String(batch).trim();
 
-      // Check if a teacher already exists for this batch
-      if (role === 'teacher') {
-        const existingTeacher = await storage.findTeacher(cleanDepartment, cleanYear, cleanBatch);
-        console.log('Existing teacher check:', existingTeacher); // Debug log
-        if (existingTeacher) {
-          return res.status(400).send("Class teacher for this batch already exists");
-        }
-      }
+      console.log('Cleaned registration data:', { cleanDepartment, cleanYear, cleanBatch });
 
-      // For students, find their teacher
+      // For students, find their teacher first
       let teacherId = null;
       if (role === 'student') {
         const classTeacher = await storage.findTeacher(cleanDepartment, cleanYear, cleanBatch);
         console.log('Found teacher for student:', classTeacher); // Debug log
-        if (classTeacher) {
-          teacherId = classTeacher.id;
-        } else {
+
+        if (!classTeacher) {
           console.log('No teacher found for:', { cleanDepartment, cleanYear, cleanBatch });
           return res.status(400).send("No teacher found for this batch. Please ensure a teacher is registered first.");
+        }
+        teacherId = classTeacher.id;
+      } else if (role === 'teacher') {
+        // Check if a teacher already exists for this batch
+        const existingTeacher = await storage.findTeacher(cleanDepartment, cleanYear, cleanBatch);
+        console.log('Existing teacher check:', existingTeacher); // Debug log
+        if (existingTeacher) {
+          return res.status(400).send("Class teacher for this batch already exists");
         }
       }
 
@@ -73,7 +73,7 @@ export function registerRoutes(app: Express): Server {
         year: user.year,
         batch: user.batch,
         teacherId: user.teacherId
-      }); // Debug log
+      });
 
       // Log in the new user
       req.login(user, (err) => {

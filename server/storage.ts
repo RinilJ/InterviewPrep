@@ -69,9 +69,9 @@ export class MemStorage implements IStorage {
       ...user, 
       id, 
       createdAt: new Date(),
-      department: String(user.department || ""),
-      year: String(user.year || ""),
-      batch: String(user.batch || ""),
+      department: String(user.department || "").trim(),
+      year: String(user.year || "").trim(),
+      batch: String(user.batch || "").trim(),
       teacherId: user.teacherId !== undefined ? Number(user.teacherId) : null
     };
 
@@ -162,7 +162,6 @@ export class MemStorage implements IStorage {
       }
     );
 
-    // Get test results for each student
     const studentsWithProgress = await Promise.all(students.map(async (student) => {
       const results = await this.getTestResults(student.id);
       const averageScore = results.length > 0
