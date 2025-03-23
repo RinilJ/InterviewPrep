@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -14,7 +15,7 @@
                 <div class="header-content">
                     <div class="header-left">
                         <h1><i class="fas fa-chalkboard-teacher"></i> Teacher Dashboard</h1>
-                        <p class="subtitle">Manage your class and student progress</p>
+                        <p class="subtitle">Manage your classes and student progress</p>
                     </div>
                     <div class="user-info">
                         <span id="userName">Loading...</span>
@@ -32,14 +33,14 @@
                         </div>
                     </div>
                     <div class="stat-card">
-                        <i class="fas fa-tasks"></i>
+                        <i class="fas fa-chalkboard"></i>
                         <div class="stat-content">
-                            <h3>Tests Completed</h3>
-                            <p id="totalTests">--</p>
+                            <h3>Active Sessions</h3>
+                            <p id="activeSessions">--</p>
                         </div>
                     </div>
                     <div class="stat-card">
-                        <i class="fas fa-comments"></i>
+                        <i class="fas fa-calendar-check"></i>
                         <div class="stat-content">
                             <h3>Discussion Slots</h3>
                             <p id="discussionSlots">--</p>
@@ -133,25 +134,7 @@
                             <small>Leave empty for open discussion</small>
                         </div>
                     </div>
-
-                    <div class="form-section">
-                        <h3><i class="fas fa-graduation-cap"></i> Class Details</h3>
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="department">Department</label>
-                                <input type="text" id="department" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="year">Year</label>
-                                <input type="text" id="year" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="batch">Batch</label>
-                                <input type="text" id="batch" required>
-                            </div>
-                        </div>
-                    </div>
-
+                    
                     <div class="form-section">
                         <h3><i class="fas fa-clock"></i> Timing Details</h3>
                         <div class="form-row">

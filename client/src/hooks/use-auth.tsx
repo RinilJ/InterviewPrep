@@ -4,27 +4,9 @@ import {
   useMutation,
   UseMutationResult,
 } from "@tanstack/react-query";
-import { insertUserSchema, User as SelectUser } from "@shared/schema";
+import { insertUserSchema, User as SelectUser, InsertUser } from "@shared/schema";
 import { getQueryFn, apiRequest, queryClient } from "../lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { z } from "zod";
-
-// Define the registration schema to match server expectations
-const registrationSchema = z.object({
-  username: z.string().min(1, "Username is required"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
-  confirmPassword: z.string().min(1, "Password confirmation is required"),
-  role: z.enum(["student", "teacher"]),
-  department: z.enum(["CS", "IT", "MCA"]),
-  year: z.enum(["1", "2", "3", "4"]),
-  batch: z.enum(["A", "B", "C", "D"])
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords don't match",
-  path: ["confirmPassword"],
-});
-
-type RegistrationData = z.infer<typeof registrationSchema>;
-type LoginData = Pick<RegistrationData, "username" | "password">;
 
 type AuthContextType = {
   user: SelectUser | null;
@@ -32,11 +14,12 @@ type AuthContextType = {
   error: Error | null;
   loginMutation: UseMutationResult<SelectUser, Error, LoginData>;
   logoutMutation: UseMutationResult<void, Error, void>;
-  registerMutation: UseMutationResult<SelectUser, Error, RegistrationData>;
+  registerMutation: UseMutationResult<SelectUser, Error, InsertUser>;
 };
 
-export const AuthContext = createContext<AuthContextType | null>(null);
+type LoginData = Pick<InsertUser, "username" | "password">;
 
+export const AuthContext = createContext<AuthContextType | null>(null);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const { toast } = useToast();
   const {
@@ -66,9 +49,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   });
 
   const registerMutation = useMutation({
-    mutationFn: async (data: RegistrationData) => {
-      const validatedData = registrationSchema.parse(data);
-      const res = await apiRequest("POST", "/api/register", validatedData);
+    mutationFn: async (credentials: InsertUser) => {
+      const res = await apiRequest("POST", "/api/register", credentials);
       return await res.json();
     },
     onSuccess: (user: SelectUser) => {

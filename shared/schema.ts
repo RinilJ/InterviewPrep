@@ -8,9 +8,6 @@ export const users = pgTable("users", {
   password: text("password").notNull(),
   role: text("role", { enum: ["student", "teacher"] }).notNull(),
   department: text("department", { enum: ["CS", "IT", "MCA"] }),
-  year: text("year", { enum: ["1", "2", "3", "4"] }),
-  batch: text("batch", { enum: ["A", "B", "C", "D"] }),
-  classTeacherId: integer("class_teacher_id").references(() => users.id),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -41,10 +38,6 @@ export const discussionSlots = pgTable("discussion_slots", {
   mentorId: integer("mentor_id").references(() => users.id),
   maxParticipants: integer("max_participants").notNull().default(6),
   topic: text("topic").notNull(),
-  // Add fields to restrict slots to specific groups
-  department: text("department", { enum: ["CS", "IT", "MCA"] }),
-  year: text("year", { enum: ["1", "2", "3", "4"] }),
-  batch: text("batch", { enum: ["A", "B", "C", "D"] }),
 });
 
 export const slotBookings = pgTable("slot_bookings", {
@@ -54,18 +47,7 @@ export const slotBookings = pgTable("slot_bookings", {
   bookedAt: timestamp("booked_at").defaultNow(),
 });
 
-// Enhanced user schema with validation
-export const insertUserSchema = createInsertSchema(users)
-  .omit({ id: true, createdAt: true })
-  .extend({
-    // Add custom validation for teacher registration
-    confirmPassword: z.string(),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords don't match",
-    path: ["confirmPassword"],
-  });
-
+export const insertUserSchema = createInsertSchema(users).omit({ id: true, createdAt: true });
 export const insertTestSchema = createInsertSchema(tests).omit({ id: true });
 export const insertTestResultSchema = createInsertSchema(testResults).omit({ id: true, completedAt: true });
 export const insertDiscussionSlotSchema = createInsertSchema(discussionSlots).omit({ id: true });
