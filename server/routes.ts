@@ -43,7 +43,7 @@ export function registerRoutes(app: Express): Server {
         }
       }
 
-      // Create the user
+      // Create the user with required fields
       const user = await storage.createUser({
         ...userData,
         role,
