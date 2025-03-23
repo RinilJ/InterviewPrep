@@ -87,8 +87,6 @@ async function getDirectionSenseQuestions(): Promise<Question[]> {
       correctAnswer: 0,
       explanation: "The East and West movements cancel out (30m each), leaving 40m North"
     },
-    // ... (Add 86 more direction sense questions to reach approximately 100 questions)
-
   ];
 }
 
@@ -179,8 +177,6 @@ async function getBloodRelationQuestions(): Promise<Question[]> {
       correctAnswer: 0,
       explanation: "B's father is C, and A has a son who is B's brother, so A must be C's wife."
     },
-    // ... (Continue with 86 more similar questions with increasing complexity...)
-
   ];
 }
 
@@ -259,8 +255,6 @@ async function getCodingDecodingQuestions(): Promise<Question[]> {
       correctAnswer: 0,
       explanation: "Each letter is converted to its position in alphabet"
     },
-    // ... (Add 88 more similar questions with different patterns...)
-
   ];
 }
 
@@ -351,8 +345,6 @@ async function getNumberSeriesQuestions(): Promise<Question[]> {
       correctAnswer: 0,
       explanation: "Multiply by 3 each time"
     },
-    // ... (Add 86 more questions here with similar patterns but different numbers and complexity...)
-
   ];
 }
 
@@ -443,8 +435,6 @@ async function getAnalogyQuestions(): Promise<Question[]> {
       correctAnswer: 0,
       explanation: "As Bee produces Honey, Cow produces Milk"
     },
-    // ... (Add 86 more analogy questions with increasing complexity...)
-
   ];
 }
 
@@ -511,8 +501,6 @@ async function getSynonymQuestions(): Promise<Question[]> {
       correctAnswer: 0,
       explanation: "Jubilant means feeling or expressing great happiness"
     },
-    // ... (Add 90 more synonym questions here...)
-
   ];
 }
 
@@ -579,7 +567,6 @@ async function getAntonymQuestions(): Promise<Question[]> {
       correctAnswer: 0,
       explanation: "Maximum means the highest amount, its opposite is Minimum"
     },
-    // Add 90 more antonym questions with increasing complexity...
     {
       question: "Find the opposite of 'Zealous':",
       options: ["Apathetic", "Eager", "Passionate", "Enthusiastic"],
@@ -647,12 +634,11 @@ async function getSentenceCompletionQuestions(): Promise<Question[]> {
       explanation: "Context indicates positive reception"
     },
     {
-      question: "The students were _____ tolearn that their favorite teacher was retiring.",
-      options: ["saddened", "delighted", "excited","pleased"],
+      question: "The students were _____ to learn that their favorite teacher was retiring.",
+      options: ["saddened", "delighted", "excited", "pleased"],
       correctAnswer: 0,
       explanation: "Context suggests emotional loss"
     },
-    // Add 90 more sentence completion questions...
     {
       question: "The archaeologist's discovery was _____ as it provided new insights into ancient civilizations.",
       options: ["groundbreaking", "ordinary", "common", "typical"],
@@ -665,37 +651,141 @@ async function getSentenceCompletionQuestions(): Promise<Question[]> {
 // Reading Comprehension Questions (L09)
 async function getReadingComprehensionQuestions(): Promise<Question[]> {
   return [
+    // Science Passage
     {
       question: `Read the following passage:
-Plants are essential for life on Earth as they produce oxygen through photosynthesis. During this process, they use sunlight, water, and carbon dioxide to produce glucose and oxygen. The oxygen is released into the atmosphere, while the glucose is used by the plant for energy. This process is crucial for maintaining the Earth's atmosphere and providing food for other organisms.
+The process ofphotosynthesis is crucial for life on Earth. Plants use sunlight, water, and carbon dioxide to produce glucose and oxygen. The sunlight is absorbed by chlorophyll in the leaves, which converts light energy into chemical energy. This energy is used to split water molecules and combine them with carbon dioxide to form glucose. Oxygen is released as a byproduct of this process. The glucose can either be used immediately by the plant for energy or stored as starch for later use.
 
-What do plants produce through photosynthesis?`,
+What is the primary function of chlorophyll in photosynthesis?`,
       options: [
-        "Glucose and oxygen",
-        "Carbon dioxide and water",
-        "Sunlight and oxygen",
-        "Water and glucose"
+        "To absorb sunlight and convert it to chemical energy",
+        "To split water molecules",
+        "To produce oxygen",
+        "To store glucose"
       ],
       correctAnswer: 0,
-      explanation: "The passage clearly states that plants produce glucose and oxygen through photosynthesis"
+      explanation: "The passage states that chlorophyll absorbs sunlight and converts light energy into chemical energy"
     },
     {
-      question: `Read the passage:
-The Industrial Revolution was a period of major industrialization and innovation during the late 18th and early 19th centuries. The Industrial Revolution began in Great Britain and quickly spread throughout Western Europe and North America. This period saw the mechanization of agriculture and textile manufacturing and a revolution in power, including steam ships and railroads.
+      question: `Based on the same passage about photosynthesis:
+What are the three main ingredients needed for photosynthesis?`,
+      options: [
+        "Sunlight, water, and carbon dioxide",
+        "Oxygen, glucose, and water",
+        "Carbon dioxide, oxygen, and sunlight",
+        "Water, glucose, and chlorophyll"
+      ],
+      correctAnswer: 0,
+      explanation: "The passage clearly states that plants use sunlight, water, and carbon dioxide for photosynthesis"
+    },
+    {
+      question: `Based on the same passage about photosynthesis:
+What happens to the glucose produced during photosynthesis?`,
+      options: [
+        "It can be used immediately or stored as starch",
+        "It is always converted to oxygen",
+        "It is only used for immediate energy",
+        "It is always stored as starch"
+      ],
+      correctAnswer: 0,
+      explanation: "The passage mentions that glucose can either be used immediately for energy or stored as starch"
+    },
+
+    // Historical Passage
+    {
+      question: `Read the following passage:
+The Industrial Revolution, which began in the late 18th century in Great Britain, marked a major turning point in human history. This period saw the transition from manual production methods to machine manufacturing processes. The development of steam power and the increased use of coal were crucial drivers of this change. Factories emerged, leading to urbanization as people moved from rural areas to cities in search of work. This transformation had profound social, economic, and environmental impacts that continue to influence our world today.
 
 When did the Industrial Revolution begin?`,
       options: [
-        "Late 18th and early 19th centuries",
-        "Early 17th century",
+        "Late 18th century",
+        "Early 18th century",
         "Mid 19th century",
-        "20th century"
+        "Early 19th century"
       ],
       correctAnswer: 0,
-      explanation: "The passage states that the Industrial Revolution occurred during the late 18th and early 19th centuries"
+      explanation: "The passage explicitly states that the Industrial Revolution began in the late 18th century"
     },
-    // Add more reading comprehension questions with varied passages and multiple questions per passage...
-    // Each passage should have 3-4 questions to test different aspects of comprehension
-    // Continue until reaching approximately 100 questions total
+    {
+      question: `Based on the same passage about the Industrial Revolution:
+What was a key factor in driving the Industrial Revolution?`,
+      options: [
+        "Development of steam power and increased coal use",
+        "Increased rural population",
+        "Decrease in factory production",
+        "Reduction in urban areas"
+      ],
+      correctAnswer: 0,
+      explanation: "The passage mentions that steam power and increased coal use were crucial drivers of change"
+    },
+    {
+      question: `Based on the same passage about the Industrial Revolution:
+What social change occurred during this period?`,
+      options: [
+        "People moved from rural areas to cities",
+        "People moved from cities to rural areas",
+        "Factory production decreased",
+        "Steam power became less important"
+      ],
+      correctAnswer: 0,
+      explanation: "The passage states that urbanization occurred as people moved from rural areas to cities for work"
+    },
+
+    // Environmental Passage
+    {
+      question: `Read the following passage:
+Climate change is causing significant alterations to Earth's ecosystems. Rising global temperatures are leading to melting polar ice caps and rising sea levels. This affects not only coastal communities but also wildlife habitats and migration patterns. Extreme weather events, such as hurricanes and droughts, are becoming more frequent and intense. Scientists warn that without significant reduction in greenhouse gas emissions, these changes will accelerate in the coming decades.
+
+What is the primary effect of rising global temperatures mentioned in the passage?`,
+      options: [
+        "Melting polar ice caps and rising sea levels",
+        "Changes in wildlife migration",
+        "Increase in greenhouse gases",
+        "More frequent hurricanes"
+      ],
+      correctAnswer: 0,
+      explanation: "The passage directly states that rising temperatures are leading to melting polar ice caps and rising sea levels"
+    },
+    {
+      question: `Based on the same passage about climate change:
+According to the passage, what is happening to extreme weather events?`,
+      options: [
+        "They are becoming more frequent and intense",
+        "They are decreasing in frequency",
+        "They remain unchanged",
+        "They only affect coastal areas"
+      ],
+      correctAnswer: 0,
+      explanation: "The passage states that extreme weather events are becoming more frequent and intense"
+    },
+    {
+      question: `Based on the same passage about climate change:
+What do scientists suggest is necessary to prevent acceleration of these changes?`,
+      options: [
+        "Significant reduction in greenhouse gas emissions",
+        "Increased polar ice cap formation",
+        "More coastal community development",
+        "Changes in wildlife migration patterns"
+      ],
+      correctAnswer: 0,
+      explanation: "Scientists warn that reducing greenhouse gas emissions is necessary to prevent acceleration of changes"
+    },
+
+    // Technology Passage
+    {
+      question: `Read the following passage:
+Artificial Intelligence (AI) is revolutionizing various sectors of society. Machine learning algorithms can now process vast amounts of data to identify patterns and make predictions. In healthcare, AI assists in disease diagnosis and drug development. In transportation, it enables the development of self-driving vehicles. However, the increasing reliance on AI also raises concerns about privacy, job displacement, and ethical decision-making.
+
+What is the main capability of machine learning algorithms mentioned in the passage?`,
+      options: [
+        "Processing data to identify patterns and make predictions",
+        "Creating self-driving vehicles",
+        "Developing new drugs",
+        "Making ethical decisions"
+      ],
+      correctAnswer: 0,
+      explanation: "The passage states that machine learning algorithms can process vast amounts of data to identify patterns and make predictions"
+    },
   ];
 }
 
@@ -724,8 +814,6 @@ async function getVerbalReasoningQuestions(): Promise<Question[]> {
       correctAnswer: 0,
       explanation: "Given that no heroes are cowards and John is a hero, we can definitively conclude that John is not a coward"
     },
-    // Add more verbal reasoning questions testing logical deduction, syllogisms, and critical thinking...
-    // Continue until reaching approximately 100 questions
   ];
 }
 
@@ -744,8 +832,6 @@ async function getWordOrderQuestions(): Promise<Question[]> {
       correctAnswer: 0,
       explanation: "Life stages sequence: Infant → Child → Teenager → Adult"
     },
-    // Add more word order questions with different contexts and complexities...
-    // Continue until reaching approximately 100 questions
   ];
 }
 
@@ -764,8 +850,6 @@ async function getLogicalSequenceQuestions(): Promise<Question[]> {
       correctAnswer: 0,
       explanation: "Squares: 1², 2², 3², 4², 5²"
     },
-    // Add more logical sequence questions with various patterns...
-    // Continue until reaching approximately 100 questions
   ];
 }
 
