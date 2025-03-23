@@ -145,6 +145,340 @@ queue.pop();`,
       ]
     },
     {
+      question: "Given a binary tree, how would you perform a level-order traversal?",
+      options: [
+        "Use a queue to process nodes level by level",
+        "Use recursion with depth parameter",
+        "Use stack for iterative traversal",
+        "Use array to store nodes"
+      ],
+      correctAnswer: 0,
+      explanation: "Queue helps process nodes level by level, maintaining the order of traversal",
+      language: 'java',
+      category: 'dsa',
+      difficulty: 'medium',
+      code: `
+class Solution {
+    public List<List<Integer>> levelOrder(TreeNode root) {
+        List<List<Integer>> result = new ArrayList<>();
+        if (root == null) return result;
+
+        Queue<TreeNode> queue = new LinkedList<>();
+        queue.offer(root);
+
+        while (!queue.isEmpty()) {
+            int levelSize = queue.size();
+            List<Integer> currentLevel = new ArrayList<>();
+
+            for (int i = 0; i < levelSize; i++) {
+                TreeNode node = queue.poll();
+                currentLevel.add(node.val);
+
+                if (node.left != null) queue.offer(node.left);
+                if (node.right != null) queue.offer(node.right);
+            }
+            result.add(currentLevel);
+        }
+        return result;
+    }
+}`,
+      sampleInput: "root = [3,9,20,null,null,15,7]",
+      sampleOutput: "[[3],[9,20],[15,7]]",
+      testCases: [
+        "root = [1]",
+        "root = []",
+        "root = [1,2,3,4,5]"
+      ]
+    },
+    {
+      question: "How would you find the kth largest element in an array?",
+      options: [
+        "Use QuickSelect algorithm",
+        "Sort the array and return n-k element",
+        "Use min heap of size k",
+        "Use bubble sort k times"
+      ],
+      correctAnswer: 0,
+      explanation: "QuickSelect provides average O(n) time complexity",
+      language: 'java',
+      category: 'dsa',
+      difficulty: 'medium',
+      code: `
+class Solution {
+    public int findKthLargest(int[] nums, int k) {
+        return quickSelect(nums, 0, nums.length - 1, nums.length - k);
+    }
+
+    private int quickSelect(int[] nums, int left, int right, int k) {
+        if (left == right) return nums[left];
+
+        int pivot = partition(nums, left, right);
+
+        if (pivot == k) return nums[k];
+        else if (pivot < k) return quickSelect(nums, pivot + 1, right, k);
+        else return quickSelect(nums, left, pivot - 1, k);
+    }
+
+    private int partition(int[] nums, int left, int right) {
+        int pivot = nums[right];
+        int i = left;
+
+        for (int j = left; j < right; j++) {
+            if (nums[j] <= pivot) {
+                swap(nums, i, j);
+                i++;
+            }
+        }
+        swap(nums, i, right);
+        return i;
+    }
+
+    private void swap(int[] nums, int i, int j) {
+        int temp = nums[i];
+        nums[i] = nums[j];
+        nums[j] = temp;
+    }
+}`,
+      sampleInput: "nums = [3,2,1,5,6,4], k = 2",
+      sampleOutput: "5",
+      testCases: [
+        "nums = [3,2,3,1,2,4,5,5,6], k = 4",
+        "nums = [1], k = 1",
+        "nums = [1,2,3,4,5], k = 3"
+      ]
+    },
+    {
+      question: "How would you detect a cycle in a linked list?",
+      options: [
+        "Use Floyd's Cycle Finding Algorithm (fast and slow pointers)",
+        "Use HashSet to store visited nodes",
+        "Use array to store node references",
+        "Use recursive approach with counter"
+      ],
+      correctAnswer: 0,
+      explanation: "Floyd's algorithm uses O(1) space and guarantees cycle detection",
+      language: 'java',
+      category: 'dsa',
+      difficulty: 'medium',
+      code: `
+public class Solution {
+    public boolean hasCycle(ListNode head) {
+        if (head == null || head.next == null) return false;
+
+        ListNode slow = head;
+        ListNode fast = head;
+
+        while (fast != null && fast.next != null) {
+            slow = slow.next;
+            fast = fast.next.next;
+
+            if (slow == fast) return true;
+        }
+        return false;
+    }
+}`,
+      sampleInput: "head = [3,2,0,-4], pos = 1",
+      sampleOutput: "true",
+      testCases: [
+        "head = [1,2], pos = 0",
+        "head = [1], pos = -1",
+        "head = [1,2,3,4], pos = -1"
+      ]
+    },
+    {
+      question: "How would you implement a min stack that supports push, pop, top, and getMin operations in O(1) time?",
+      options: [
+        "Use two stacks, one for elements and one for minimum values",
+        "Use single stack with pair objects",
+        "Use linked list with min pointer",
+        "Use array with sorted copy"
+      ],
+      correctAnswer: 0,
+      explanation: "Two stacks approach maintains minimum value at each step efficiently",
+      language: 'java',
+      category: 'dsa',
+      difficulty: 'medium',
+      code: `
+class MinStack {
+    private Stack<Integer> stack;
+    private Stack<Integer> minStack;
+
+    public MinStack() {
+        stack = new Stack<>();
+        minStack = new Stack<>();
+    }
+
+    public void push(int val) {
+        stack.push(val);
+        if (minStack.isEmpty() || val <= minStack.peek()) {
+            minStack.push(val);
+        }
+    }
+
+    public void pop() {
+        if (!stack.isEmpty()) {
+            if (stack.peek().equals(minStack.peek())) {
+                minStack.pop();
+            }
+            stack.pop();
+        }
+    }
+
+    public int top() {
+        return stack.peek();
+    }
+
+    public int getMin() {
+        return minStack.peek();
+    }
+}`,
+      sampleInput: `
+MinStack minStack = new MinStack();
+minStack.push(-2);
+minStack.push(0);
+minStack.push(-3);
+minStack.getMin();
+minStack.pop();
+minStack.top();
+minStack.getMin();`,
+      sampleOutput: `-3
+0
+-2`,
+      testCases: [
+        "push(0), push(1), push(-1), getMin(), pop(), getMin()",
+        "push(2), push(2), push(2), pop(), getMin()",
+        "push(1), push(2), push(3), top(), pop(), getMin()"
+      ]
+    },
+    {
+      question: "How would you reverse a linked list iteratively?",
+      options: [
+        "Use three pointers (prev, curr, next) to reverse links",
+        "Use stack to store and rebuild list",
+        "Use array to store and rebuild list",
+        "Use recursive approach"
+      ],
+      correctAnswer: 0,
+      explanation: "Three pointer approach provides O(n) time and O(1) space complexity",
+      language: 'java',
+      category: 'dsa',
+      difficulty: 'easy',
+      code: `
+class Solution {
+    public ListNode reverseList(ListNode head) {
+        ListNode prev = null;
+        ListNode curr = head;
+
+        while (curr != null) {
+            ListNode next = curr.next;
+            curr.next = prev;
+            prev = curr;
+            curr = next;
+        }
+        return prev;
+    }
+}`,
+      sampleInput: "head = [1,2,3,4,5]",
+      sampleOutput: "[5,4,3,2,1]",
+      testCases: [
+        "head = [1,2]",
+        "head = []",
+        "head = [1]"
+      ]
+    },
+    {
+      question: "How would you merge k sorted linked lists?",
+      options: [
+        "Use priority queue (min heap) to merge lists efficiently",
+        "Merge lists one by one",
+        "Convert to arrays, merge and convert back",
+        "Use divide and conquer without heap"
+      ],
+      correctAnswer: 0,
+      explanation: "Priority queue provides efficient way to find minimum element among k lists",
+      language: 'java',
+      category: 'dsa',
+      difficulty: 'hard',
+      code: `
+class Solution {
+    public ListNode mergeKLists(ListNode[] lists) {
+        if (lists == null || lists.length == 0) return null;
+
+        PriorityQueue<ListNode> minHeap = new PriorityQueue<>((a,b) -> a.val - b.val);
+
+        // Add first node from each list
+        for (ListNode list : lists) {
+            if (list != null) {
+                minHeap.offer(list);
+            }
+        }
+
+        ListNode dummy = new ListNode(0);
+        ListNode tail = dummy;
+
+        while (!minHeap.isEmpty()) {
+            ListNode node = minHeap.poll();
+            tail.next = node;
+            tail = tail.next;
+
+            if (node.next != null) {
+                minHeap.offer(node.next);
+            }
+        }
+
+        return dummy.next;
+    }
+}`,
+      sampleInput: "lists = [[1,4,5],[1,3,4],[2,6]]",
+      sampleOutput: "[1,1,2,3,4,4,5,6]",
+      testCases: [
+        "lists = []",
+        "lists = [[]]",
+        "lists = [[1]]"
+      ]
+    },
+    {
+      question: "How would you implement binary search in a sorted array?",
+      options: [
+        "Use two pointers (left and right) and compute mid point",
+        "Use recursion with start and end indices",
+        "Use linear search with early termination",
+        "Use jump search with sqrt(n) steps"
+      ],
+      correctAnswer: 0,
+      explanation: "Two pointer approach provides O(log n) time complexity",
+      language: 'java',
+      category: 'dsa',
+      difficulty: 'easy',
+      code: `
+class Solution {
+    public int search(int[] nums, int target) {
+        int left = 0;
+        int right = nums.length - 1;
+
+        while (left <= right) {
+            int mid = left + (right - left) / 2;
+
+            if (nums[mid] == target) {
+                return mid;
+            } else if (nums[mid] < target) {
+                left = mid + 1;
+            } else {
+                right = mid - 1;
+            }
+        }
+        return -1;
+    }
+}`,
+      sampleInput: "nums = [-1,0,3,5,9,12], target = 9",
+      sampleOutput: "4",
+      testCases: [
+        "nums = [-1,0,3,5,9,12], target = 2",
+        "nums = [5], target = 5",
+        "nums = [], target = 0"
+      ]
+    },
+    {
       question: "How would you implement bracket matching to check if a string of brackets is valid?",
       options: [
         "Use a stack to track opening brackets and match with closing brackets",
@@ -222,6 +556,7 @@ class Solution {
   ];
 }
 
+// Add similar comprehensive set of questions for Python
 export async function getArrayQuestionsPython(): Promise<TechnicalQuestion[]> {
   return [
     {
