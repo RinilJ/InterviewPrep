@@ -21,17 +21,28 @@ export function registerRoutes(app: Express): Server {
   app.post("/api/register", async (req, res, next) => {
     try {
       const { role, department, year, batch, ...userData } = req.body;
-      console.log('Registration attempt:', { role, department, year, batch, ...userData }); // Debug log
+      console.log('Registration attempt:', { role, department, year, batch, ...userData });
 
       // Validate required fields
       if (!department || !year || !batch) {
         return res.status(400).send("Department, year, and batch are required");
       }
 
-      // Ensure values are strings
-      const cleanDepartment = String(department).trim();
+      // Enforce specific values
+      const cleanDepartment = String(department).trim().toUpperCase();
+      if (!['CS', 'IT', 'MCA'].includes(cleanDepartment)) {
+        return res.status(400).send("Department must be CS, IT, or MCA");
+      }
+
       const cleanYear = String(year).trim();
-      const cleanBatch = String(batch).trim();
+      if (!['1', '2', '3', '4'].includes(cleanYear)) {
+        return res.status(400).send("Year must be 1, 2, 3, or 4");
+      }
+
+      const cleanBatch = String(batch).trim().toUpperCase();
+      if (!['A', 'B', 'C'].includes(cleanBatch)) {
+        return res.status(400).send("Batch must be A, B, or C");
+      }
 
       console.log('Cleaned registration data:', { cleanDepartment, cleanYear, cleanBatch });
 
@@ -39,7 +50,7 @@ export function registerRoutes(app: Express): Server {
       let teacherId = null;
       if (role === 'student') {
         const classTeacher = await storage.findTeacher(cleanDepartment, cleanYear, cleanBatch);
-        console.log('Found teacher for student:', classTeacher); // Debug log
+        console.log('Found teacher for student:', classTeacher);
 
         if (!classTeacher) {
           console.log('No teacher found for:', { cleanDepartment, cleanYear, cleanBatch });
@@ -49,7 +60,7 @@ export function registerRoutes(app: Express): Server {
       } else if (role === 'teacher') {
         // Check if a teacher already exists for this batch
         const existingTeacher = await storage.findTeacher(cleanDepartment, cleanYear, cleanBatch);
-        console.log('Existing teacher check:', existingTeacher); // Debug log
+        console.log('Existing teacher check:', existingTeacher);
         if (existingTeacher) {
           return res.status(400).send("Class teacher for this batch already exists");
         }
