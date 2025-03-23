@@ -1,7 +1,7 @@
 import { Question } from '../types';
 
 // Direction Sense Questions (L01)
-export async function getDirectionSenseQuestions(): Promise<Question[]> {
+async function getDirectionSenseQuestions(): Promise<Question[]> {
   return [
     {
       question: "Starting from point A, John walks 3 km North, then 4 km East, and finally 3 km South. How far is he from point A?",
@@ -92,8 +92,8 @@ export async function getDirectionSenseQuestions(): Promise<Question[]> {
   ];
 }
 
-// Blood Relations Questions (L02)
-export async function getBloodRelationQuestions(): Promise<Question[]> {
+// Blood Relations Questions (L02) 
+async function getBloodRelationQuestions(): Promise<Question[]> {
   return [
     {
       question: "If A is B's father and C is B's sister, how is A related to C?",
@@ -185,7 +185,7 @@ export async function getBloodRelationQuestions(): Promise<Question[]> {
 }
 
 // Coding-Decoding Questions (L03)
-export async function getCodingDecodingQuestions(): Promise<Question[]> {
+async function getCodingDecodingQuestions(): Promise<Question[]> {
   return [
     {
       question: "If COMPUTER is coded as RFUVQNPC, how is PRINTER coded?",
@@ -265,7 +265,7 @@ export async function getCodingDecodingQuestions(): Promise<Question[]> {
 }
 
 // Number Series Questions (L04)
-export async function getNumberSeriesQuestions(): Promise<Question[]> {
+async function getNumberSeriesQuestions(): Promise<Question[]> {
   return [
     {
       question: "What comes next in the series: 2, 4, 8, 16, 32, __?",
@@ -357,7 +357,7 @@ export async function getNumberSeriesQuestions(): Promise<Question[]> {
 }
 
 // Analogy Questions (L05)
-export async function getAnalogyQuestions(): Promise<Question[]> {
+async function getAnalogyQuestions(): Promise<Question[]> {
   return [
     {
       question: "Book is to Reading as Food is to:",
@@ -449,7 +449,7 @@ export async function getAnalogyQuestions(): Promise<Question[]> {
 }
 
 // Synonyms Questions (L06)
-export async function getSynonymQuestions(): Promise<Question[]> {
+async function getSynonymQuestions(): Promise<Question[]> {
   return [
     {
       question: "Select the word most similar in meaning to 'Benevolent':",
@@ -517,7 +517,7 @@ export async function getSynonymQuestions(): Promise<Question[]> {
 }
 
 // Antonyms Questions (L07)
-export async function getAntonymQuestions(): Promise<Question[]> {
+async function getAntonymQuestions(): Promise<Question[]> {
   return [
     {
       question: "Choose the word most opposite in meaning to 'Ancient':",
@@ -590,7 +590,7 @@ export async function getAntonymQuestions(): Promise<Question[]> {
 }
 
 // Sentence Completion Questions (L08)
-export async function getSentenceCompletionQuestions(): Promise<Question[]> {
+async function getSentenceCompletionQuestions(): Promise<Question[]> {
   return [
     {
       question: "Despite the heavy rain, the team decided to _____ with the outdoor practice session.",
@@ -647,10 +647,10 @@ export async function getSentenceCompletionQuestions(): Promise<Question[]> {
       explanation: "Context indicates positive reception"
     },
     {
-      question: "The students were _____ to learn that their favorite teacher was retiring.",
+      question: "The students were _____ tolearn that their favorite teacher was retiring.",
       options: ["saddened", "delighted", "excited","pleased"],
       correctAnswer: 0,
-explanation: "Context suggests emotional loss"
+      explanation: "Context suggests emotional loss"
     },
     // Add 90 more sentence completion questions...
     {
@@ -663,7 +663,7 @@ explanation: "Context suggests emotional loss"
 }
 
 // Reading Comprehension Questions (L09)
-export async function getReadingComprehensionQuestions(): Promise<Question[]> {
+async function getReadingComprehensionQuestions(): Promise<Question[]> {
   return [
     {
       question: `Read the following passage:
@@ -700,7 +700,7 @@ When did the Industrial Revolution begin?`,
 }
 
 // Verbal Reasoning Questions (L10)
-export async function getVerbalReasoningQuestions(): Promise<Question[]> {
+async function getVerbalReasoningQuestions(): Promise<Question[]> {
   return [
     {
       question: "If all cats are animals, and some animals are pets, which statement is definitely true?",
@@ -730,7 +730,7 @@ export async function getVerbalReasoningQuestions(): Promise<Question[]> {
 }
 
 // Word Order Questions (L11)
-export async function getWordOrderQuestions(): Promise<Question[]> {
+async function getWordOrderQuestions(): Promise<Question[]> {
   return [
     {
       question: "Arrange the words in a meaningful sequence: 1. Water 2. Crop 3. Seed 4. Plant 5. Harvest",
@@ -750,7 +750,7 @@ export async function getWordOrderQuestions(): Promise<Question[]> {
 }
 
 // Logical Sequence Questions (L12)
-export async function getLogicalSequenceQuestions(): Promise<Question[]> {
+async function getLogicalSequenceQuestions(): Promise<Question[]> {
   return [
     {
       question: "Complete the sequence: XY15, WX13, UV11, ?",
@@ -769,7 +769,7 @@ export async function getLogicalSequenceQuestions(): Promise<Question[]> {
   ];
 }
 
-// Export all question generators
+// Single export statement at the bottom
 export {
   getDirectionSenseQuestions,
   getBloodRelationQuestions,
