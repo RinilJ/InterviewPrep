@@ -552,6 +552,389 @@ class Solution {
         "nums = [5,4,-1,7,8]",
         "nums = [-1,-2,-3,-4]"
       ]
+    },
+    {
+      question: "How would you implement a priority queue efficiently?",
+      options: [
+        "Use a binary heap implementation",
+        "Use a sorted array",
+        "Use a linked list",
+        "Use a regular queue"
+      ],
+      correctAnswer: 0,
+      explanation: "Binary heap provides O(log n) insertion and deletion with O(1) peek operations",
+      language: 'java',
+      category: 'dsa',
+      difficulty: 'medium',
+      code: `
+class PriorityQueue<T> {
+    private List<T> heap;
+    private Comparator<T> comparator;
+
+    public PriorityQueue(Comparator<T> comparator) {
+        this.heap = new ArrayList<>();
+        this.comparator = comparator;
+    }
+
+    public void offer(T element) {
+        heap.add(element);
+        siftUp(heap.size() - 1);
+    }
+
+    public T poll() {
+        if (heap.isEmpty()) return null;
+        T result = heap.get(0);
+        T last = heap.remove(heap.size() - 1);
+        if (!heap.isEmpty()) {
+            heap.set(0, last);
+            siftDown(0);
+        }
+        return result;
+    }
+
+    private void siftUp(int index) {
+        T element = heap.get(index);
+        while (index > 0) {
+            int parentIndex = (index - 1) / 2;
+            T parent = heap.get(parentIndex);
+            if (comparator.compare(element, parent) >= 0) break;
+            heap.set(index, parent);
+            index = parentIndex;
+        }
+        heap.set(index, element);
+    }
+
+    private void siftDown(int index) {
+        T element = heap.get(index);
+        int size = heap.size();
+        int half = size >>> 1;
+        while (index < half) {
+            int child = (index << 1) + 1;
+            T childElement = heap.get(child);
+            int right = child + 1;
+            if (right < size && comparator.compare(childElement, heap.get(right)) > 0) {
+                child = right;
+                childElement = heap.get(right);
+            }
+            if (comparator.compare(element, childElement) <= 0) break;
+            heap.set(index, childElement);
+            index = child;
+        }
+        heap.set(index, element);
+    }
+}`,
+      sampleInput: "Add elements: [5,2,8,1,9]",
+      sampleOutput: "Poll elements: [1,2,5,8,9]",
+      testCases: [
+        "Add: [3,1,4,1,5], Poll all",
+        "Add: [10], Poll, Add: [5], Poll",
+        "Poll empty queue"
+      ]
+    },
+    {
+      question: "How would you implement a trie (prefix tree) for efficient string operations?",
+      options: [
+        "Use a tree structure with character nodes and end markers",
+        "Use a hash table with string keys",
+        "Use a balanced binary search tree",
+        "Use array of strings with binary search"
+      ],
+      correctAnswer: 0,
+      explanation: "Trie provides efficient prefix-based operations with O(m) complexity where m is key length",
+      language: 'java',
+      category: 'dsa',
+      difficulty: 'hard',
+      code: `
+class TrieNode {
+    private TrieNode[] children;
+    private boolean isEndOfWord;
+
+    public TrieNode() {
+        children = new TrieNode[26];
+        isEndOfWord = false;
+    }
+
+    public TrieNode[] getChildren() { return children; }
+    public boolean isEndOfWord() { return isEndOfWord; }
+    public void setEndOfWord(boolean end) { isEndOfWord = end; }
+}
+
+class Trie {
+    private TrieNode root;
+
+    public Trie() {
+        root = new TrieNode();
+    }
+
+    public void insert(String word) {
+        TrieNode current = root;
+        for (char ch : word.toCharArray()) {
+            int index = ch - 'a';
+            if (current.getChildren()[index] == null) {
+                current.getChildren()[index] = new TrieNode();
+            }
+            current = current.getChildren()[index];
+        }
+        current.setEndOfWord(true);
+    }
+
+    public boolean search(String word) {
+        TrieNode node = searchNode(word);
+        return node != null && node.isEndOfWord();
+    }
+
+    public boolean startsWith(String prefix) {
+        return searchNode(prefix) != null;
+    }
+
+    private TrieNode searchNode(String str) {
+        TrieNode current = root;
+        for (char ch : str.toCharArray()) {
+            int index = ch - 'a';
+            if (current.getChildren()[index] == null) return null;
+            current = current.getChildren()[index];
+        }
+        return current;
+    }
+}`,
+      sampleInput: `
+Trie trie = new Trie();
+trie.insert("apple");
+trie.search("apple");
+trie.search("app");
+trie.startsWith("app");`,
+      sampleOutput: `
+true
+false
+true`,
+      testCases: [
+        "Insert: cat, catch, catch; Search: cat, catch",
+        "Insert: the; StartsWith: th, the, they",
+        "Search empty trie"
+      ]
+    },
+    {
+      question: "How would you implement bracket matching to check if a string of brackets is valid?",
+      options: [
+        "Use a stack to track opening brackets and match with closing brackets",
+        "Count the number of opening and closing brackets",
+        "Use string replacement to remove valid pairs recursively",
+        "Create a binary tree of bracket pairs"
+      ],
+      correctAnswer: 0,
+      explanation: "Stack provides perfect LIFO structure for matching brackets in correct order",
+      language: 'java',
+      category: 'dsa',
+      difficulty: 'easy',
+      code: `
+class Solution {
+    public boolean isValid(String s) {
+        Stack<Character> stack = new Stack<>();
+        for (char c : s.toCharArray()) {
+            if (c == '(' || c == '{' || c == '[') {
+                stack.push(c);
+            } else {
+                if (stack.isEmpty()) return false;
+                char top = stack.pop();
+                if ((c == ')' && top != '(') ||
+                    (c == '}' && top != '{') ||
+                    (c == ']' && top != '[')) {
+                    return false;
+                }
+            }
+        }
+        return stack.isEmpty();
+    }
+}`,
+      sampleInput: "s = \"()[]{}\"",
+      sampleOutput: "true",
+      testCases: [
+        "s = \"(]\"",
+        "s = \"([)]\"",
+        "s = \"{[]}\"",
+      ]
+    },
+    {
+      question: "Maximum Subarray: Find the contiguous subarray with the largest sum.",
+      options: [
+        "Use Kadane's Algorithm",
+        "Use nested loops to try all subarrays",
+        "Sort the array first",
+        "Use divide and conquer"
+      ],
+      correctAnswer: 0,
+      explanation: "Kadane's Algorithm provides optimal O(n) solution",
+      language: 'java',
+      category: 'dsa',
+      difficulty: 'medium',
+      code: `
+class Solution {
+    public int maxSubArray(int[] nums) {
+        int maxSum = nums[0];
+        int currentSum = nums[0];
+
+        for (int i = 1; i < nums.length; i++) {
+            currentSum = Math.max(nums[i], currentSum + nums[i]);
+            maxSum = Math.max(maxSum, currentSum);
+        }
+        return maxSum;
+    }
+}`,
+      sampleInput: "nums = [-2,1,-3,4,-1,2,1,-5,4]",
+      sampleOutput: "6",
+      testCases: [
+        "nums = [1]",
+        "nums = [5,4,-1,7,8]",
+        "nums = [-1,-2,-3,-4]"
+      ]
+    },
+    {
+      question: "How would you implement a priority queue in Python?",
+      options: [
+        "Use heapq module with a list",
+        "Use sorted list with binary search",
+        "Use regular list with linear search",
+        "Use collections.deque"
+      ],
+      correctAnswer: 0,
+      explanation: "heapq provides efficient priority queue operations with O(log n) complexity",
+      language: 'python',
+      category: 'dsa',
+      difficulty: 'medium',
+      code: `
+import heapq
+
+class PriorityQueue:
+    def __init__(self):
+        self._queue = []
+        self._index = 0
+
+    def push(self, item, priority):
+        heapq.heappush(self._queue, (priority, self._index, item))
+        self._index += 1
+
+    def pop(self):
+        if self._queue:
+            return heapq.heappop(self._queue)[-1]
+        return None
+
+    def peek(self):
+        if self._queue:
+            return self._queue[0][-1]
+        return None
+
+    def is_empty(self):
+        return len(self._queue) == 0`,
+      sampleInput: `
+pq = PriorityQueue()
+pq.push('task1', 3)
+pq.push('task2', 1)
+pq.push('task3', 2)`,
+      sampleOutput: `
+task2
+task3
+task1`,
+      testCases: [
+        "Push multiple items, pop all",
+        "Push one item, pop, check empty",
+        "Pop from empty queue"
+      ]
+    },
+    {
+      question: "How would you implement a trie (prefix tree) in Python?",
+      options: [
+        "Use dictionary for children and end marker",
+        "Use list for character storage",
+        "Use binary search tree",
+        "Use string array with sorting"
+      ],
+      correctAnswer: 0,
+      explanation: "Dictionary provides O(1) child lookup and flexible character support",
+      language: 'python',
+      category: 'dsa',
+      difficulty: 'hard',
+      code: `
+class TrieNode:
+    def __init__(self):
+        self.children = {}
+        self.is_end = False
+
+class Trie:
+    def __init__(self):
+        self.root = TrieNode()
+
+    def insert(self, word: str) -> None:
+        node = self.root
+        for char in word:
+            if char not in node.children:
+                node.children[char] = TrieNode()
+            node = node.children[char]
+        node.is_end = True
+
+    def search(self, word: str) -> bool:
+        node = self._search_node(word)
+        return node is not None and node.is_end
+
+    def starts_with(self, prefix: str) -> bool:
+        return self._search_node(prefix) is not None
+
+    def _search_node(self, string: str) -> TrieNode:
+        node = self.root
+        for char in string:
+            if char not in node.children:
+                return None
+            node = node.children[char]
+        return node`,
+      sampleInput: `
+trie = Trie()
+trie.insert("apple")
+trie.search("apple")
+trie.search("app")
+trie.starts_with("app")`,
+      sampleOutput: `
+True
+False
+True`,
+      testCases: [
+        "Insert: python, py, pytorch; Search: py, python",
+        "Insert: code; StartsWith: co, cod, coding",
+        "Search in empty trie"
+      ]
+    },
+    {
+      question: "How would you implement binary search in Python?",
+      options: [
+        "Use two pointers with while loop",
+        "Use recursive approach",
+        "Use list.index() method",
+        "Use linear search"
+      ],
+      correctAnswer: 0,
+      explanation: "Two pointer approach provides O(log n) time complexity",
+      language: 'python',
+      category: 'dsa',
+      difficulty: 'easy',
+      code: `
+def binary_search(nums: List[int], target: int) -> int:
+    left, right = 0, len(nums) - 1
+
+    while left <= right:
+        mid = (left + right) // 2
+        if nums[mid] == target:
+            return mid
+        elif nums[mid] < target:
+            left = mid + 1
+        else:
+            right = mid - 1
+
+    return -1`,
+      sampleInput: "nums = [-1,0,3,5,9,12], target = 9",
+      sampleOutput: "4",
+      testCases: [
+        "nums = [-1,0,3,5,9,12], target = 2",
+        "nums = [5], target = 5",
+        "nums = [], target = 0"
+      ]
     }
   ];
 }
@@ -592,7 +975,7 @@ class Solution:
     },
     {
       question: "How would you find the longest substring without repeating characters in Python?",
-      options: [
+      options:[
         "Use sliding window with set",
         "Use dictionary to store last positions",
         "Use string slicing",
@@ -710,6 +1093,154 @@ class Solution:
         "s = \"(]\"",
         "s = \"([)]\"",
         "s = \"{[]}\"",
+      ]
+    },
+    {
+      question: "How would you implement a priority queue in Python?",
+      options: [
+        "Use heapq module with a list",
+        "Use sorted list with binary search",
+        "Use regular list with linear search",
+        "Use collections.deque"
+      ],
+      correctAnswer: 0,
+      explanation: "heapq provides efficient priority queue operations with O(log n) complexity",
+      language: 'python',
+      category: 'dsa',
+      difficulty: 'medium',
+      code: `
+import heapq
+
+class PriorityQueue:
+    def __init__(self):
+        self._queue = []
+        self._index = 0
+
+    def push(self, item, priority):
+        heapq.heappush(self._queue, (priority, self._index, item))
+        self._index += 1
+
+    def pop(self):
+        if self._queue:
+            return heapq.heappop(self._queue)[-1]
+        return None
+
+    def peek(self):
+        if self._queue:
+            return self._queue[0][-1]
+        return None
+
+    def is_empty(self):
+        return len(self._queue) == 0`,
+      sampleInput: `
+pq = PriorityQueue()
+pq.push('task1', 3)
+pq.push('task2', 1)
+pq.push('task3', 2)`,
+      sampleOutput: `
+task2
+task3
+task1`,
+      testCases: [
+        "Push multiple items, pop all",
+        "Push one item, pop, check empty",
+        "Pop from empty queue"
+      ]
+    },
+    {
+      question: "How would you implement a trie (prefix tree) in Python?",
+      options: [
+        "Use dictionary for children and end marker",
+        "Use list for character storage",
+        "Use binary search tree",
+        "Use string array with sorting"
+      ],
+      correctAnswer: 0,
+      explanation: "Dictionary provides O(1) child lookup and flexible character support",
+      language: 'python',
+      category: 'dsa',
+      difficulty: 'hard',
+      code: `
+class TrieNode:
+    def __init__(self):
+        self.children = {}
+        self.is_end = False
+
+class Trie:
+    def __init__(self):
+        self.root = TrieNode()
+
+    def insert(self, word: str) -> None:
+        node = self.root
+        for char in word:
+            if char not in node.children:
+                node.children[char] = TrieNode()
+            node = node.children[char]
+        node.is_end = True
+
+    def search(self, word: str) -> bool:
+        node = self._search_node(word)
+        return node is not None and node.is_end
+
+    def starts_with(self, prefix: str) -> bool:
+        return self._search_node(prefix) is not None
+
+    def _search_node(self, string: str) -> TrieNode:
+        node = self.root
+        for char in string:
+            if char not in node.children:
+                return None
+            node = node.children[char]
+        return node`,
+      sampleInput: `
+trie = Trie()
+trie.insert("apple")
+trie.search("apple")
+trie.search("app")
+trie.starts_with("app")`,
+      sampleOutput: `
+True
+False
+True`,
+      testCases: [
+        "Insert: python, py, pytorch; Search: py, python",
+        "Insert: code; StartsWith: co, cod, coding",
+        "Search in empty trie"
+      ]
+    },
+    {
+      question: "How would you implement binary search in Python?",
+      options: [
+        "Use two pointers with while loop",
+        "Use recursive approach",
+        "Use list.index() method",
+        "Use linear search"
+      ],
+      correctAnswer: 0,
+      explanation: "Two pointer approach provides O(log n) time complexity",
+      language: 'python',
+      category: 'dsa',
+      difficulty: 'easy',
+      code: `
+def binary_search(nums: List[int], target: int) -> int:
+    left, right = 0, len(nums) - 1
+
+    while left <= right:
+        mid = (left + right) // 2
+        if nums[mid] == target:
+            return mid
+        elif nums[mid] < target:
+            left = mid + 1
+        else:
+            right = mid - 1
+
+    return -1`,
+      sampleInput: "nums = [-1,0,3,5,9,12], target = 9",
+      sampleOutput: "4",
+      testCases: [
+        "nums = [-1,0,3,5,9,12], target = 2",
+        "nums = [5], target = 5",
+        "nums = [], target = 0"
       ]
     }
   ];
