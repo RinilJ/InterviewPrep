@@ -18,7 +18,6 @@ import { getDebuggingQuestionsJava, getDebuggingQuestionsPython } from './questi
 export function registerRoutes(app: Express): Server {
   setupAuth(app);
 
-  // Modified registration endpoint
   app.post("/api/register", async (req, res, next) => {
     try {
       const { role, department, year, batch, ...userData } = req.body;
