@@ -191,63 +191,6 @@ class Solution {
       ]
     },
     {
-      question: "How would you find the kth largest element in an array?",
-      options: [
-        "Use QuickSelect algorithm",
-        "Sort the array and return n-k element",
-        "Use min heap of size k",
-        "Use bubble sort k times"
-      ],
-      correctAnswer: 0,
-      explanation: "QuickSelect provides average O(n) time complexity",
-      language: 'java',
-      category: 'dsa',
-      difficulty: 'medium',
-      code: `
-class Solution {
-    public int findKthLargest(int[] nums, int k) {
-        return quickSelect(nums, 0, nums.length - 1, nums.length - k);
-    }
-
-    private int quickSelect(int[] nums, int left, int right, int k) {
-        if (left == right) return nums[left];
-
-        int pivot = partition(nums, left, right);
-
-        if (pivot == k) return nums[k];
-        else if (pivot < k) return quickSelect(nums, pivot + 1, right, k);
-        else return quickSelect(nums, left, pivot - 1, k);
-    }
-
-    private int partition(int[] nums, int left, int right) {
-        int pivot = nums[right];
-        int i = left;
-
-        for (int j = left; j < right; j++) {
-            if (nums[j] <= pivot) {
-                swap(nums, i, j);
-                i++;
-            }
-        }
-        swap(nums, i, right);
-        return i;
-    }
-
-    private void swap(int[] nums, int i, int j) {
-        int temp = nums[i];
-        nums[i] = nums[j];
-        nums[j] = temp;
-    }
-}`,
-      sampleInput: "nums = [3,2,1,5,6,4], k = 2",
-      sampleOutput: "5",
-      testCases: [
-        "nums = [3,2,3,1,2,4,5,5,6], k = 4",
-        "nums = [1], k = 1",
-        "nums = [1,2,3,4,5], k = 3"
-      ]
-    },
-    {
       question: "How would you detect a cycle in a linked list?",
       options: [
         "Use Floyd's Cycle Finding Algorithm (fast and slow pointers)",
@@ -351,93 +294,6 @@ minStack.getMin();`,
       ]
     },
     {
-      question: "How would you reverse a linked list iteratively?",
-      options: [
-        "Use three pointers (prev, curr, next) to reverse links",
-        "Use stack to store and rebuild list",
-        "Use array to store and rebuild list",
-        "Use recursive approach"
-      ],
-      correctAnswer: 0,
-      explanation: "Three pointer approach provides O(n) time and O(1) space complexity",
-      language: 'java',
-      category: 'dsa',
-      difficulty: 'easy',
-      code: `
-class Solution {
-    public ListNode reverseList(ListNode head) {
-        ListNode prev = null;
-        ListNode curr = head;
-
-        while (curr != null) {
-            ListNode next = curr.next;
-            curr.next = prev;
-            prev = curr;
-            curr = next;
-        }
-        return prev;
-    }
-}`,
-      sampleInput: "head = [1,2,3,4,5]",
-      sampleOutput: "[5,4,3,2,1]",
-      testCases: [
-        "head = [1,2]",
-        "head = []",
-        "head = [1]"
-      ]
-    },
-    {
-      question: "How would you merge k sorted linked lists?",
-      options: [
-        "Use priority queue (min heap) to merge lists efficiently",
-        "Merge lists one by one",
-        "Convert to arrays, merge and convert back",
-        "Use divide and conquer without heap"
-      ],
-      correctAnswer: 0,
-      explanation: "Priority queue provides efficient way to find minimum element among k lists",
-      language: 'java',
-      category: 'dsa',
-      difficulty: 'hard',
-      code: `
-class Solution {
-    public ListNode mergeKLists(ListNode[] lists) {
-        if (lists == null || lists.length == 0) return null;
-
-        PriorityQueue<ListNode> minHeap = new PriorityQueue<>((a,b) -> a.val - b.val);
-
-        // Add first node from each list
-        for (ListNode list : lists) {
-            if (list != null) {
-                minHeap.offer(list);
-            }
-        }
-
-        ListNode dummy = new ListNode(0);
-        ListNode tail = dummy;
-
-        while (!minHeap.isEmpty()) {
-            ListNode node = minHeap.poll();
-            tail.next = node;
-            tail = tail.next;
-
-            if (node.next != null) {
-                minHeap.offer(node.next);
-            }
-        }
-
-        return dummy.next;
-    }
-}`,
-      sampleInput: "lists = [[1,4,5],[1,3,4],[2,6]]",
-      sampleOutput: "[1,1,2,3,4,4,5,6]",
-      testCases: [
-        "lists = []",
-        "lists = [[]]",
-        "lists = [[1]]"
-      ]
-    },
-    {
       question: "How would you implement binary search in a sorted array?",
       options: [
         "Use two pointers (left and right) and compute mid point",
@@ -517,118 +373,6 @@ class Solution {
         "s = \"(]\"",
         "s = \"([)]\"",
         "s = \"{[]}\"",
-      ]
-    },
-    {
-      question: "Maximum Subarray: Find the contiguous subarray with the largest sum.",
-      options: [
-        "Use Kadane's Algorithm",
-        "Use nested loops to try all subarrays",
-        "Sort the array first",
-        "Use divide and conquer"
-      ],
-      correctAnswer: 0,
-      explanation: "Kadane's Algorithm provides optimal O(n) solution",
-      language: 'java',
-      category: 'dsa',
-      difficulty: 'medium',
-      code: `
-class Solution {
-    public int maxSubArray(int[] nums) {
-        int maxSum = nums[0];
-        int currentSum = nums[0];
-
-        for (int i = 1; i < nums.length; i++) {
-            currentSum = Math.max(nums[i], currentSum + nums[i]);
-            maxSum = Math.max(maxSum, currentSum);
-        }
-        return maxSum;
-    }
-}`,
-      sampleInput: "nums = [-2,1,-3,4,-1,2,1,-5,4]",
-      sampleOutput: "6",
-      testCases: [
-        "nums = [1]",
-        "nums = [5,4,-1,7,8]",
-        "nums = [-1,-2,-3,-4]"
-      ]
-    },
-    {
-      question: "How would you implement a priority queue efficiently?",
-      options: [
-        "Use a binary heap implementation",
-        "Use a sorted array",
-        "Use a linked list",
-        "Use a regular queue"
-      ],
-      correctAnswer: 0,
-      explanation: "Binary heap provides O(log n) insertion and deletion with O(1) peek operations",
-      language: 'java',
-      category: 'dsa',
-      difficulty: 'medium',
-      code: `
-class PriorityQueue<T> {
-    private List<T> heap;
-    private Comparator<T> comparator;
-
-    public PriorityQueue(Comparator<T> comparator) {
-        this.heap = new ArrayList<>();
-        this.comparator = comparator;
-    }
-
-    public void offer(T element) {
-        heap.add(element);
-        siftUp(heap.size() - 1);
-    }
-
-    public T poll() {
-        if (heap.isEmpty()) return null;
-        T result = heap.get(0);
-        T last = heap.remove(heap.size() - 1);
-        if (!heap.isEmpty()) {
-            heap.set(0, last);
-            siftDown(0);
-        }
-        return result;
-    }
-
-    private void siftUp(int index) {
-        T element = heap.get(index);
-        while (index > 0) {
-            int parentIndex = (index - 1) / 2;
-            T parent = heap.get(parentIndex);
-            if (comparator.compare(element, parent) >= 0) break;
-            heap.set(index, parent);
-            index = parentIndex;
-        }
-        heap.set(index, element);
-    }
-
-    private void siftDown(int index) {
-        T element = heap.get(index);
-        int size = heap.size();
-        int half = size >>> 1;
-        while (index < half) {
-            int child = (index << 1) + 1;
-            T childElement = heap.get(child);
-            int right = child + 1;
-            if (right < size && comparator.compare(childElement, heap.get(right)) > 0) {
-                child = right;
-                childElement = heap.get(right);
-            }
-            if (comparator.compare(element, childElement) <= 0) break;
-            heap.set(index, childElement);
-            index = child;
-        }
-        heap.set(index, element);
-    }
-}`,
-      sampleInput: "Add elements: [5,2,8,1,9]",
-      sampleOutput: "Poll elements: [1,2,5,8,9]",
-      testCases: [
-        "Add: [3,1,4,1,5], Poll all",
-        "Add: [10], Poll, Add: [5], Poll",
-        "Poll empty queue"
       ]
     },
     {
@@ -714,47 +458,6 @@ true`,
       ]
     },
     {
-      question: "How would you implement bracket matching to check if a string of brackets is valid?",
-      options: [
-        "Use a stack to track opening brackets and match with closing brackets",
-        "Count the number of opening and closing brackets",
-        "Use string replacement to remove valid pairs recursively",
-        "Create a binary tree of bracket pairs"
-      ],
-      correctAnswer: 0,
-      explanation: "Stack provides perfect LIFO structure for matching brackets in correct order",
-      language: 'java',
-      category: 'dsa',
-      difficulty: 'easy',
-      code: `
-class Solution {
-    public boolean isValid(String s) {
-        Stack<Character> stack = new Stack<>();
-        for (char c : s.toCharArray()) {
-            if (c == '(' || c == '{' || c == '[') {
-                stack.push(c);
-            } else {
-                if (stack.isEmpty()) return false;
-                char top = stack.pop();
-                if ((c == ')' && top != '(') ||
-                    (c == '}' && top != '{') ||
-                    (c == ']' && top != '[')) {
-                    return false;
-                }
-            }
-        }
-        return stack.isEmpty();
-    }
-}`,
-      sampleInput: "s = \"()[]{}\"",
-      sampleOutput: "true",
-      testCases: [
-        "s = \"(]\"",
-        "s = \"([)]\"",
-        "s = \"{[]}\"",
-      ]
-    },
-    {
       question: "Maximum Subarray: Find the contiguous subarray with the largest sum.",
       options: [
         "Use Kadane's Algorithm",
@@ -789,151 +492,155 @@ class Solution {
       ]
     },
     {
-      question: "How would you implement a priority queue in Python?",
+      question: "How would you find all permutations of a string?",
       options: [
-        "Use heapq module with a list",
-        "Use sorted list with binary search",
-        "Use regular list with linear search",
-        "Use collections.deque"
+        "Use backtracking with swapping characters",
+        "Generate all possible combinations",
+        "Use iteration with string concatenation",
+        "Use recursion with string slicing"
       ],
       correctAnswer: 0,
-      explanation: "heapq provides efficient priority queue operations with O(log n) complexity",
-      language: 'python',
+      explanation: "Backtracking with character swapping provides an efficient solution without extra space",
+      language: 'java',
       category: 'dsa',
       difficulty: 'medium',
       code: `
-import heapq
+class Solution {
+    public List<String> findPermutations(String s) {
+        List<String> result = new ArrayList<>();
+        backtrack(s.toCharArray(), 0, result);
+        return result;
+    }
 
-class PriorityQueue:
-    def __init__(self):
-        self._queue = []
-        self._index = 0
+    private void backtrack(char[] chars, int start, List<String> result) {
+        if (start == chars.length) {
+            result.add(new String(chars));
+            return;
+        }
 
-    def push(self, item, priority):
-        heapq.heappush(self._queue, (priority, self._index, item))
-        self._index += 1
+        for (int i = start; i < chars.length; i++) {
+            swap(chars, start, i);
+            backtrack(chars, start + 1, result);
+            swap(chars, start, i); // backtrack
+        }
+    }
 
-    def pop(self):
-        if self._queue:
-            return heapq.heappop(self._queue)[-1]
-        return None
-
-    def peek(self):
-        if self._queue:
-            return self._queue[0][-1]
-        return None
-
-    def is_empty(self):
-        return len(self._queue) == 0`,
-      sampleInput: `
-pq = PriorityQueue()
-pq.push('task1', 3)
-pq.push('task2', 1)
-pq.push('task3', 2)`,
-      sampleOutput: `
-task2
-task3
-task1`,
+    private void swap(char[] chars, int i, int j) {
+        char temp = chars[i];
+        chars[i] = chars[j];
+        chars[j] = temp;
+    }
+}`,
+      sampleInput: "s = \"abc\"",
+      sampleOutput: "[\"abc\",\"acb\",\"bac\",\"bca\",\"cab\",\"cba\"]",
       testCases: [
-        "Push multiple items, pop all",
-        "Push one item, pop, check empty",
-        "Pop from empty queue"
+        "s = \"a\"",
+        "s = \"ab\"",
+        "s = \"aab\""
       ]
     },
     {
-      question: "How would you implement a trie (prefix tree) in Python?",
+      question: "How would you implement a LRU (Least Recently Used) Cache?",
       options: [
-        "Use dictionary for children and end marker",
-        "Use list for character storage",
-        "Use binary search tree",
-        "Use string array with sorting"
+        "Use HashMap with Doubly Linked List",
+        "Use TreeMap for ordering",
+        "Use ArrayList with sorting",
+        "Use Queue with HashMap"
       ],
       correctAnswer: 0,
-      explanation: "Dictionary provides O(1) child lookup and flexible character support",
-      language: 'python',
+      explanation: "HashMap with Doubly Linked List provides O(1) operations with ordering",
+      language: 'java',
       category: 'dsa',
       difficulty: 'hard',
       code: `
-class TrieNode:
-    def __init__(self):
-        self.children = {}
-        self.is_end = False
+class LRUCache {
+    class Node {
+        int key, value;
+        Node prev, next;
+        Node(int k, int v) {
+            key = k;
+            value = v;
+        }
+    }
 
-class Trie:
-    def __init__(self):
-        self.root = TrieNode()
+    private Map<Integer, Node> cache;
+    private Node head, tail;
+    private int capacity;
 
-    def insert(self, word: str) -> None:
-        node = self.root
-        for char in word:
-            if char not in node.children:
-                node.children[char] = TrieNode()
-            node = node.children[char]
-        node.is_end = True
+    public LRUCache(int capacity) {
+        this.capacity = capacity;
+        cache = new HashMap<>();
+        head = new Node(0, 0);
+        tail = new Node(0, 0);
+        head.next = tail;
+        tail.prev = head;
+    }
 
-    def search(self, word: str) -> bool:
-        node = self._search_node(word)
-        return node is not None and node.is_end
+    public int get(int key) {
+        if (cache.containsKey(key)) {
+            Node node = cache.get(key);
+            moveToHead(node);
+            return node.value;
+        }
+        return -1;
+    }
 
-    def starts_with(self, prefix: str) -> bool:
-        return self._search_node(prefix) is not None
+    public void put(int key, int value) {
+        if (cache.containsKey(key)) {
+            Node node = cache.get(key);
+            node.value = value;
+            moveToHead(node);
+        } else {
+            Node newNode = new Node(key, value);
+            cache.put(key, newNode);
+            addNode(newNode);
 
-    def _search_node(self, string: str) -> TrieNode:
-        node = self.root
-        for char in string:
-            if char not in node.children:
-                return None
-            node = node.children[char]
-        return node`,
+            if (cache.size() > capacity) {
+                Node tail = removeTail();
+                cache.remove(tail.key);
+            }
+        }
+    }
+
+    private void addNode(Node node) {
+        node.prev = head;
+        node.next = head.next;
+        head.next.prev = node;
+        head.next = node;
+    }
+
+    private void removeNode(Node node) {
+        Node prev = node.prev;
+        Node next = node.next;
+        prev.next = next;
+        next.prev = prev;
+    }
+
+    private void moveToHead(Node node) {
+        removeNode(node);
+        addNode(node);
+    }
+
+    private Node removeTail() {
+        Node res = tail.prev;
+        removeNode(res);
+        return res;
+    }
+}`,
       sampleInput: `
-trie = Trie()
-trie.insert("apple")
-trie.search("apple")
-trie.search("app")
-trie.starts_with("app")`,
+cache = LRUCache(2)
+cache.put(1, 1)
+cache.put(2, 2)
+cache.get(1)
+cache.put(3, 3)
+cache.get(2)`,
       sampleOutput: `
-True
-False
-True`,
+1
+-1`,
       testCases: [
-        "Insert: python, py, pytorch; Search: py, python",
-        "Insert: code; StartsWith: co, cod, coding",
-        "Search in empty trie"
-      ]
-    },
-    {
-      question: "How would you implement binary search in Python?",
-      options: [
-        "Use two pointers with while loop",
-        "Use recursive approach",
-        "Use list.index() method",
-        "Use linear search"
-      ],
-      correctAnswer: 0,
-      explanation: "Two pointer approach provides O(log n) time complexity",
-      language: 'python',
-      category: 'dsa',
-      difficulty: 'easy',
-      code: `
-def binary_search(nums: List[int], target: int) -> int:
-    left, right = 0, len(nums) - 1
-
-    while left <= right:
-        mid = (left + right) // 2
-        if nums[mid] == target:
-            return mid
-        elif nums[mid] < target:
-            left = mid + 1
-        else:
-            right = mid - 1
-
-    return -1`,
-      sampleInput: "nums = [-1,0,3,5,9,12], target = 9",
-      sampleOutput: "4",
-      testCases: [
-        "nums = [-1,0,3,5,9,12], target = 2",
-        "nums = [5], target = 5",
-        "nums = [], target = 0"
+        "capacity=1, put(2,1), get(2), put(3,2), get(2)",
+        "capacity=2, put(1,1), put(2,2), get(1), put(3,3), get(2)",
+        "capacity=3, put(1,1), put(2,2), put(3,3), get(1), put(4,4), get(2)"
       ]
     }
   ];
@@ -1241,6 +948,188 @@ def binary_search(nums: List[int], target: int) -> int:
         "nums = [-1,0,3,5,9,12], target = 2",
         "nums = [5], target = 5",
         "nums = [], target = 0"
+      ]
+    },
+    {
+        question: "How would you find the kth largest element in an array?",
+        options: [
+          "Use QuickSelect algorithm",
+          "Sort the array and return n-k element",
+          "Use min heap of size k",
+          "Use bubble sort k times"
+        ],
+        correctAnswer: 0,
+        explanation: "QuickSelect provides average O(n) time complexity",
+        language: 'python',
+        category: 'dsa',
+        difficulty: 'medium',
+        code: `
+class Solution:
+    def findKthLargest(self, nums: List[int], k: int) -> int:
+        return self.quickselect(nums, 0, len(nums) - 1, len(nums) - k)
+
+    def quickselect(self, nums, left, right, k):
+        if left == right:
+            return nums[left]
+
+        pivot = self.partition(nums, left, right)
+
+        if pivot == k:
+            return nums[k]
+        elif pivot < k:
+            return self.quickselect(nums, pivot + 1, right, k)
+        else:
+            return self.quickselect(nums, left, pivot - 1, k)
+
+    def partition(self, nums, left, right):
+        pivot = nums[right]
+        i = left
+        for j in range(left, right):
+            if nums[j] <= pivot:
+                nums[i], nums[j] = nums[j], nums[i]
+                i += 1
+        nums[i], nums[right] = nums[right], nums[i]
+        return i
+`,
+        sampleInput: "nums = [3,2,1,5,6,4], k = 2",
+        sampleOutput: "5",
+        testCases: [
+          "nums = [3,2,3,1,2,4,5,5,6], k = 4",
+          "nums = [1], k = 1",
+          "nums = [1,2,3,4,5], k = 3"
+        ]
+      },
+    {
+      question: "How would you implement Merge Sort in Python?",
+      options: [
+        "Use divide and conquer with recursion",
+        "Use iteration with multiple arrays",
+        "Use a priority queue",
+        "Use quicksort instead"
+      ],
+      correctAnswer: 0,
+      explanation: "Merge sort uses divide and conquer strategy with O(n log n) time complexity",
+      language: 'python',
+      category: 'dsa',
+      difficulty: 'medium',
+      code: `
+def mergeSort(arr):
+    if len(arr) <= 1:
+        return arr
+
+    mid = len(arr) // 2
+    left = mergeSort(arr[:mid])
+    right = mergeSort(arr[mid:])
+
+    return merge(left, right)
+
+def merge(left, right):
+    result = []
+    i = j = 0
+
+    while i < len(left) and j < len(right):
+        if left[i] <= right[j]:
+            result.append(left[i])
+            i += 1
+        else:
+            result.append(right[j])
+            j += 1
+
+    result.extend(left[i:])
+    result.extend(right[j:])
+    return result`,
+      sampleInput: "arr = [64, 34, 25, 12, 22, 11, 90]",
+      sampleOutput: "[11, 12, 22, 25, 34, 64, 90]",
+      testCases: [
+        "arr = [5,2,3,1]",
+        "arr = [1]",
+        "arr = [3,1,2,4]"
+      ]
+    },
+    {
+      question: "How would you implement a LRU Cache in Python?",
+      options: [
+        "Use OrderedDict from collections",
+        "Use dictionary with list",
+        "Use two dictionaries",
+        "Use custom doubly linked list"
+      ],
+      correctAnswer: 0,
+      explanation: "OrderedDict provides built-in ordering with dictionary operations",
+      language: 'python',
+      category: 'dsa',
+      difficulty: 'hard',
+      code: `
+from collections import OrderedDict
+
+class LRUCache:
+    def __init__(self, capacity: int):
+        self.cache = OrderedDict()
+        self.capacity = capacity
+
+    def get(self, key: int) -> int:
+        if key not in self.cache:
+            return -1
+        self.cache.move_to_end(key)
+        return self.cache[key]
+
+    def put(self, key: int, value: int) -> None:
+        if key in self.cache:
+            self.cache.move_to_end(key)
+        self.cache[key] = value
+        if len(self.cache) > self.capacity:
+            self.cache.popitem(last=False)`,
+      sampleInput: `
+cache = LRUCache(2)
+cache.put(1, 1)
+cache.put(2, 2)
+cache.get(1)
+cache.put(3, 3)
+cache.get(2)`,
+      sampleOutput: `
+1
+-1`,
+      testCases: [
+        "capacity=1, put(2,1), get(2), put(3,2), get(2)",
+        "capacity=2, put(1,1), put(2,2), get(1), put(3,3), get(2)",
+        "capacity=3, put(1,1), put(2,2), put(3,3), get(1), put(4,4), get(2)"
+      ]
+    },
+    {
+      question: "How would you find all permutations of a string in Python?",
+      options: [
+        "Use itertools.permutations",
+        "Use recursive backtracking",
+        "Generate all possible combinations",
+        "Use string slicing"
+      ],
+      correctAnswer: 0,
+      explanation: "itertools.permutations provides an efficient built-in solution",
+      language: 'python',
+      category: 'dsa',
+      difficulty: 'medium',
+      code: `
+from itertools import permutations
+
+def findPermutations(s: str) -> List[str]:
+    return [''.join(p) for p in permutations(s)]
+
+# Alternative implementation without itertools:
+def findPermutationsManual(s: str) -> List[str]:
+    if len(s) <= 1:
+        return [s]
+
+    result = []
+    for i, char in enumerate(s):
+        for perm in findPermutationsManual(s[:i] + s[i+1:]):
+            result.append(char + perm)
+    return result`,
+      sampleInput: "s = \"abc\"",
+      sampleOutput: "[\"abc\",\"acb\",\"bac\",\"bca\",\"cab\",\"cba\"]",
+      testCases: [
+        "s = \"a\"",
+        "s = \"ab\"",
+        "s = \"aab\""
       ]
     }
   ];
