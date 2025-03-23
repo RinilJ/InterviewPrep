@@ -23,3 +23,31 @@ export interface QuestionBank {
     [key: string]: TopicModule;
   };
 }
+
+// Technical Question Types
+export interface TechnicalQuestion extends Question {
+  code?: string;
+  language: 'java' | 'python';
+  category: 'dsa' | 'oop' | 'debugging';
+  difficulty: 'easy' | 'medium' | 'hard';
+  sampleInput?: string;
+  sampleOutput?: string;
+  testCases?: string[];
+}
+
+export interface TechnicalTopicModule extends TopicModule {
+  language: 'java' | 'python';
+  getQuestions: () => Promise<TechnicalQuestion[]>;
+}
+
+export interface TechnicalQuestionBank {
+  dsa: {
+    [key: string]: TechnicalTopicModule;
+  };
+  oop: {
+    [key: string]: TechnicalTopicModule;
+  };
+  debugging: {
+    [key: string]: TechnicalTopicModule;
+  };
+}
