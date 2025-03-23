@@ -231,10 +231,12 @@ async function startTest(topicId) {
 
 // Add handling for psychometric tests
 async function startPsychometricTest(testType) {
+    // Get the button that was clicked
+    const button = event.currentTarget;
+    const originalText = button.innerHTML;
+
     try {
         // Show loading state
-        const button = event.target;
-        const originalText = button.innerHTML;
         button.disabled = true;
         button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
 
@@ -255,8 +257,9 @@ async function startPsychometricTest(testType) {
             type: testType,
             title: test.title,
             questions: test.questions,
+            timeLimit: test.timeLimit || 1800, // 30 minutes default
             currentQuestionIndex: 0,
-            answers: [],
+            answers: new Array(test.questions.length).fill(null),
             startTime: new Date().toISOString()
         }));
 
@@ -264,17 +267,19 @@ async function startPsychometricTest(testType) {
         window.location.href = '/test.html';
     } catch (error) {
         console.error('Error starting test:', error);
+
+        // Show error message
         const errorMsg = document.createElement('div');
         errorMsg.className = 'error-message';
         errorMsg.textContent = 'Failed to start test. Please try again.';
         document.body.appendChild(errorMsg);
+
+        // Remove error message after 5 seconds
         setTimeout(() => errorMsg.remove(), 5000);
 
         // Reset button state
-        if (button) {
-            button.disabled = false;
-            button.innerHTML = originalText;
-        }
+        button.disabled = false;
+        button.innerHTML = originalText;
     }
 }
 

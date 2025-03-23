@@ -2,6 +2,13 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { setupAuth } from "./auth";
 import { storage } from "./storage";
+import { 
+  getBigFiveQuestions,
+  getMBTIQuestions,
+  getRavensQuestions,
+  getSJTQuestions,
+  getEQQuestions 
+} from './questions/psychometric';
 import { insertTestSchema, insertTestResultSchema } from "@shared/schema";
 import { getUniqueQuestionsForUser, questionBank } from "./questionBank";
 import { getArrayQuestionsJava, getArrayQuestionsPython } from './questions/technical/dsa';
@@ -237,6 +244,62 @@ export function registerRoutes(app: Express): Server {
     // For demo purposes, we'll just send a success response
 
     res.status(200).send("Password reset instructions sent");
+  });
+
+  // Add route for psychometric tests
+  app.get("/api/psychometric-test", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+
+    const testType = req.query.type as string;
+    if (!testType) return res.status(400).send("Test type is required");
+
+    try {
+      let questions;
+      let title;
+
+      switch(testType) {
+        case 'big-five':
+          questions = await getBigFiveQuestions();
+          title = "Big Five Personality Test";
+          break;
+        case 'mbti':
+          questions = await getMBTIQuestions();
+          title = "Myers-Briggs Type Indicator";
+          break;
+        case 'ravens':
+          questions = await getRavensQuestions();
+          title = "Raven's Progressive Matrices";
+          break;
+        case 'sjt':
+          questions = await getSJTQuestions();
+          title = "Situational Judgment Test";
+          break;
+        case 'eq':
+          questions = await getEQQuestions();
+          title = "Emotional Intelligence Test";
+          break;
+        default:
+          return res.status(400).send("Invalid test type");
+      }
+
+      // Ensure we have questions
+      if (!questions || questions.length === 0) {
+        return res.status(404).send("No questions available for this test type");
+      }
+
+      // Return 10 random questions
+      const randomQuestions = questions.sort(() => Math.random() - 0.5).slice(0, 10);
+
+      res.json({
+        title,
+        questions: randomQuestions,
+        timeLimit: 30 * 60, // 30 minutes for psychometric tests
+        type: testType
+      });
+    } catch (error) {
+      console.error('Error generating psychometric test:', error);
+      res.status(500).send("Failed to generate test questions");
+    }
   });
 
   const httpServer = createServer(app);
