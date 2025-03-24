@@ -13,10 +13,22 @@ export const users = pgTable("users", {
   teacherId: integer("teacher_id").references(() => users.id),
   createdAt: timestamp("created_at").defaultNow(),
 }, (table) => ({
-  // Ensure unique teacher per department, year, and batch combination
   teacherConstraint: unique().on(table.department, table.year, table.batch)
     .where(sql`${table.role} = 'teacher'`)
 }));
+
+// Update insert schema with strict validation
+export const insertUserSchema = createInsertSchema(users)
+  .omit({ 
+    id: true, 
+    createdAt: true,
+    teacherId: true 
+  })
+  .extend({
+    department: z.enum(["CS", "IT", "MCA"]),
+    year: z.enum(["1", "2", "3", "4"]),
+    batch: z.enum(["A", "B", "C"])
+  });
 
 export const tests = pgTable("tests", {
   id: serial("id").primaryKey(),
@@ -50,7 +62,6 @@ export const discussionSlots = pgTable("discussion_slots", {
   mentorId: integer("mentor_id").references(() => users.id),
   maxParticipants: integer("max_participants").notNull().default(6),
   topic: text("topic").notNull(),
-  // Add fields for batch-specific slots
   department: text("department", { enum: ["CS", "IT", "MCA"] }).notNull(),
   year: text("year", { enum: ["1", "2", "3", "4"] }).notNull(),
   batch: text("batch", { enum: ["A", "B", "C"] }).notNull(),
@@ -63,13 +74,6 @@ export const slotBookings = pgTable("slot_bookings", {
   bookedAt: timestamp("booked_at").defaultNow(),
 });
 
-// Update insert schemas with new fields
-export const insertUserSchema = createInsertSchema(users).omit({ 
-  id: true, 
-  createdAt: true,
-  teacherId: true // This will be set by the backend
-});
-
 export const insertTestSchema = createInsertSchema(tests).omit({ id: true });
 export const insertTestResultSchema = createInsertSchema(testResults).omit({ 
   id: true, 
@@ -78,7 +82,6 @@ export const insertTestResultSchema = createInsertSchema(testResults).omit({
 export const insertDiscussionSlotSchema = createInsertSchema(discussionSlots).omit({ id: true });
 export const insertSlotBookingSchema = createInsertSchema(slotBookings).omit({ id: true, bookedAt: true });
 
-// Export types
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type Test = typeof tests.$inferSelect;

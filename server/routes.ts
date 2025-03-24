@@ -78,7 +78,7 @@ export function registerRoutes(app: Express): Server {
         department: cleanDepartment,
         year: cleanYear,
         batch: cleanBatch,
-        teacherId // This will be null for teachers and set for students
+        teacherId
       });
 
       console.log('Created user:', {
