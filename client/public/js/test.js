@@ -155,7 +155,8 @@ async function submitTest() {
         startTime: currentTest.startTime,
         endTime: new Date().toISOString(),
         category: currentTest.category,
-        language: currentTest.language
+        language: currentTest.language,
+        type: currentTest.type // Add type for psychometric tests
     };
 
     results.questions.forEach(question => {
@@ -175,7 +176,8 @@ async function submitTest() {
             body: JSON.stringify({
                 testId: currentTest.id,
                 score: score,
-                answers: currentTest.answers
+                answers: currentTest.answers,
+                type: currentTest.type // Add type for psychometric tests
             })
         });
 
@@ -183,8 +185,14 @@ async function submitTest() {
             throw new Error('Failed to submit test results');
         }
 
-        // Store results for the results page
-        sessionStorage.setItem('testResults', JSON.stringify(results));
+        // Get the response data which includes insights for psychometric tests
+        const responseData = await response.json();
+
+        // Store results for the results page, including any insights
+        sessionStorage.setItem('testResults', JSON.stringify({
+            ...results,
+            insights: responseData.insights // Include insights in the stored results
+        }));
 
         // Clear current test data and redirect to results page
         sessionStorage.removeItem('currentTest');
