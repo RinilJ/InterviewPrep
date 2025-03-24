@@ -92,8 +92,8 @@ function createTestCard(test) {
 function formatTestResult(result) {
     if (result.insights) {
         try {
-            const insightData = typeof result.insights === 'string' 
-                ? JSON.parse(result.insights) 
+            const insightData = typeof result.insights === 'string'
+                ? JSON.parse(result.insights)
                 : result.insights;
 
             return `
@@ -101,14 +101,14 @@ function formatTestResult(result) {
                     <div class="history-info">
                         <h3>${insightData.category}</h3>
                         <div class="insights-list">
-                            ${insightData.insights.map(insight => 
+                            ${insightData.insights.map(insight =>
                                 `<p class="insight-item">${insight}</p>`
                             ).join('')}
                         </div>
                         ${insightData.recommendations ? `
                             <div class="recommendations-list">
                                 <h4>Career Recommendations:</h4>
-                                ${insightData.recommendations.map(rec => 
+                                ${insightData.recommendations.map(rec =>
                                     `<p class="recommendation-item">${rec}</p>`
                                 ).join('')}
                             </div>
@@ -135,13 +135,13 @@ function formatTestResult(result) {
 }
 
 
-// Load user data and initialize dashboard
+// Update the user info section in initializeDashboard function
 async function initializeDashboard() {
     const user = await checkAuth();
     if (!user) return;
 
-    // Update user info
-    document.getElementById('userName').textContent = `${user.username} (${user.role})`;
+    // Update user info with correct formatting
+    document.getElementById('userName').textContent = `${user.username} (${user.role}) - ${user.department} Year ${user.year}, Batch ${user.batch}`;
 
     try {
         // Load topics for each category
@@ -375,7 +375,7 @@ function filterDiscussionSlots(filter) {
         const dateStr = slot.querySelector('.discussion-info p').textContent;
         const slotDate = new Date(dateStr.split('-')[0].trim());
 
-        switch(filter) {
+        switch (filter) {
             case 'today':
                 slot.style.display =
                     slotDate.toDateString() === now.toDateString() ? 'flex' : 'none';

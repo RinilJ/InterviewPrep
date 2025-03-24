@@ -32,11 +32,8 @@ async function initializeDashboard() {
 
     // Update user info with correct formatting
     const userElement = document.getElementById('userName');
-    if (user.department && user.year && user.batch) {
-        userElement.textContent = `${user.username} (${user.department} - Year ${user.year}, Batch ${user.batch})`;
-    } else {
-        userElement.textContent = user.username;
-    }
+    userElement.textContent = `${user.username} (${user.department} - Year ${user.year}, Batch ${user.batch})`;
+
     console.log('Teacher Info:', user); // Debug log
 
     try {
