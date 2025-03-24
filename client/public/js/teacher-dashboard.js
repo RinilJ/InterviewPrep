@@ -139,24 +139,42 @@ async function loadDiscussionSlots(filter = 'all') {
             discussionManagement.innerHTML = `
                 <div class="empty-state">
                     <i class="fas fa-calendar-times"></i>
-                    <p>No discussion slots found</p>
+                    <p>No discussion slots scheduled</p>
+                    <button class="btn-primary" onclick="openModal()">
+                        <i class="fas fa-plus"></i> Create New Slot
+                    </button>
                 </div>`;
         } else {
             discussionManagement.innerHTML = filteredSlots.map(slot => `
-                <div class="discussion-card">
+                <div class="discussion-card ${new Date(slot.startTime) < now ? 'past' : ''}">
                     <div class="discussion-info">
-                        <h3><i class="fas fa-comments"></i> ${slot.topic || 'Open Discussion'}</h3>
-                        <p><i class="far fa-clock"></i> ${formatDate(slot.startTime)} - ${new Date(slot.endTime).toLocaleTimeString()}</p>
-                        <p><i class="fas fa-users"></i> Maximum Participants: ${slot.maxParticipants}</p>
-                        <p><i class="fas fa-graduation-cap"></i> For: ${slot.department} - Year ${slot.year}, Batch ${slot.batch}</p>
+                        <h3>
+                            <i class="fas fa-comments"></i> 
+                            ${slot.topic || 'Open Discussion'}
+                            ${new Date(slot.startTime) < now ? 
+                                '<span class="status past">Past</span>' : 
+                                '<span class="status upcoming">Upcoming</span>'
+                            }
+                        </h3>
+                        <div class="slot-details">
+                            <p><i class="far fa-clock"></i> ${formatDate(slot.startTime)} - ${new Date(slot.endTime).toLocaleTimeString()}</p>
+                            <p><i class="fas fa-users"></i> Participants: ${slot.bookedCount || 0}/${slot.maxParticipants}</p>
+                            <p><i class="fas fa-graduation-cap"></i> ${slot.department} - Year ${slot.year}, Batch ${slot.batch}</p>
+                        </div>
                     </div>
                     <div class="slot-actions">
-                        <button class="btn-secondary" onclick="editSlot(${slot.id})">
-                            <i class="fas fa-edit"></i> Edit
-                        </button>
-                        <button class="btn-danger" onclick="cancelSlot(${slot.id})">
-                            <i class="fas fa-times"></i> Cancel
-                        </button>
+                        ${new Date(slot.startTime) > now ? `
+                            <button class="btn-secondary" onclick="editSlot(${slot.id})">
+                                <i class="fas fa-edit"></i> Edit
+                            </button>
+                            <button class="btn-danger" onclick="cancelSlot(${slot.id})">
+                                <i class="fas fa-times"></i> Cancel
+                            </button>
+                        ` : `
+                            <button class="btn-secondary" onclick="viewParticipants(${slot.id})">
+                                <i class="fas fa-users"></i> View Participants
+                            </button>
+                        `}
                     </div>
                 </div>
             `).join('');
@@ -166,7 +184,10 @@ async function loadDiscussionSlots(filter = 'all') {
         document.getElementById('discussionManagement').innerHTML = `
             <div class="error-state">
                 <i class="fas fa-exclamation-circle"></i>
-                <p>Failed to load discussion slots. Please try refreshing the page.</p>
+                <p>Failed to load discussion slots</p>
+                <button class="btn-secondary" onclick="loadDiscussionSlots()">
+                    <i class="fas fa-sync"></i> Try Again
+                </button>
             </div>`;
     }
 }

@@ -314,22 +314,32 @@ async function loadDiscussionSlots(filter = 'all') {
             discussionsTab.innerHTML = `
                 <div class="empty-state">
                     <i class="fas fa-calendar-times"></i>
-                    <p>No discussion slots available for your batch</p>
+                    <p>No discussion slots available for your batch at the moment</p>
+                    <p class="subtitle">Check back later for new slots</p>
                 </div>`;
         } else {
             discussionsTab.innerHTML = `
-                <div class="discussion-filters">
-                    <button class="btn-filter active" data-filter="all">All Slots</button>
-                    <button class="btn-filter" data-filter="upcoming">Upcoming</button>
-                    <button class="btn-filter" data-filter="past">Past</button>
+                <div class="section-header">
+                    <div class="category-header">
+                        <i class="fas fa-comments"></i>
+                        <h2>Available Discussion Slots</h2>
+                    </div>
+                    <div class="discussion-filters">
+                        <button class="btn-filter active" data-filter="all">All Slots</button>
+                        <button class="btn-filter" data-filter="upcoming">Upcoming</button>
+                        <button class="btn-filter" data-filter="past">Past</button>
+                    </div>
                 </div>
                 <div id="discussionsList" class="discussion-grid">
                     ${filteredSlots.map(slot => `
                         <div class="discussion-card">
                             <div class="discussion-info">
                                 <h3><i class="fas fa-comments"></i> ${slot.topic}</h3>
-                                <p><i class="far fa-clock"></i> ${formatDate(slot.startTime)} - ${new Date(slot.endTime).toLocaleTimeString()}</p>
-                                <p><i class="fas fa-users"></i> Maximum Participants: ${slot.maxParticipants}</p>
+                                <div class="slot-details">
+                                    <p><i class="far fa-clock"></i> ${formatDate(slot.startTime)} - ${new Date(slot.endTime).toLocaleTimeString()}</p>
+                                    <p><i class="fas fa-users"></i> Available Seats: ${slot.maxParticipants}</p>
+                                    <p><i class="fas fa-graduation-cap"></i> ${slot.department} - Year ${slot.year}, Batch ${slot.batch}</p>
+                                </div>
                             </div>
                             <div class="slot-actions">
                                 <button class="btn-primary" onclick="bookSlot(${slot.id})">
@@ -354,9 +364,62 @@ async function loadDiscussionSlots(filter = 'all') {
         document.getElementById('discussionsTab').innerHTML = `
             <div class="error-state">
                 <i class="fas fa-exclamation-circle"></i>
-                <p>Failed to load discussion slots. Please try refreshing the page.</p>
+                <p>Failed to load discussion slots</p>
+                <button class="btn-secondary" onclick="loadDiscussionSlots()">
+                    <i class="fas fa-sync"></i> Try Again
+                </button>
             </div>`;
     }
+}
+
+// Book discussion slot
+async function bookSlot(slotId) {
+    try {
+        const button = event.target;
+        button.disabled = true;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Booking...';
+
+        const response = await fetch('/api/slot-bookings', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                slotId: slotId 
+            })
+        });
+
+        if (response.ok) {
+            showToast('Success', 'You have successfully booked this discussion slot!');
+            loadDiscussionSlots(); // Refresh the slots list
+        } else {
+            const error = await response.text();
+            showToast('Error', error || 'Unable to book slot. Please try again.');
+        }
+    } catch (error) {
+        console.error('Booking error:', error);
+        showToast('Error', 'Failed to book slot. Please try again later.');
+    } finally {
+        const button = event.target;
+        button.disabled = false;
+        button.innerHTML = '<i class="fas fa-check"></i> Book Slot';
+    }
+}
+
+// Add toast notification function
+function showToast(title, message) {
+    const toast = document.createElement('div');
+    toast.className = `toast ${title.toLowerCase()}`;
+    toast.innerHTML = `
+        <div class="toast-header">
+            <i class="fas fa-${title === 'Success' ? 'check-circle' : 'exclamation-circle'}"></i>
+            <strong>${title}</strong>
+        </div>
+        <div class="toast-body">${message}</div>
+    `;
+    document.body.appendChild(toast);
+    setTimeout(() => {
+        toast.classList.add('fade-out');
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
 }
 
 // Add handling for psychometric tests
@@ -445,45 +508,3 @@ document.addEventListener('DOMContentLoaded', () => {
     initializeDashboard();
     initializeTechnicalTest();
 });
-
-
-// Book discussion slot
-async function bookSlot(slotId) {
-    try {
-        const response = await fetch('/api/slot-bookings', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ slotId })
-        });
-
-        if (response.ok) {
-            // Show toast notification instead of alert
-            showToast('Success', 'Slot booked successfully!');
-            loadDiscussionSlots(); // Refresh the discussion slots
-        } else {
-            const error = await response.text();
-            showToast('Error', error || 'Failed to book slot');
-        }
-    } catch (error) {
-        console.error('Booking error:', error);
-        showToast('Error', 'Failed to book slot');
-    }
-}
-
-// Add toast notification function
-function showToast(title, message) {
-    const toast = document.createElement('div');
-    toast.className = `toast ${title.toLowerCase()}`;
-    toast.innerHTML = `
-        <div class="toast-header">
-            <i class="fas fa-${title === 'Success' ? 'check-circle' : 'exclamation-circle'}"></i>
-            <strong>${title}</strong>
-        </div>
-        <div class="toast-body">${message}</div>
-    `;
-    document.body.appendChild(toast);
-    setTimeout(() => {
-        toast.classList.add('fade-out');
-        setTimeout(() => toast.remove(), 300);
-    }, 3000);
-}
