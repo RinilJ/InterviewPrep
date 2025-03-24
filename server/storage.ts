@@ -25,9 +25,11 @@ export interface IStorage {
   // Discussion Slots
   createDiscussionSlot(slot: Omit<DiscussionSlot, "id">): Promise<DiscussionSlot>;
   getDiscussionSlots(department: string, year: string, batch: string): Promise<DiscussionSlot[]>;
+  getDiscussionSlot(id: number): Promise<DiscussionSlot | undefined>;
 
   // Slot Bookings
   createSlotBooking(booking: Omit<SlotBooking, "id" | "bookedAt">): Promise<SlotBooking>;
+  getSlotBookings(slotId: number): Promise<SlotBooking[]>;
 
   sessionStore: session.Store;
 }
@@ -217,6 +219,16 @@ export class MemStorage implements IStorage {
         String(slot.department).trim() === String(department).trim() &&
         String(slot.year).trim() === String(year).trim() &&
         String(slot.batch).trim() === String(batch).trim()
+    );
+  }
+
+  async getDiscussionSlot(id: number): Promise<DiscussionSlot | undefined> {
+    return this.discussionSlots.get(id);
+  }
+
+  async getSlotBookings(slotId: number): Promise<SlotBooking[]> {
+    return Array.from(this.slotBookings.values()).filter(
+      (booking) => booking.slotId === slotId
     );
   }
 

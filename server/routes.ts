@@ -497,6 +497,48 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
+  app.post("/api/slot-bookings", async (req, res) => {
+    if (!req.isAuthenticated() || req.user.role !== "student") {
+      return res.sendStatus(401);
+    }
+
+    try {
+      const { slotId } = req.body;
+      if (!slotId) {
+        return res.status(400).send("Slot ID is required");
+      }
+
+      // Get the slot details first
+      const slot = await storage.getDiscussionSlot(slotId);
+      if (!slot) {
+        return res.status(404).send("Discussion slot not found");
+      }
+
+      // Check if slot is already full
+      const bookings = await storage.getSlotBookings(slotId);
+      if (bookings.length >= slot.maxParticipants) {
+        return res.status(400).send("This slot is already full");
+      }
+
+      // Check if student already booked this slot
+      const existingBooking = bookings.find(b => b.userId === req.user.id);
+      if (existingBooking) {
+        return res.status(400).send("You have already booked this slot");
+      }
+
+      // Create the booking
+      const booking = await storage.createSlotBooking({
+        slotId,
+        userId: req.user.id
+      });
+
+      res.status(201).json(booking);
+    } catch (error) {
+      console.error('Error booking slot:', error);
+      res.status(500).send("Failed to book slot");
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
