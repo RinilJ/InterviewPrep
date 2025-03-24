@@ -70,35 +70,10 @@ export const insertTestResultSchema = createInsertSchema(testResults).omit({ id:
 export const insertDiscussionSlotSchema = createInsertSchema(discussionSlots).omit({ id: true });
 export const insertSlotBookingSchema = createInsertSchema(slotBookings).omit({ id: true, bookedAt: true });
 
-// Add to the existing schema:
-export const psychometricResults = pgTable("psychometric_results", {
-  id: serial("id").primaryKey(),
-  userId: integer("user_id").references(() => users.id),
-  testId: integer("test_id").references(() => tests.id),
-  responses: json("responses").$type<{
-    questionId: number;
-    selectedOption: number;
-    interpretation: string;
-  }[]>().notNull(),
-  insights: json("insights").$type<{
-    category: string;
-    summary: string;
-    recommendations: string[];
-  }>().notNull(),
-  completedAt: timestamp("completed_at").defaultNow(),
-});
-
-// Add to insert schemas
-export const insertPsychometricResultSchema = createInsertSchema(psychometricResults).omit({ 
-  id: true, 
-  completedAt: true 
-});
-
-// Add to types
+// Export types
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type Test = typeof tests.$inferSelect;
 export type TestResult = typeof testResults.$inferSelect;
 export type DiscussionSlot = typeof discussionSlots.$inferSelect;
 export type SlotBooking = typeof slotBookings.$inferSelect;
-export type PsychometricResult = typeof psychometricResults.$inferSelect;
