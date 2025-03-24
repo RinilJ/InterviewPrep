@@ -446,43 +446,6 @@ document.addEventListener('DOMContentLoaded', () => {
     initializeTechnicalTest();
 });
 
-// Add event listeners for discussion filters
-
-//This section is replaced by the new filtering mechanism in loadDiscussionSlots
-// document.querySelectorAll('.btn-filter').forEach(button => {
-//     button.addEventListener('click', () => filterDiscussionSlots(button.dataset.filter));
-// });
-
-//This function is replaced by the new filtering mechanism in loadDiscussionSlots
-// // Filter discussion slots
-// function filterDiscussionSlots(filter) {
-//     const buttons = document.querySelectorAll('.btn-filter');
-//     buttons.forEach(btn => btn.classList.remove('active'));
-//     document.querySelector(`[data-filter="${filter}"]`).classList.add('active');
-
-//     const slots = document.querySelectorAll('.discussion-card');
-//     const now = new Date();
-//     const weekEnd = new Date(now);
-//     weekEnd.setDate(weekEnd.getDate() + 7);
-
-//     slots.forEach(slot => {
-//         const dateStr = slot.querySelector('.discussion-info p').textContent;
-//         const slotDate = new Date(dateStr.split('-')[0].trim());
-
-//         switch (filter) {
-//             case 'today':
-//                 slot.style.display =
-//                     slotDate.toDateString() === now.toDateString() ? 'flex' : 'none';
-//                 break;
-//             case 'week':
-//                 slot.style.display =
-//                     slotDate >= now && slotDate <= weekEnd ? 'flex' : 'none';
-//                 break;
-//             default:
-//                 slot.style.display = 'flex';
-//         }
-//     });
-// }
 
 // Book discussion slot
 async function bookSlot(slotId) {
@@ -494,14 +457,33 @@ async function bookSlot(slotId) {
         });
 
         if (response.ok) {
-            alert('Slot booked successfully!');
-            initializeDashboard(); // Refresh the dashboard
+            // Show toast notification instead of alert
+            showToast('Success', 'Slot booked successfully!');
+            loadDiscussionSlots(); // Refresh the discussion slots
         } else {
             const error = await response.text();
-            alert(error || 'Failed to book slot');
+            showToast('Error', error || 'Failed to book slot');
         }
     } catch (error) {
         console.error('Booking error:', error);
-        alert('Failed to book slot');
+        showToast('Error', 'Failed to book slot');
     }
+}
+
+// Add toast notification function
+function showToast(title, message) {
+    const toast = document.createElement('div');
+    toast.className = `toast ${title.toLowerCase()}`;
+    toast.innerHTML = `
+        <div class="toast-header">
+            <i class="fas fa-${title === 'Success' ? 'check-circle' : 'exclamation-circle'}"></i>
+            <strong>${title}</strong>
+        </div>
+        <div class="toast-body">${message}</div>
+    `;
+    document.body.appendChild(toast);
+    setTimeout(() => {
+        toast.classList.add('fade-out');
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
 }

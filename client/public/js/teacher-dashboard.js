@@ -25,7 +25,10 @@ async function checkAuth() {
     }
 }
 
-// Initialize dashboard
+// Add periodic refresh of student list
+let refreshInterval;
+
+// Update initializeDashboard to include refresh mechanism
 async function initializeDashboard() {
     const user = await checkAuth();
     if (!user) return;
@@ -34,30 +37,28 @@ async function initializeDashboard() {
     const userElement = document.getElementById('userName');
     userElement.textContent = `${user.username} (${user.department} - Year ${user.year}, Batch ${user.batch})`;
 
-    console.log('Teacher Info:', user); // Debug log
+    await refreshDashboard();
 
+    // Set up periodic refresh every 30 seconds
+    refreshInterval = setInterval(refreshDashboard, 30000);
+}
+
+// Separate refresh function for reusability
+async function refreshDashboard() {
     try {
-        // Show student list with teacher's name immediately
-        const studentsList = document.getElementById('studentsList');
-        studentsList.innerHTML = `<div class="empty-state">
-            <i class="fas fa-users"></i>
-            <p>Welcome ${user.username}</p>
-            <p>Loading student data...</p>
-        </div>`;
-
         // Fetch and display student progress
         const studentsResponse = await fetch('/api/teacher/students');
         if (!studentsResponse.ok) {
             throw new Error('Failed to fetch students');
         }
         const students = await studentsResponse.json();
-        console.log('Fetched students:', students); // Debug log
 
+        const studentsList = document.getElementById('studentsList');
         if (students.length === 0) {
             studentsList.innerHTML = `
                 <div class="empty-state">
                     <i class="fas fa-users"></i>
-                    <p>No students found for ${user.department} - Year ${user.year}, Batch ${user.batch}</p>
+                    <p>No students found in your batch</p>
                 </div>`;
         } else {
             studentsList.innerHTML = students.map(student => `
@@ -95,21 +96,22 @@ async function initializeDashboard() {
             throw new Error('Failed to fetch stats');
         }
         const stats = await statsResponse.json();
-        console.log('Teacher stats:', stats); // Debug log
 
         document.getElementById('totalStudents').textContent = stats.totalStudents;
         document.getElementById('activeSessions').textContent = stats.activeSessions || 0;
         document.getElementById('discussionSlots').textContent = stats.discussionSlots || 0;
 
     } catch (error) {
-        console.error('Error initializing dashboard:', error);
-        document.getElementById('studentsList').innerHTML = `
-            <div class="error-state">
-                <i class="fas fa-exclamation-circle"></i>
-                <p>Failed to load student data. Please try refreshing the page.</p>
-            </div>`;
+        console.error('Error refreshing dashboard:', error);
     }
 }
+
+// Clean up interval when leaving the page
+window.addEventListener('beforeunload', () => {
+    if (refreshInterval) {
+        clearInterval(refreshInterval);
+    }
+});
 
 // Load discussion slots
 async function loadDiscussionSlots(filter = 'all') {

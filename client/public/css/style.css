@@ -834,3 +834,76 @@ nav {
     flex: 1;
     padding-right: 1rem;
 }
+
+/* Add toast notification styles */
+.toast {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    min-width: 300px;
+    background: white;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    overflow: hidden;
+    animation: slideIn 0.3s ease-out;
+}
+
+.toast.success {
+    border-left: 4px solid var(--primary-color);
+}
+
+.toast.error {
+    border-left: 4px solid #dc2626;
+}
+
+.toast-header {
+    padding: 0.75rem 1rem;
+    background: rgba(0, 0, 0, 0.03);
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.toast-header i {
+    font-size: 1.25rem;
+}
+
+.toast.success .toast-header i {
+    color: var(--primary-color);
+}
+
+.toast.error .toast-header i {
+    color: #dc2626;
+}
+
+.toast-body {
+    padding: 0.75rem 1rem;
+}
+
+.toast.fade-out {
+    animation: slideOut 0.3s ease-in forwards;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOut {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+}
