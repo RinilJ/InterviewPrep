@@ -155,18 +155,15 @@ async function submitTest() {
         startTime: currentTest.startTime,
         endTime: new Date().toISOString(),
         category: currentTest.category,
-        language: currentTest.language,
-        type: currentTest.type // Add test type to results
+        language: currentTest.language
     };
 
-    // Only calculate score for non-psychometric tests
-    if (!currentTest.type || !['big-five', 'mbti', 'eq', 'sjt'].includes(currentTest.type)) {
-        results.questions.forEach(question => {
-            if (question.isCorrect) correctAnswers++;
-        });
-        const score = Math.round((correctAnswers / currentTest.questions.length) * 100);
-        results.score = score;
-    }
+    results.questions.forEach(question => {
+        if (question.isCorrect) correctAnswers++;
+    });
+
+    const score = Math.round((correctAnswers / currentTest.questions.length) * 100);
+    results.score = score;
 
     try {
         // Submit test result
@@ -177,9 +174,8 @@ async function submitTest() {
             },
             body: JSON.stringify({
                 testId: currentTest.id,
-                score: results.score || -1, // Use -1 for psychometric tests
-                answers: currentTest.answers,
-                type: currentTest.type
+                score: score,
+                answers: currentTest.answers
             })
         });
 
@@ -190,15 +186,9 @@ async function submitTest() {
         // Store results for the results page
         sessionStorage.setItem('testResults', JSON.stringify(results));
 
-        // Clear current test data
+        // Clear current test data and redirect to results page
         sessionStorage.removeItem('currentTest');
-
-        // Redirect based on test type
-        if (currentTest.type && ['big-five', 'mbti', 'eq', 'sjt'].includes(currentTest.type)) {
-            window.location.href = '/psychometric-results.html';
-        } else {
-            window.location.href = '/test-results.html';
-        }
+        window.location.href = '/test-results.html';
     } catch (error) {
         console.error('Error submitting test:', error);
         const errorDiv = document.createElement('div');
