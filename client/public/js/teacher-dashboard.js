@@ -95,18 +95,6 @@ async function refreshDashboard() {
                 </div>
             `).join('');
         }
-
-        // Update statistics
-        const statsResponse = await fetch('/api/teacher/stats');
-        if (!statsResponse.ok) {
-            throw new Error('Failed to fetch stats');
-        }
-        const stats = await statsResponse.json();
-
-        document.getElementById('totalStudents').textContent = stats.totalStudents;
-        document.getElementById('activeSessions').textContent = stats.activeSessions || 0;
-        document.getElementById('discussionSlots').textContent = stats.discussionSlots || 0;
-
     } catch (error) {
         console.error('Error refreshing dashboard:', error);
         showToast('Error', 'Failed to refresh dashboard data');
@@ -219,6 +207,8 @@ async function loadDiscussionSlots(filter = 'all') {
             // Add event listeners for filters
             document.querySelectorAll('.btn-filter').forEach(button => {
                 button.addEventListener('click', () => {
+                    document.querySelectorAll('.btn-filter').forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
                     loadDiscussionSlots(button.dataset.filter);
                 });
             });
@@ -236,63 +226,18 @@ async function loadDiscussionSlots(filter = 'all') {
     }
 }
 
-// View student's detailed progress
-async function viewProgress(studentId) {
-    // TODO: Implement detailed progress view
-    showToast('Info', 'Detailed progress view will be implemented soon');
-}
-
-// Clean up interval when leaving the page
-window.addEventListener('beforeunload', () => {
-    if (refreshInterval) {
-        clearInterval(refreshInterval);
-    }
-});
-
-// Show toast notification
-function showToast(title, message) {
-    const toast = document.createElement('div');
-    toast.className = `toast ${title.toLowerCase()}`;
-    toast.innerHTML = `
-        <div class="toast-header">
-            <i class="fas fa-${title === 'Success' ? 'check-circle' : title === 'Error' ? 'exclamation-circle' : 'info-circle'}"></i>
-            <strong>${title}</strong>
-        </div>
-        <div class="toast-body">${message}</div>
-    `;
-    document.body.appendChild(toast);
-    setTimeout(() => {
-        toast.classList.add('fade-out');
-        setTimeout(() => toast.remove(), 300);
-    }, 3000);
-}
-
 // Modal functions
 function openModal() {
     document.getElementById('createSlotModal').classList.remove('hidden');
+    document.getElementById('modalTitle').textContent = 'Create Discussion Slot';
+    document.getElementById('submitBtn').textContent = 'Create Slot';
 }
 
 function closeModal() {
     document.getElementById('createSlotModal').classList.add('hidden');
     document.getElementById('createSlotForm').reset();
-    document.getElementById('createSlotForm').dataset.mode = ''; //reset mode after closing
-    document.getElementById('modalTitle').textContent = 'Create Discussion Slot';
-    document.getElementById('submitBtn').textContent = 'Create Slot';
+    document.getElementById('createSlotForm').dataset.mode = '';
 }
-
-// Tab switching
-document.querySelectorAll('.tab').forEach(tab => {
-    tab.addEventListener('click', () => {
-        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-        tab.classList.add('active');
-
-        const targetId = `${tab.dataset.tab}Tab`;
-        document.querySelectorAll('.tab-content').forEach(content => {
-            content.classList.toggle('hidden', content.id !== targetId);
-        });
-    });
-});
-
 
 // Function to edit discussion slot
 async function editSlot(slotId) {
@@ -303,13 +248,20 @@ async function editSlot(slotId) {
         }
         const slot = await response.json();
 
+        // Format the date for the datetime-local input
+        const startTime = new Date(slot.startTime);
+        const formattedDateTime = startTime.toISOString().slice(0, 16); // Format: YYYY-MM-DDThh:mm
+
+        // Calculate duration in minutes
+        const endTime = new Date(slot.endTime);
+        const durationMinutes = Math.round((endTime - startTime) / (1000 * 60));
+
         // Show edit modal with current values
         const form = document.getElementById('createSlotForm');
-        form.slotTopic.value = slot.topic;
-        form.slotDateTime.value = new Date(slot.startTime).toISOString().slice(0, 16);
+        form.slotTopic.value = slot.topic || '';
+        form.slotDateTime.value = formattedDateTime;
         form.maxParticipants.value = slot.maxParticipants;
-        form.slotDuration.value = (new Date(slot.endTime) - new Date(slot.startTime)) / 60000; // Calculate duration in minutes
-
+        form.slotDuration.value = durationMinutes;
 
         // Update form for edit mode
         form.dataset.mode = 'edit';
@@ -347,7 +299,7 @@ async function cancelSlot(slotId) {
     }
 }
 
-// Update createSlot function to handle both create and edit
+// Create/update discussion slot
 async function createSlot(e) {
     e.preventDefault();
     const form = e.target;
@@ -358,13 +310,14 @@ async function createSlot(e) {
         submitButton.disabled = true;
         submitButton.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${isEdit ? 'Updating...' : 'Creating...'}`;
 
+        // Create Date objects for start and end times
         const startTime = new Date(form.slotDateTime.value);
         const endTime = new Date(startTime.getTime() + parseInt(form.slotDuration.value) * 60000);
 
         const slotData = {
             topic: form.slotTopic.value || 'Open Discussion',
-            startTime,
-            endTime,
+            startTime: startTime.toISOString(),
+            endTime: endTime.toISOString(),
             maxParticipants: parseInt(form.maxParticipants.value)
         };
 
@@ -393,17 +346,38 @@ async function createSlot(e) {
     }
 }
 
-//Function to view participants (added based on context)
-async function viewParticipants(slotId){
-    //Implement view participants functionality here. This would likely involve fetching the list of participants for the slot.
-    showToast('Info', `Viewing participants for slot ${slotId} will be implemented soon.`)
+// Show toast notification
+function showToast(title, message) {
+    const toast = document.createElement('div');
+    toast.className = `toast ${title.toLowerCase()}`;
+    toast.innerHTML = `
+        <div class="toast-header">
+            <i class="fas fa-${title === 'Success' ? 'check-circle' : title === 'Error' ? 'exclamation-circle' : 'info-circle'}"></i>
+            <strong>${title}</strong>
+        </div>
+        <div class="toast-body">${message}</div>
+    `;
+    document.body.appendChild(toast);
+    setTimeout(() => {
+        toast.classList.add('fade-out');
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
 }
+
+// Function to view participants (placeholder)
+async function viewParticipants(slotId) {
+    showToast('Info', `Viewing participants for slot ${slotId} will be implemented soon.`);
+}
+
+// Clean up interval when leaving the page
+window.addEventListener('beforeunload', () => {
+    if (refreshInterval) {
+        clearInterval(refreshInterval);
+    }
+});
 
 // Event listeners
 document.addEventListener('DOMContentLoaded', initializeDashboard);
-document.querySelectorAll('.btn-filter').forEach(button => {
-    button.addEventListener('click', () => loadDiscussionSlots(button.dataset.filter));
-});
 document.getElementById('createSlotBtn').addEventListener('click', openModal);
 document.querySelector('.close-modal').addEventListener('click', closeModal);
 document.getElementById('createSlotForm').addEventListener('submit', createSlot);
