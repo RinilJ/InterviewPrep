@@ -197,10 +197,11 @@ async function createSlot(e) {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                topic: form.slotTopic.value || null,
+                topic: form.slotTopic.value || 'Open Discussion',
                 startTime,
                 endTime,
                 maxParticipants: parseInt(form.maxParticipants.value)
+                // Note: department, year, and batch will be added by the server based on teacher's info
             })
         });
 

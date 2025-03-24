@@ -235,6 +235,9 @@ async function initializeDashboard() {
             .map(result => formatTestResult(result))
             .join('');
 
+        // Load discussion slots
+        await loadDiscussionSlots();
+
     } catch (error) {
         console.error('Error loading dashboard data:', error);
         alert('Failed to load dashboard data. Please refresh the page.');
@@ -282,6 +285,77 @@ async function startTest(topicId) {
             button.disabled = false;
             button.innerHTML = originalText;
         }
+    }
+}
+
+// Add function to load discussion slots for students
+async function loadDiscussionSlots(filter = 'all') {
+    try {
+        const slots = await fetch('/api/discussion-slots').then(res => {
+            if (!res.ok) throw new Error('Failed to fetch discussion slots');
+            return res.json();
+        });
+
+        const now = new Date();
+        const filteredSlots = slots.filter(slot => {
+            const slotDate = new Date(slot.startTime);
+            switch(filter) {
+                case 'upcoming':
+                    return slotDate > now;
+                case 'past':
+                    return slotDate < now;
+                default:
+                    return true;
+            }
+        });
+
+        const discussionsTab = document.getElementById('discussionsTab');
+        if (filteredSlots.length === 0) {
+            discussionsTab.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-calendar-times"></i>
+                    <p>No discussion slots available for your batch</p>
+                </div>`;
+        } else {
+            discussionsTab.innerHTML = `
+                <div class="discussion-filters">
+                    <button class="btn-filter active" data-filter="all">All Slots</button>
+                    <button class="btn-filter" data-filter="upcoming">Upcoming</button>
+                    <button class="btn-filter" data-filter="past">Past</button>
+                </div>
+                <div id="discussionsList" class="discussion-grid">
+                    ${filteredSlots.map(slot => `
+                        <div class="discussion-card">
+                            <div class="discussion-info">
+                                <h3><i class="fas fa-comments"></i> ${slot.topic}</h3>
+                                <p><i class="far fa-clock"></i> ${formatDate(slot.startTime)} - ${new Date(slot.endTime).toLocaleTimeString()}</p>
+                                <p><i class="fas fa-users"></i> Maximum Participants: ${slot.maxParticipants}</p>
+                            </div>
+                            <div class="slot-actions">
+                                <button class="btn-primary" onclick="bookSlot(${slot.id})">
+                                    <i class="fas fa-check"></i> Book Slot
+                                </button>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>`;
+
+            // Add event listeners for filters
+            document.querySelectorAll('.btn-filter').forEach(button => {
+                button.addEventListener('click', () => {
+                    document.querySelectorAll('.btn-filter').forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+                    loadDiscussionSlots(button.dataset.filter);
+                });
+            });
+        }
+    } catch (error) {
+        console.error('Error loading discussion slots:', error);
+        document.getElementById('discussionsTab').innerHTML = `
+            <div class="error-state">
+                <i class="fas fa-exclamation-circle"></i>
+                <p>Failed to load discussion slots. Please try refreshing the page.</p>
+            </div>`;
     }
 }
 
@@ -373,39 +447,42 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Add event listeners for discussion filters
-document.querySelectorAll('.btn-filter').forEach(button => {
-    button.addEventListener('click', () => filterDiscussionSlots(button.dataset.filter));
-});
 
-// Filter discussion slots
-function filterDiscussionSlots(filter) {
-    const buttons = document.querySelectorAll('.btn-filter');
-    buttons.forEach(btn => btn.classList.remove('active'));
-    document.querySelector(`[data-filter="${filter}"]`).classList.add('active');
+//This section is replaced by the new filtering mechanism in loadDiscussionSlots
+// document.querySelectorAll('.btn-filter').forEach(button => {
+//     button.addEventListener('click', () => filterDiscussionSlots(button.dataset.filter));
+// });
 
-    const slots = document.querySelectorAll('.discussion-card');
-    const now = new Date();
-    const weekEnd = new Date(now);
-    weekEnd.setDate(weekEnd.getDate() + 7);
+//This function is replaced by the new filtering mechanism in loadDiscussionSlots
+// // Filter discussion slots
+// function filterDiscussionSlots(filter) {
+//     const buttons = document.querySelectorAll('.btn-filter');
+//     buttons.forEach(btn => btn.classList.remove('active'));
+//     document.querySelector(`[data-filter="${filter}"]`).classList.add('active');
 
-    slots.forEach(slot => {
-        const dateStr = slot.querySelector('.discussion-info p').textContent;
-        const slotDate = new Date(dateStr.split('-')[0].trim());
+//     const slots = document.querySelectorAll('.discussion-card');
+//     const now = new Date();
+//     const weekEnd = new Date(now);
+//     weekEnd.setDate(weekEnd.getDate() + 7);
 
-        switch (filter) {
-            case 'today':
-                slot.style.display =
-                    slotDate.toDateString() === now.toDateString() ? 'flex' : 'none';
-                break;
-            case 'week':
-                slot.style.display =
-                    slotDate >= now && slotDate <= weekEnd ? 'flex' : 'none';
-                break;
-            default:
-                slot.style.display = 'flex';
-        }
-    });
-}
+//     slots.forEach(slot => {
+//         const dateStr = slot.querySelector('.discussion-info p').textContent;
+//         const slotDate = new Date(dateStr.split('-')[0].trim());
+
+//         switch (filter) {
+//             case 'today':
+//                 slot.style.display =
+//                     slotDate.toDateString() === now.toDateString() ? 'flex' : 'none';
+//                 break;
+//             case 'week':
+//                 slot.style.display =
+//                     slotDate >= now && slotDate <= weekEnd ? 'flex' : 'none';
+//                 break;
+//             default:
+//                 slot.style.display = 'flex';
+//         }
+//     });
+// }
 
 // Book discussion slot
 async function bookSlot(slotId) {
