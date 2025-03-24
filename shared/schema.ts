@@ -35,6 +35,11 @@ export const testResults = pgTable("test_results", {
   userId: integer("user_id").references(() => users.id),
   testId: integer("test_id").references(() => tests.id),
   score: integer("score").notNull(),
+  insights: json("insights").$type<{
+    category: string;
+    insights: string[];
+    recommendations?: string[];
+  }>(),
   completedAt: timestamp("completed_at").defaultNow(),
 });
 
@@ -66,7 +71,10 @@ export const insertUserSchema = createInsertSchema(users).omit({
 });
 
 export const insertTestSchema = createInsertSchema(tests).omit({ id: true });
-export const insertTestResultSchema = createInsertSchema(testResults).omit({ id: true, completedAt: true });
+export const insertTestResultSchema = createInsertSchema(testResults).omit({ 
+  id: true, 
+  completedAt: true 
+});
 export const insertDiscussionSlotSchema = createInsertSchema(discussionSlots).omit({ id: true });
 export const insertSlotBookingSchema = createInsertSchema(slotBookings).omit({ id: true, bookedAt: true });
 
@@ -75,5 +83,6 @@ export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type Test = typeof tests.$inferSelect;
 export type TestResult = typeof testResults.$inferSelect;
+export type InsertTestResult = z.infer<typeof insertTestResultSchema>;
 export type DiscussionSlot = typeof discussionSlots.$inferSelect;
 export type SlotBooking = typeof slotBookings.$inferSelect;

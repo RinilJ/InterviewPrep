@@ -14,6 +14,12 @@ import { getUniqueQuestionsForUser, questionBank } from "./questionBank";
 import { getArrayQuestionsJava, getArrayQuestionsPython } from './questions/technical/dsa';
 import { getOOPQuestionsJava, getOOPQuestionsPython } from './questions/technical/oop';
 import { getDebuggingQuestionsJava, getDebuggingQuestionsPython } from './questions/technical/debugging';
+import {
+  generateBigFiveInsights,
+  generateMBTIInsights,
+  generateEQInsights,
+  generateSJTInsights
+} from './questions/psychometric/insights';
 
 export function registerRoutes(app: Express): Server {
   setupAuth(app);
@@ -263,13 +269,52 @@ export function registerRoutes(app: Express): Server {
   app.post("/api/test-results", async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
 
-    const parsed = insertTestResultSchema.parse(req.body);
-    const result = await storage.createTestResult({
-      ...parsed,
-      userId: req.user.id,
-      completedAt: new Date()
-    });
-    res.status(201).json(result);
+    try {
+      const { testId, answers, type } = req.body;
+
+      // For psychometric tests, generate insights instead of numerical score
+      if (type && ['big-five', 'mbti', 'eq', 'sjt'].includes(type)) {
+        let insights;
+        switch (type) {
+          case 'big-five':
+            insights = generateBigFiveInsights(answers);
+            break;
+          case 'mbti':
+            insights = generateMBTIInsights(answers);
+            break;
+          case 'eq':
+            insights = generateEQInsights(answers);
+            break;
+          case 'sjt':
+            insights = generateSJTInsights(answers);
+            break;
+        }
+
+        // Store the insights in the test results
+        const result = await storage.createTestResult({
+          userId: req.user.id,
+          testId,
+          score: -1, // Use -1 to indicate this is a psychometric test
+          insights: JSON.stringify(insights) // Store insights as JSON string
+        });
+
+        return res.status(201).json({
+          ...result,
+          insights
+        });
+      }
+
+      // For non-psychometric tests, continue with normal scoring
+      const parsed = insertTestResultSchema.parse(req.body);
+      const result = await storage.createTestResult({
+        ...parsed,
+        userId: req.user.id
+      });
+      res.status(201).json(result);
+    } catch (error) {
+      console.error('Error creating test result:', error);
+      res.status(500).send("Failed to save test results");
+    }
   });
 
   app.post("/api/logout", (req, res, next) => {
