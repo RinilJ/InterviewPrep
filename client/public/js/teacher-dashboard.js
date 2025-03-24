@@ -41,6 +41,9 @@ async function initializeDashboard() {
 
     // Set up periodic refresh every 30 seconds
     refreshInterval = setInterval(refreshDashboard, 30000);
+
+    // Load discussion slots
+    await loadDiscussionSlots();
 }
 
 // Separate refresh function for reusability
@@ -59,31 +62,33 @@ async function refreshDashboard() {
                 <div class="empty-state">
                     <i class="fas fa-users"></i>
                     <p>No students found in your batch</p>
+                    <p class="subtitle">Students will appear here once they register</p>
                 </div>`;
         } else {
             studentsList.innerHTML = students.map(student => `
                 <div class="student-card">
                     <div class="student-info">
                         <h3><i class="fas fa-user-graduate"></i> ${student.username}</h3>
-                        <p><i class="fas fa-graduation-cap"></i> ${student.department} - Year ${student.year}, Batch ${student.batch}</p>
-                        <p><i class="fas fa-clock"></i> Registered: ${formatDate(student.createdAt)}</p>
-                        <div class="progress-section">
-                            <h4>Test Progress</h4>
-                            <div class="progress-stats">
-                                <div class="stat">
-                                    <span class="label">Tests Completed</span>
-                                    <span class="value">${student.testsCompleted || 0}</span>
-                                </div>
-                                <div class="stat">
-                                    <span class="label">Average Score</span>
-                                    <span class="value">${student.averageScore || 0}%</span>
+                        <div class="student-details">
+                            <p><i class="fas fa-clock"></i> Registered: ${formatDate(student.createdAt)}</p>
+                            <div class="progress-section">
+                                <h4>Test Progress</h4>
+                                <div class="progress-stats">
+                                    <div class="stat">
+                                        <span class="label">Tests Completed</span>
+                                        <span class="value">${student.testsCompleted || 0}</span>
+                                    </div>
+                                    <div class="stat">
+                                        <span class="label">Average Score</span>
+                                        <span class="value">${student.averageScore || 0}%</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                     <div class="student-actions">
                         <button class="btn-secondary" onclick="viewProgress(${student.id})">
-                            <i class="fas fa-chart-bar"></i> View Details
+                            <i class="fas fa-chart-line"></i> View Progress
                         </button>
                     </div>
                 </div>
@@ -105,13 +110,6 @@ async function refreshDashboard() {
         console.error('Error refreshing dashboard:', error);
     }
 }
-
-// Clean up interval when leaving the page
-window.addEventListener('beforeunload', () => {
-    if (refreshInterval) {
-        clearInterval(refreshInterval);
-    }
-});
 
 // Load discussion slots
 async function loadDiscussionSlots(filter = 'all') {
@@ -135,49 +133,91 @@ async function loadDiscussionSlots(filter = 'all') {
         });
 
         const discussionManagement = document.getElementById('discussionManagement');
+
+        // Render header section with filters
+        const headerHtml = `
+            <div class="section-header">
+                <div class="category-header">
+                    <i class="fas fa-comments"></i>
+                    <h2>Discussion Management</h2>
+                </div>
+                <div class="discussion-filters">
+                    <button class="btn-filter ${filter === 'all' ? 'active' : ''}" data-filter="all">
+                        <i class="fas fa-list"></i> All Slots
+                    </button>
+                    <button class="btn-filter ${filter === 'upcoming' ? 'active' : ''}" data-filter="upcoming">
+                        <i class="fas fa-calendar-alt"></i> Upcoming
+                    </button>
+                    <button class="btn-filter ${filter === 'past' ? 'active' : ''}" data-filter="past">
+                        <i class="fas fa-history"></i> Past
+                    </button>
+                </div>
+            </div>`;
+
         if (filteredSlots.length === 0) {
             discussionManagement.innerHTML = `
+                ${headerHtml}
                 <div class="empty-state">
                     <i class="fas fa-calendar-times"></i>
-                    <p>No discussion slots scheduled</p>
+                    <p>No discussion slots found</p>
+                    <p class="subtitle">Create a new slot to get started</p>
                     <button class="btn-primary" onclick="openModal()">
                         <i class="fas fa-plus"></i> Create New Slot
                     </button>
                 </div>`;
         } else {
-            discussionManagement.innerHTML = filteredSlots.map(slot => `
-                <div class="discussion-card ${new Date(slot.startTime) < now ? 'past' : ''}">
-                    <div class="discussion-info">
-                        <h3>
-                            <i class="fas fa-comments"></i> 
-                            ${slot.topic || 'Open Discussion'}
-                            ${new Date(slot.startTime) < now ? 
-                                '<span class="status past">Past</span>' : 
-                                '<span class="status upcoming">Upcoming</span>'
-                            }
-                        </h3>
-                        <div class="slot-details">
-                            <p><i class="far fa-clock"></i> ${formatDate(slot.startTime)} - ${new Date(slot.endTime).toLocaleTimeString()}</p>
-                            <p><i class="fas fa-users"></i> Participants: ${slot.bookedCount || 0}/${slot.maxParticipants}</p>
-                            <p><i class="fas fa-graduation-cap"></i> ${slot.department} - Year ${slot.year}, Batch ${slot.batch}</p>
-                        </div>
-                    </div>
-                    <div class="slot-actions">
-                        ${new Date(slot.startTime) > now ? `
-                            <button class="btn-secondary" onclick="editSlot(${slot.id})">
-                                <i class="fas fa-edit"></i> Edit
-                            </button>
-                            <button class="btn-danger" onclick="cancelSlot(${slot.id})">
-                                <i class="fas fa-times"></i> Cancel
-                            </button>
-                        ` : `
-                            <button class="btn-secondary" onclick="viewParticipants(${slot.id})">
-                                <i class="fas fa-users"></i> View Participants
-                            </button>
-                        `}
-                    </div>
-                </div>
-            `).join('');
+            discussionManagement.innerHTML = `
+                ${headerHtml}
+                <div class="discussion-grid">
+                    ${filteredSlots.map(slot => {
+                        const isPast = new Date(slot.startTime) < now;
+                        const statusClass = isPast ? 'past' : 'upcoming';
+                        const statusText = isPast ? 'Completed' : 'Upcoming';
+
+                        return `
+                            <div class="discussion-card ${statusClass}">
+                                <div class="discussion-info">
+                                    <h3>
+                                        <i class="fas fa-comments"></i>
+                                        ${slot.topic || 'Open Discussion'}
+                                        <span class="status ${statusClass}">${statusText}</span>
+                                    </h3>
+                                    <div class="slot-details">
+                                        <p>
+                                            <i class="far fa-clock"></i>
+                                            ${formatDate(slot.startTime)} - ${new Date(slot.endTime).toLocaleTimeString()}
+                                        </p>
+                                        <p>
+                                            <i class="fas fa-users"></i>
+                                            Participants: ${slot.bookedCount || 0}/${slot.maxParticipants}
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="slot-actions">
+                                    ${isPast ? `
+                                        <button class="btn-secondary" onclick="viewParticipants(${slot.id})">
+                                            <i class="fas fa-users"></i> View Participants
+                                        </button>
+                                    ` : `
+                                        <button class="btn-secondary" onclick="editSlot(${slot.id})">
+                                            <i class="fas fa-edit"></i> Edit
+                                        </button>
+                                        <button class="btn-danger" onclick="cancelSlot(${slot.id})">
+                                            <i class="fas fa-times"></i> Cancel
+                                        </button>
+                                    `}
+                                </div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>`;
+
+            // Add event listeners for filters
+            document.querySelectorAll('.btn-filter').forEach(button => {
+                button.addEventListener('click', () => {
+                    loadDiscussionSlots(button.dataset.filter);
+                });
+            });
         }
     } catch (error) {
         console.error('Error loading discussion slots:', error);
@@ -195,54 +235,15 @@ async function loadDiscussionSlots(filter = 'all') {
 // View student's detailed progress
 async function viewProgress(studentId) {
     // TODO: Implement detailed progress view
-    alert('Detailed progress view will be implemented soon');
+    showToast('Info', 'Detailed progress view will be implemented soon');
 }
 
-// Filter discussion slots
-function filterDiscussionSlots(filter) {
-    loadDiscussionSlots(filter);
-}
-
-// Create new discussion slot
-async function createSlot(e) {
-    e.preventDefault();
-    const form = e.target;
-    const submitButton = form.querySelector('button[type="submit"]');
-
-    try {
-        submitButton.disabled = true;
-        submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating...';
-
-        const startTime = new Date(form.slotDateTime.value);
-        const endTime = new Date(startTime.getTime() + parseInt(form.slotDuration.value) * 60000);
-
-        const response = await fetch('/api/discussion-slots', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                topic: form.slotTopic.value || 'Open Discussion',
-                startTime,
-                endTime,
-                maxParticipants: parseInt(form.maxParticipants.value)
-                // Note: department, year, and batch will be added by the server based on teacher's info
-            })
-        });
-
-        if (!response.ok) {
-            throw new Error(await response.text());
-        }
-
-        closeModal();
-        loadDiscussionSlots();
-        showToast('Success', 'Discussion slot created successfully');
-    } catch (error) {
-        console.error('Create slot error:', error);
-        showToast('Error', 'Failed to create discussion slot');
-    } finally {
-        submitButton.disabled = false;
-        submitButton.innerHTML = 'Create Slot';
+// Clean up interval when leaving the page
+window.addEventListener('beforeunload', () => {
+    if (refreshInterval) {
+        clearInterval(refreshInterval);
     }
-}
+});
 
 // Show toast notification
 function showToast(title, message) {
@@ -250,13 +251,16 @@ function showToast(title, message) {
     toast.className = `toast ${title.toLowerCase()}`;
     toast.innerHTML = `
         <div class="toast-header">
-            <i class="fas fa-${title === 'Success' ? 'check-circle' : 'exclamation-circle'}"></i>
+            <i class="fas fa-${title === 'Success' ? 'check-circle' : title === 'Error' ? 'exclamation-circle' : 'info-circle'}"></i>
             <strong>${title}</strong>
         </div>
         <div class="toast-body">${message}</div>
     `;
     document.body.appendChild(toast);
-    setTimeout(() => toast.remove(), 5000);
+    setTimeout(() => {
+        toast.classList.add('fade-out');
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
 }
 
 // Modal functions
@@ -300,3 +304,61 @@ document.getElementById('logoutBtn').addEventListener('click', async () => {
         showToast('Error', 'Failed to logout');
     }
 });
+
+//Function to edit discussion slot (added based on context)
+async function editSlot(slotId){
+    //Implement edit functionality here.  This would likely involve fetching the slot data, populating a form, and submitting updates.
+    showToast('Info', `Editing slot ${slotId} will be implemented soon.`)
+}
+
+//Function to cancel discussion slot (added based on context)
+async function cancelSlot(slotId){
+    //Implement cancel functionality here. This would likely involve sending a delete request to the server.
+    showToast('Info', `Cancelling slot ${slotId} will be implemented soon.`)
+}
+
+//Function to view participants (added based on context)
+async function viewParticipants(slotId){
+    //Implement view participants functionality here. This would likely involve fetching the list of participants for the slot.
+    showToast('Info', `Viewing participants for slot ${slotId} will be implemented soon.`)
+}
+
+async function createSlot(e) {
+    e.preventDefault();
+    const form = e.target;
+    const submitButton = form.querySelector('button[type="submit"]');
+
+    try {
+        submitButton.disabled = true;
+        submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating...';
+
+        const startTime = new Date(form.slotDateTime.value);
+        const endTime = new Date(startTime.getTime() + parseInt(form.slotDuration.value) * 60000);
+
+        const response = await fetch('/api/discussion-slots', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                topic: form.slotTopic.value || 'Open Discussion',
+                startTime,
+                endTime,
+                maxParticipants: parseInt(form.maxParticipants.value)
+                // Note: department, year, and batch will be added by the server based on teacher's info
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(await response.text());
+        }
+
+        closeModal();
+        loadDiscussionSlots();
+        showToast('Success', 'Discussion slot created successfully');
+    } catch (error) {
+        console.error('Create slot error:', error);
+        showToast('Error', 'Failed to create discussion slot');
+    } finally {
+        submitButton.disabled = false;
+        submitButton.innerHTML = 'Create Slot';
+    }
+}
