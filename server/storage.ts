@@ -68,19 +68,42 @@ export class MemStorage implements IStorage {
 
     // Normalize and validate the user data
     const normalizedUser = {
-      ...user,
-      id,
-      createdAt: new Date(),
-      department: String(user.department || "").trim().toUpperCase(),
-      year: String(user.year || "").trim(),
-      batch: String(user.batch || "").trim().toUpperCase()
+        ...user,
+        id,
+        createdAt: new Date(),
+        department: String(user.department || "").trim().toUpperCase(),
+        year: String(user.year || "").trim(),
+        batch: String(user.batch || "").trim().toUpperCase()
     };
 
-    // Handle teacherId specifically
-    if (user.role === 'student' && user.teacherId) {
-      normalizedUser.teacherId = Number(user.teacherId);
-    } else {
-      normalizedUser.teacherId = null;
+    // For teachers, check if a teacher already exists for this batch
+    if (user.role === 'teacher') {
+        const existingTeacher = await this.findTeacher(
+            normalizedUser.department,
+            normalizedUser.year,
+            normalizedUser.batch
+        );
+
+        if (existingTeacher) {
+            throw new Error("Class teacher for this batch already exists");
+        }
+
+        // Teachers don't have a teacherId
+        normalizedUser.teacherId = null;
+    }
+    // For students, find and assign their teacher
+    else if (user.role === 'student') {
+        const assignedTeacher = await this.findTeacher(
+            normalizedUser.department,
+            normalizedUser.year,
+            normalizedUser.batch
+        );
+
+        if (!assignedTeacher) {
+            throw new Error("No teacher assigned for this batch yet");
+        }
+
+        normalizedUser.teacherId = assignedTeacher.id;
     }
 
     this.users.set(id, normalizedUser);
