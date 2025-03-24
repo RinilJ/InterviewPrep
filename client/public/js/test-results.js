@@ -15,44 +15,42 @@ window.addEventListener('DOMContentLoaded', () => {
 
     const timeSpent = Math.round((new Date(testData.endTime) - new Date(testData.startTime)) / 1000);
 
-    // Check if this is a psychometric test
+    // For psychometric tests, show a different layout
     if (testData.type && ['big-five', 'mbti', 'eq', 'sjt'].includes(testData.type)) {
-        // Hide all score-related elements
-        document.getElementById('scorePercentage').style.display = 'none';
-        document.getElementById('scoreSection').style.display = 'none';
-        document.getElementById('reviewSection').style.display = 'none';
-
-        // Show insights section with a different layout
         const mainContent = document.querySelector('.main-content');
         const insights = testData.insights || {};
 
         mainContent.innerHTML = `
-            <div class="results-container">
+            <div class="results-container p-6">
                 <h1 class="text-3xl font-bold mb-6">${insights.category || 'Personality Assessment'}</h1>
 
-                <div class="insights-section bg-white p-6 rounded-lg shadow-sm">
-                    <div class="insights-list space-y-4">
+                <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+                    <div class="mb-4">
+                        <p class="text-sm text-gray-600">Time taken: ${formatTime(timeSpent)}</p>
+                    </div>
+
+                    <div class="insights-section">
                         ${insights.insights ? insights.insights.map(insight => 
-                            `<p class="insight-item">${insight}</p>`
+                            `<div class="insight-item mb-4 p-4 bg-gray-50 rounded-lg">
+                                <p class="text-lg">${insight}</p>
+                            </div>`
                         ).join('') : ''}
                     </div>
 
                     ${insights.recommendations ? `
-                        <div class="recommendations-list mt-8">
+                        <div class="recommendations-section mt-8">
                             <h3 class="text-xl font-semibold mb-4">Career Recommendations</h3>
                             ${insights.recommendations.map(rec => 
-                                `<p class="recommendation-item">${rec}</p>`
+                                `<div class="recommendation-item mb-3 p-3 border-l-4 border-primary bg-gray-50 rounded-r-lg">
+                                    <p>${rec}</p>
+                                </div>`
                             ).join('')}
                         </div>
                     ` : ''}
-
-                    <div class="mt-6 text-sm text-gray-600">
-                        Time taken: ${formatTime(timeSpent)}
-                    </div>
                 </div>
 
-                <div class="mt-8 text-center">
-                    <a href="/dashboard.html" class="btn-primary">
+                <div class="text-center mt-8">
+                    <a href="/dashboard.html" class="btn-primary px-6 py-2 rounded-lg">
                         Return to Dashboard
                     </a>
                 </div>
