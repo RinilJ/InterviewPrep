@@ -1,8 +1,13 @@
+import { drizzle } from 'drizzle-orm/node-postgres';
+import { migrate } from 'drizzle-orm/node-postgres/migrator';
+import { Pool } from 'pg';
+import { users, tests, testResults, discussionSlots, slotBookings } from '@shared/schema';
 import session from "express-session";
-import createMemoryStore from "memorystore";
+import connectPg from "connect-pg-simple";
+import { eq, and } from 'drizzle-orm';
 import { User, Test, TestResult, DiscussionSlot, SlotBooking } from "@shared/schema";
 
-const MemoryStore = createMemoryStore(session);
+const PostgresSessionStore = connectPg(session);
 
 export interface IStorage {
   // Auth
@@ -32,142 +37,76 @@ export interface IStorage {
   sessionStore: session.Store;
 }
 
-export class MemStorage implements IStorage {
-  private users: Map<number, User>;
-  private tests: Map<number, Test>;
-  private testResults: Map<number, TestResult>;
-  private discussionSlots: Map<number, DiscussionSlot>;
-  private slotBookings: Map<number, SlotBooking>;
-  private currentId: number;
+export class DatabaseStorage implements IStorage {
+  private db: any;
+  private pool: Pool;
   sessionStore: session.Store;
 
   constructor() {
-    this.users = new Map();
-    this.tests = new Map();
-    this.testResults = new Map();
-    this.discussionSlots = new Map();
-    this.slotBookings = new Map();
-    this.currentId = 1;
-    this.sessionStore = new MemoryStore({
-      checkPeriod: 86400000,
+    this.pool = new Pool({
+      connectionString: process.env.DATABASE_URL
     });
+
+    this.db = drizzle(this.pool);
+    this.sessionStore = new PostgresSessionStore({
+      pool: this.pool,
+      createTableIfMissing: true
+    });
+
+    // Log connection
+    console.log('Initializing database connection...');
   }
 
   async getUser(id: number): Promise<User | undefined> {
-    return this.users.get(id);
+    const result = await this.db.select().from(users).where(eq(users.id, id));
+    return result[0];
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
-      (user) => user.username === username,
-    );
+    const result = await this.db.select().from(users).where(eq(users.username, username));
+    return result[0];
   }
 
   async createUser(user: Omit<User, "id" | "createdAt">): Promise<User> {
-    const id = this.currentId++;
-
     // Normalize and validate the user data
     const normalizedUser = {
       ...user,
-      id,
-      createdAt: new Date(),
       department: String(user.department || "").trim().toUpperCase(),
       year: String(user.year || "").trim(),
-      batch: String(user.batch || "").trim().toUpperCase()
+      batch: String(user.batch || "").trim().toUpperCase(),
+      teacherId: user.teacherId ? Number(user.teacherId) : null
     };
 
-    // Handle teacherId specifically
-    if (user.role === 'student' && user.teacherId) {
-      normalizedUser.teacherId = Number(user.teacherId);
-      console.log('Setting teacherId for student:', {
-        studentId: id,
-        teacherId: normalizedUser.teacherId
-      });
-    } else {
-      normalizedUser.teacherId = null;
-    }
-
-    // Log the full user object being created
     console.log('Creating new user:', {
       ...normalizedUser,
       password: '[REDACTED]'
     });
 
-    this.users.set(id, normalizedUser);
-
-    // Verify the user was stored correctly
-    const storedUser = this.users.get(id);
-    console.log('Stored user verification:', {
-      id: storedUser?.id,
-      username: storedUser?.username,
-      role: storedUser?.role,
-      department: storedUser?.department,
-      year: storedUser?.year,
-      batch: storedUser?.batch,
-      teacherId: storedUser?.teacherId
-    });
-
-    return normalizedUser;
+    const result = await this.db.insert(users).values(normalizedUser).returning();
+    return result[0];
   }
 
   async findTeacher(department: string, year: string, batch: string): Promise<User | undefined> {
-    // Normalize input
     const cleanDepartment = String(department).trim().toUpperCase();
     const cleanYear = String(year).trim();
     const cleanBatch = String(batch).trim().toUpperCase();
 
     console.log('Finding teacher for:', { cleanDepartment, cleanYear, cleanBatch });
 
-    // Get all users and log them
-    const allUsers = Array.from(this.users.values());
-    console.log('All users in system:', allUsers.map(u => ({
-      id: u.id,
-      username: u.username,
-      role: u.role,
-      department: u.department,
-      year: u.year,
-      batch: u.batch
-    })));
+    const result = await this.db
+      .select()
+      .from(users)
+      .where(and(
+        eq(users.role, 'teacher'),
+        eq(users.department, cleanDepartment),
+        eq(users.year, cleanYear),
+        eq(users.batch, cleanBatch)
+      ));
 
-    // Find matching teacher
-    const teacher = allUsers.find(user => {
-      const matches = {
-        isTeacher: user.role === 'teacher',
-        departmentMatch: user.department === cleanDepartment,
-        yearMatch: user.year === cleanYear,
-        batchMatch: user.batch === cleanBatch
-      };
-
-      const isMatch = Object.values(matches).every(match => match === true);
-
-      console.log('Teacher match evaluation:', {
-        userId: user.id,
-        username: user.username,
-        role: user.role,
-        matches,
-        isMatch
-      });
-
-      return isMatch;
-    });
-
-    if (teacher) {
-      console.log('Found matching teacher:', {
-        id: teacher.id,
-        username: teacher.username,
-        department: teacher.department,
-        year: teacher.year,
-        batch: teacher.batch
-      });
-    } else {
-      console.log('No matching teacher found');
-    }
-
-    return teacher;
+    return result[0];
   }
 
   async getTeacherStudents(teacherId: number, department: string, year: string, batch: string): Promise<User[]> {
-    // Normalize input
     const cleanDepartment = String(department).trim().toUpperCase();
     const cleanYear = String(year).trim();
     const cleanBatch = String(batch).trim().toUpperCase();
@@ -179,45 +118,16 @@ export class MemStorage implements IStorage {
       batch: cleanBatch
     });
 
-    // Get all users and log them
-    const allUsers = Array.from(this.users.values());
-    console.log('All users in system:', allUsers.map(u => ({
-      id: u.id,
-      username: u.username,
-      role: u.role,
-      teacherId: u.teacherId,
-      department: u.department,
-      year: u.year,
-      batch: u.batch
-    })));
-
-    // Find matching students
-    const students = allUsers.filter(user => {
-      const matches = {
-        isStudent: user.role === 'student',
-        teacherMatch: Number(user.teacherId) === Number(teacherId),
-        departmentMatch: user.department === cleanDepartment,
-        yearMatch: user.year === cleanYear,
-        batchMatch: user.batch === cleanBatch
-      };
-
-      const isMatch = Object.values(matches).every(match => match === true);
-
-      console.log('Student match evaluation:', {
-        userId: user.id,
-        username: user.username,
-        matches,
-        isMatch
-      });
-
-      return isMatch;
-    });
-
-    console.log('Matched students:', students.map(s => ({
-      id: s.id,
-      username: s.username,
-      teacherId: s.teacherId
-    })));
+    const students = await this.db
+      .select()
+      .from(users)
+      .where(and(
+        eq(users.role, 'student'),
+        eq(users.teacherId, teacherId),
+        eq(users.department, cleanDepartment),
+        eq(users.year, cleanYear),
+        eq(users.batch, cleanBatch)
+      ));
 
     // Add progress information
     const studentsWithProgress = await Promise.all(students.map(async (student) => {
@@ -234,52 +144,57 @@ export class MemStorage implements IStorage {
     return studentsWithProgress;
   }
 
-  async getTests(): Promise<Test[]> {
-    return Array.from(this.tests.values());
+  // Implement other methods similarly...
+  async createTest(test: Omit<Test, "id">): Promise<Test> {
+    const result = await this.db.insert(tests).values(test).returning();
+    return result[0];
   }
 
-  async createTest(test: Omit<Test, "id">): Promise<Test> {
-    const id = this.currentId++;
-    const newTest = { ...test, id };
-    this.tests.set(id, newTest);
-    return newTest;
+  async getTests(): Promise<Test[]> {
+    return await this.db.select().from(tests);
   }
 
   async createTestResult(result: Omit<TestResult, "id" | "completedAt">): Promise<TestResult> {
-    const id = this.currentId++;
-    const newResult = { ...result, id, completedAt: new Date() };
-    this.testResults.set(id, newResult);
-    return newResult;
+    const newResult = {
+      ...result,
+      completedAt: new Date()
+    };
+    const insertedResult = await this.db.insert(testResults).values(newResult).returning();
+    return insertedResult[0];
   }
 
   async getTestResults(userId: number): Promise<TestResult[]> {
-    return Array.from(this.testResults.values()).filter(
-      (result) => result.userId === userId,
-    );
+    return await this.db
+      .select()
+      .from(testResults)
+      .where(eq(testResults.userId, userId));
   }
 
   async createDiscussionSlot(slot: Omit<DiscussionSlot, "id">): Promise<DiscussionSlot> {
-    const id = this.currentId++;
-    const newSlot = { ...slot, id };
-    this.discussionSlots.set(id, newSlot);
-    return newSlot;
+    const result = await this.db.insert(discussionSlots).values(slot).returning();
+    return result[0];
   }
 
   async getDiscussionSlots(department: string, year: string, batch: string): Promise<DiscussionSlot[]> {
-    return Array.from(this.discussionSlots.values()).filter(
-      (slot) =>
-        String(slot.department).trim() === String(department).trim() &&
-        String(slot.year).trim() === String(year).trim() &&
-        String(slot.batch).trim() === String(batch).trim()
-    );
+    return await this.db
+      .select()
+      .from(discussionSlots)
+      .where(and(
+        eq(discussionSlots.department, department),
+        eq(discussionSlots.year, year),
+        eq(discussionSlots.batch, batch)
+      ));
   }
 
   async createSlotBooking(booking: Omit<SlotBooking, "id" | "bookedAt">): Promise<SlotBooking> {
-    const id = this.currentId++;
-    const newBooking = { ...booking, id, bookedAt: new Date() };
-    this.slotBookings.set(id, newBooking);
-    return newBooking;
+    const newBooking = {
+      ...booking,
+      bookedAt: new Date()
+    };
+    const result = await this.db.insert(slotBookings).values(newBooking).returning();
+    return result[0];
   }
 }
 
-export const storage = new MemStorage();
+// Export a single instance
+export const storage = new DatabaseStorage();
