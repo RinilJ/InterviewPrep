@@ -140,8 +140,8 @@ async function initializeDashboard() {
     const user = await checkAuth();
     if (!user) return;
 
-    // Update user info with correct formatting
-    document.getElementById('userName').textContent = `${user.username} (${user.role}) - ${user.department} Year ${user.year}, Batch ${user.batch}`;
+    // Update user info with correct formatting - focus on year and batch
+    document.getElementById('userName').textContent = `${user.username} - Year ${user.year}, Batch ${user.batch}`;
 
     try {
         // Load topics for each category
