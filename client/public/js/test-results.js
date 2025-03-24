@@ -55,52 +55,78 @@ window.addEventListener('DOMContentLoaded', () => {
     }
 
     const timeSpent = Math.round((new Date(testData.endTime) - new Date(testData.startTime)) / 1000);
-    const correctAnswers = testData.questions.filter(q => q.isCorrect).length;
-    const incorrectAnswers = testData.questions.length - correctAnswers;
 
-    // Update score display
-    document.getElementById('scorePercentage').textContent = `${testData.score}%`;
-    document.getElementById('correctAnswers').textContent = correctAnswers;
-    document.getElementById('incorrectAnswers').textContent = incorrectAnswers;
-    document.getElementById('timeTaken').textContent = formatTime(timeSpent);
+    // Check if this is a psychometric test
+    if (testData.type && ['big-five', 'mbti', 'eq', 'sjt'].includes(testData.type)) {
+        // Hide the score-related elements
+        document.getElementById('scoreSection').style.display = 'none';
 
-    // Add performance feedback
-    const feedback = getPerformanceFeedback(testData.score);
-    const feedbackHtml = `
-        <h3 class="mb-2 font-semibold">${feedback.message}</h3>
-        <ul class="list-disc ml-4">
-            ${feedback.suggestions.map(s => `<li>${s}</li>`).join('')}
-        </ul>
-    `;
-    document.getElementById('performanceFeedback').innerHTML = feedbackHtml;
+        // Show insights section
+        const insightsSection = document.getElementById('insightsSection');
+        insightsSection.style.display = 'block';
 
-    // Show questions review
-    const reviewContent = document.getElementById('reviewContent');
-    testData.questions.forEach((question, index) => {
-        const reviewHtml = `
-            <div class="review-item ${question.isCorrect ? 'correct' : 'incorrect'}">
-                <h3>Question ${index + 1}</h3>
-                <p>${question.question}</p>
-                ${question.code ? `<pre class="code-block"><code>${question.code}</code></pre>` : ''}
-                <div class="options">
-                    ${question.options.map((option, i) => `
-                        <div class="option 
-                            ${i === question.correctAnswer ? 'correct' : ''} 
-                            ${i === question.userAnswer ? 'selected' : ''}">
-                            ${option}
-                            ${i === question.correctAnswer ? ' ✓' : ''}
-                            ${i === question.userAnswer && i !== question.correctAnswer ? ' ✗' : ''}
-                        </div>
-                    `).join('')}
+        const insights = testData.insights || {};
+        const insightsHtml = `
+            <h2 class="text-2xl font-semibold mb-4">${insights.category || 'Personality Insights'}</h2>
+            <div class="insights-list">
+                ${insights.insights ? insights.insights.map(insight => 
+                    `<p class="insight-item">${insight}</p>`
+                ).join('') : ''}
+            </div>
+            ${insights.recommendations ? `
+                <div class="recommendations-list mt-6">
+                    <h3 class="text-xl font-semibold mb-2">Career Recommendations</h3>
+                    ${insights.recommendations.map(rec => 
+                        `<p class="recommendation-item">${rec}</p>`
+                    ).join('')}
                 </div>
-                <div class="explanation">
-                    <h4>Explanation:</h4>
-                    <p>${question.explanation}</p>
-                </div>
+            ` : ''}
+            <div class="mt-4 text-gray-600">
+                Time taken: ${formatTime(timeSpent)}
             </div>
         `;
-        reviewContent.innerHTML += reviewHtml;
-    });
+        insightsSection.innerHTML = insightsHtml;
+
+        // Hide the questions review section as it's not relevant for psychometric tests
+        document.getElementById('reviewSection').style.display = 'none';
+    } else {
+        // For non-psychometric tests, show the regular score display
+        const correctAnswers = testData.questions.filter(q => q.isCorrect).length;
+        const incorrectAnswers = testData.questions.length - correctAnswers;
+
+        document.getElementById('scorePercentage').textContent = `${testData.score}%`;
+        document.getElementById('correctAnswers').textContent = correctAnswers;
+        document.getElementById('incorrectAnswers').textContent = incorrectAnswers;
+        document.getElementById('timeTaken').textContent = formatTime(timeSpent);
+
+        // Show questions review
+        const reviewContent = document.getElementById('reviewContent');
+        testData.questions.forEach((question, index) => {
+            const reviewHtml = `
+                <div class="review-item ${question.isCorrect ? 'correct' : 'incorrect'}">
+                    <h3>Question ${index + 1}</h3>
+                    <p>${question.question}</p>
+                    ${question.code ? `<pre class="code-block"><code>${question.code}</code></pre>` : ''}
+                    <div class="options">
+                        ${question.options.map((option, i) => `
+                            <div class="option 
+                                ${i === question.correctAnswer ? 'correct' : ''} 
+                                ${i === question.userAnswer ? 'selected' : ''}">
+                                ${option}
+                                ${i === question.correctAnswer ? ' ✓' : ''}
+                                ${i === question.userAnswer && i !== question.correctAnswer ? ' ✗' : ''}
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div class="explanation">
+                        <h4>Explanation:</h4>
+                        <p>${question.explanation}</p>
+                    </div>
+                </div>
+            `;
+            reviewContent.innerHTML += reviewHtml;
+        });
+    }
 
     // Highlight code blocks if present
     if (typeof hljs !== 'undefined') {

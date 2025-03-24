@@ -88,7 +88,7 @@ function createTestCard(test) {
     `;
 }
 
-// Add this function to format test results based on type
+// Function to format test results based on type
 function formatTestResult(result) {
     if (result.insights) {
         try {
@@ -107,7 +107,7 @@ function formatTestResult(result) {
                         </div>
                         ${insightData.recommendations ? `
                             <div class="recommendations-list">
-                                <h4>Recommendations:</h4>
+                                <h4>Career Recommendations:</h4>
                                 ${insightData.recommendations.map(rec => 
                                     `<p class="recommendation-item">${rec}</p>`
                                 ).join('')}
@@ -121,7 +121,7 @@ function formatTestResult(result) {
             return '';
         }
     } else {
-        // Regular test result display
+        // Regular test result display (for non-psychometric tests)
         return `
             <div class="history-card">
                 <div class="history-info">
