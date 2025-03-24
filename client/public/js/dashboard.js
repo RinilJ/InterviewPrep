@@ -12,8 +12,11 @@ async function checkAuth() {
             window.location.href = '/login.html';
             return null;
         }
-        return await response.json();
+        const user = await response.json();
+        console.log('User data:', user); // Debug log
+        return user;
     } catch (error) {
+        console.error('Auth error:', error);
         window.location.href = '/login.html';
         return null;
     }
@@ -140,8 +143,22 @@ async function initializeDashboard() {
     const user = await checkAuth();
     if (!user) return;
 
+    // Debug log to check user data
+    console.log('Initializing dashboard with user:', {
+        username: user.username,
+        year: user.year,
+        batch: user.batch,
+        department: user.department
+    });
+
     // Update user info with year and batch
-    document.getElementById('userName').textContent = `${user.username} - Year ${user.year}, Batch ${user.batch}`;
+    const userNameElement = document.getElementById('userName');
+    if (userNameElement) {
+        userNameElement.textContent = `${user.username} - Year ${user.year}, Batch ${user.batch}`;
+        console.log('Updated username display:', userNameElement.textContent);
+    } else {
+        console.error('userName element not found');
+    }
 
     try {
         // Load topics for each category
@@ -322,7 +339,6 @@ async function startPsychometricTest(testType) {
     }
 }
 
-
 // Tab switching functionality
 document.querySelectorAll('.tab').forEach(tab => {
     tab.addEventListener('click', () => {
@@ -351,6 +367,7 @@ document.getElementById('logoutBtn').addEventListener('click', async () => {
 
 // Initialize dashboard when page loads
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('DOM loaded, initializing dashboard');
     initializeDashboard();
     initializeTechnicalTest();
 });
