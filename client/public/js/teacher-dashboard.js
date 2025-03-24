@@ -68,9 +68,19 @@ async function refreshDashboard() {
             studentsList.innerHTML = students.map(student => `
                 <div class="student-card">
                     <div class="student-info">
-                        <h3><i class="fas fa-user-graduate"></i> ${student.username}</h3>
+                        <h3>
+                            <i class="fas fa-user-graduate"></i>
+                            ${student.username}
+                        </h3>
                         <div class="student-details">
-                            <p><i class="fas fa-clock"></i> Registered: ${formatDate(student.createdAt)}</p>
+                            <p>
+                                <i class="fas fa-graduation-cap"></i>
+                                ${student.department} - Year ${student.year}, Batch ${student.batch}
+                            </p>
+                            <p>
+                                <i class="fas fa-clock"></i>
+                                Registered: ${formatDate(student.createdAt)}
+                            </p>
                             <div class="progress-section">
                                 <h4>Test Progress</h4>
                                 <div class="progress-stats">
@@ -88,7 +98,8 @@ async function refreshDashboard() {
                     </div>
                     <div class="student-actions">
                         <button class="btn-secondary" onclick="viewProgress(${student.id})">
-                            <i class="fas fa-chart-line"></i> View Progress
+                            <i class="fas fa-chart-line"></i>
+                            View Progress
                         </button>
                     </div>
                 </div>
@@ -108,6 +119,7 @@ async function refreshDashboard() {
 
     } catch (error) {
         console.error('Error refreshing dashboard:', error);
+        showToast('Error', 'Failed to refresh dashboard data');
     }
 }
 

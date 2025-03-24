@@ -441,6 +441,7 @@ nav {
     margin: 0;
 }
 
+
 .test-card {
     background: white;
     padding: 1.5rem;
@@ -936,4 +937,131 @@ nav {
 .participant-count.full {
     background: rgba(220, 38, 38, 0.1);
     color: #dc2626;
+}
+
+/* Student List Styles */
+.student-card {
+    background: white;
+    padding: 1.75rem;
+    border-radius: 0.75rem;
+    margin-bottom: 1.25rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    border: 1px solid var(--border-color);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.student-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.student-info {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.student-info h3 {
+    color: var(--text-color);
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.student-info h3 i {
+    color: var(--primary-color);
+    font-size: 1.1rem;
+}
+
+.student-details {
+    background: rgba(0, 0, 0, 0.02);
+    padding: 1rem;
+    border-radius: 0.5rem;
+}
+
+.student-details p {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: var(--text-color);
+    font-size: 0.95rem;
+    margin-bottom: 0.75rem;
+}
+
+.student-details i {
+    color: var(--primary-color);
+    opacity: 0.8;
+    width: 1.25rem;
+    text-align: center;
+}
+
+.progress-section {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.progress-section h4 {
+    color: var(--primary-color);
+    font-size: 1rem;
+    margin-bottom: 0.75rem;
+}
+
+.progress-stats {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}
+
+.stat {
+    background: white;
+    padding: 0.75rem;
+    border-radius: 0.375rem;
+    border: 1px solid var(--border-color);
+}
+
+.stat .label {
+    display: block;
+    font-size: 0.85rem;
+    color: var(--text-color);
+    opacity: 0.8;
+    margin-bottom: 0.25rem;
+}
+
+.stat .value {
+    display: block;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+.student-actions {
+    margin-top: 1.25rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.student-actions button {
+    width: 100%;
+    padding: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-weight: 500;
+}
+
+.student-actions button i {
+    font-size: 1rem;
+}
+
+@media (max-width: 768px) {
+    .student-card {
+        padding: 1.25rem;
+    }
+
+    .progress-stats {
+        grid-template-columns: 1fr;
+    }
 }
