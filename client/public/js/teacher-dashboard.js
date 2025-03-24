@@ -173,6 +173,8 @@ async function loadDiscussionSlots(filter = 'all') {
                         const isPast = new Date(slot.startTime) < now;
                         const statusClass = isPast ? 'past' : 'upcoming';
                         const statusText = isPast ? 'Completed' : 'Upcoming';
+                        const participantCount = slot.bookedCount || 0;
+                        const participantStatus = participantCount >= slot.maxParticipants ? 'full' : 'available';
 
                         return `
                             <div class="discussion-card ${statusClass}">
@@ -189,7 +191,7 @@ async function loadDiscussionSlots(filter = 'all') {
                                         </p>
                                         <p>
                                             <i class="fas fa-users"></i>
-                                            Participants: ${slot.bookedCount || 0}/${slot.maxParticipants}
+                                            Participants: <span class="participant-count ${participantStatus}">${participantCount}/${slot.maxParticipants}</span>
                                         </p>
                                     </div>
                                 </div>
@@ -290,7 +292,7 @@ document.querySelectorAll('.tab').forEach(tab => {
 // Event listeners
 document.addEventListener('DOMContentLoaded', initializeDashboard);
 document.querySelectorAll('.btn-filter').forEach(button => {
-    button.addEventListener('click', () => filterDiscussionSlots(button.dataset.filter));
+    button.addEventListener('click', () => loadDiscussionSlots(button.dataset.filter));
 });
 document.getElementById('createSlotBtn').addEventListener('click', openModal);
 document.querySelector('.close-modal').addEventListener('click', closeModal);

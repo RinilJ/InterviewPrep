@@ -214,16 +214,34 @@ export class MemStorage implements IStorage {
   }
 
   async getDiscussionSlots(department: string, year: string, batch: string): Promise<DiscussionSlot[]> {
-    return Array.from(this.discussionSlots.values()).filter(
+    const slots = Array.from(this.discussionSlots.values()).filter(
       (slot) =>
         String(slot.department).trim() === String(department).trim() &&
         String(slot.year).trim() === String(year).trim() &&
         String(slot.batch).trim() === String(batch).trim()
     );
+
+    // Add booking count for each slot
+    const slotsWithBookings = await Promise.all(slots.map(async (slot) => {
+      const bookings = await this.getSlotBookings(slot.id);
+      return {
+        ...slot,
+        bookedCount: bookings.length
+      };
+    }));
+
+    return slotsWithBookings;
   }
 
   async getDiscussionSlot(id: number): Promise<DiscussionSlot | undefined> {
-    return this.discussionSlots.get(id);
+    const slot = this.discussionSlots.get(id);
+    if (!slot) return undefined;
+
+    const bookings = await this.getSlotBookings(id);
+    return {
+      ...slot,
+      bookedCount: bookings.length
+    };
   }
 
   async getSlotBookings(slotId: number): Promise<SlotBooking[]> {
@@ -236,6 +254,11 @@ export class MemStorage implements IStorage {
     const id = this.currentId++;
     const newBooking = { ...booking, id, bookedAt: new Date() };
     this.slotBookings.set(id, newBooking);
+
+    // After creating a booking, refresh the discussion slot data
+    const slot = await this.getDiscussionSlot(booking.slotId);
+    console.log(`Created booking for slot ${booking.slotId}, new count: ${slot?.bookedCount}`);
+
     return newBooking;
   }
 }

@@ -923,3 +923,17 @@ nav {
     color: var(--primary-color);
     margin-bottom: 0.5rem;
 }
+
+/* Add participant count styles */
+.participant-count {
+    font-weight: 500;
+    padding: 0.2rem 0.5rem;
+    border-radius: 0.25rem;
+    background: rgba(22, 101, 52, 0.1);
+    color: var(--primary-color);
+}
+
+.participant-count.full {
+    background: rgba(220, 38, 38, 0.1);
+    color: #dc2626;
+}
