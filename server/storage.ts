@@ -1,6 +1,6 @@
 import session from "express-session";
 import createMemoryStore from "memorystore";
-import { User, Test, TestResult, DiscussionSlot, SlotBooking } from "@shared/schema";
+import { User, Test, TestResult, DiscussionSlot, SlotBooking, PsychometricResult } from "@shared/schema";
 
 const MemoryStore = createMemoryStore(session);
 
@@ -17,10 +17,15 @@ export interface IStorage {
   // Tests
   createTest(test: Omit<Test, "id">): Promise<Test>;
   getTests(): Promise<Test[]>;
+  getTest(id: number): Promise<Test | undefined>;
 
   // Test Results
   createTestResult(result: Omit<TestResult, "id" | "completedAt">): Promise<TestResult>;
   getTestResults(userId: number): Promise<TestResult[]>;
+
+  // Psychometric Results
+  createPsychometricResult(result: Omit<PsychometricResult, "id" | "completedAt">): Promise<PsychometricResult>;
+  getPsychometricResults(userId: number): Promise<PsychometricResult[]>;
 
   // Discussion Slots
   createDiscussionSlot(slot: Omit<DiscussionSlot, "id">): Promise<DiscussionSlot>;
@@ -36,6 +41,7 @@ export class MemStorage implements IStorage {
   private users: Map<number, User>;
   private tests: Map<number, Test>;
   private testResults: Map<number, TestResult>;
+  private psychometricResults: Map<number, PsychometricResult>;
   private discussionSlots: Map<number, DiscussionSlot>;
   private slotBookings: Map<number, SlotBooking>;
   private currentId: number;
@@ -45,6 +51,7 @@ export class MemStorage implements IStorage {
     this.users = new Map();
     this.tests = new Map();
     this.testResults = new Map();
+    this.psychometricResults = new Map();
     this.discussionSlots = new Map();
     this.slotBookings = new Map();
     this.currentId = 1;
@@ -279,6 +286,34 @@ export class MemStorage implements IStorage {
     const newBooking = { ...booking, id, bookedAt: new Date() };
     this.slotBookings.set(id, newBooking);
     return newBooking;
+  }
+
+  async getTest(id: number): Promise<Test | undefined> {
+    return this.tests.get(id);
+  }
+
+  async createPsychometricResult(result: Omit<PsychometricResult, "id" | "completedAt">): Promise<PsychometricResult> {
+    const id = this.currentId++;
+    const newResult = { 
+      ...result, 
+      id, 
+      completedAt: new Date() 
+    };
+
+    console.log('Creating psychometric result:', {
+      id: newResult.id,
+      userId: newResult.userId,
+      testId: newResult.testId,
+      insights: newResult.insights
+    });
+
+    this.psychometricResults.set(id, newResult);
+    return newResult;
+  }
+
+  async getPsychometricResults(userId: number): Promise<PsychometricResult[]> {
+    return Array.from(this.psychometricResults.values())
+      .filter(result => result.userId === userId);
   }
 }
 

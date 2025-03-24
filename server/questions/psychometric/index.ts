@@ -3,6 +3,8 @@ import { Question } from '../../types';
 interface PsychometricQuestion extends Question {
   category: 'big-five' | 'mbti' | 'ravens' | 'sjt' | 'eq';
   subcategory?: string;
+  options: string[];
+  optionInterpretations: string[]; // Interpretation for each option
 }
 
 export async function getBigFiveQuestions(): Promise<PsychometricQuestion[]> {
@@ -15,7 +17,12 @@ export async function getBigFiveQuestions(): Promise<PsychometricQuestion[]> {
         "I'm cautiously open to new experiences",
         "I strongly prefer sticking to what I know"
       ],
-      correctAnswer: -1, // No correct answer for personality tests
+      optionInterpretations: [
+        "You show high openness to experience, embracing novelty and innovation readily",
+        "You value stability and consistency, preferring established methods",
+        "You balance curiosity with caution, showing moderate openness",
+        "You strongly prefer familiar environments and established routines"
+      ],
       explanation: "Measures openness to experience",
       category: 'big-five',
       subcategory: 'openness'
@@ -28,7 +35,12 @@ export async function getBigFiveQuestions(): Promise<PsychometricQuestion[]> {
         "I prefer to go with the flow",
         "I deal with tasks as they come"
       ],
-      correctAnswer: -1,
+      optionInterpretations: [
+        "You exhibit high conscientiousness, with strong planning and organizational skills",
+        "You show balanced conscientiousness, combining structure with adaptability",
+        "You prefer spontaneity and flexibility over rigid structure",
+        "You take a highly adaptable approach, dealing with tasks reactively"
+      ],
       explanation: "Measures conscientiousness",
       category: 'big-five',
       subcategory: 'conscientiousness'
@@ -41,7 +53,12 @@ export async function getBigFiveQuestions(): Promise<PsychometricQuestion[]> {
         "I prefer small group interactions",
         "I tend to observe more than participate"
       ],
-      correctAnswer: -1,
+      optionInterpretations: [
+        "You exhibit high extraversion, enjoying social interaction and engagement.",
+        "You display moderate extraversion, comfortable in social settings but not needing constant attention.",
+        "You show introverted tendencies, preferring smaller and more intimate social interactions.",
+        "You are highly introverted, preferring observation over active participation in social settings."
+      ],
       explanation: "Measures extraversion",
       category: 'big-five',
       subcategory: 'extraversion'
@@ -54,7 +71,12 @@ export async function getBigFiveQuestions(): Promise<PsychometricQuestion[]> {
         "I prefer to avoid confrontation",
         "I strongly defend my viewpoint"
       ],
-      correctAnswer: -1,
+      optionInterpretations: [
+        "You demonstrate high agreeableness, prioritizing harmony and compromise.",
+        "You show balanced agreeableness, assertively expressing your views while respecting others.",
+        "You exhibit lower agreeableness, preferring to avoid conflict.",
+        "You show lower agreeableness, prioritizing your position in conflict situations."
+      ],
       explanation: "Measures agreeableness",
       category: 'big-five',
       subcategory: 'agreeableness'
@@ -67,7 +89,12 @@ export async function getBigFiveQuestions(): Promise<PsychometricQuestion[]> {
         "I often feel overwhelmed",
         "I get very anxious and worried"
       ],
-      correctAnswer: -1,
+      optionInterpretations: [
+        "You demonstrate low neuroticism, maintaining composure under stress.",
+        "You show moderate neuroticism, experiencing anxiety but managing it effectively.",
+        "You exhibit higher neuroticism, feeling overwhelmed by stress.",
+        "You display high neuroticism, experiencing significant anxiety in stressful situations."
+      ],
       explanation: "Measures neuroticism",
       category: 'big-five',
       subcategory: 'neuroticism'
@@ -80,7 +107,12 @@ export async function getBigFiveQuestions(): Promise<PsychometricQuestion[]> {
         "A mix of familiar and new activities",
         "Sticking to what I know I enjoy"
       ],
-      correctAnswer: -1,
+      optionInterpretations: [
+        "You display high openness to experience, seeking novelty and exploration.",
+        "You value routine and familiarity in your leisure time.",
+        "You show balanced openness, enjoying both new and familiar experiences.",
+        "You exhibit lower openness, preferring established and comfortable activities."
+      ],
       explanation: "Measures openness",
       category: 'big-five',
       subcategory: 'openness'
@@ -93,7 +125,12 @@ export async function getBigFiveQuestions(): Promise<PsychometricQuestion[]> {
         "I sometimes need to rush at the last minute",
         "I often struggle with time management"
       ],
-      correctAnswer: -1,
+      optionInterpretations: [
+        "You demonstrate high conscientiousness and excellent time management skills.",
+        "You show balanced conscientiousness, effectively managing your time and commitments.",
+        "You exhibit lower conscientiousness, sometimes requiring last-minute efforts.",
+        "You show lower conscientiousness, often struggling with time management and deadlines."
+      ],
       explanation: "Measures conscientiousness",
       category: 'big-five',
       subcategory: 'conscientiousness'
@@ -106,7 +143,12 @@ export async function getBigFiveQuestions(): Promise<PsychometricQuestion[]> {
         "By engaging in quiet activities alone",
         "By completely isolating myself"
       ],
-      correctAnswer: -1,
+      optionInterpretations: [
+        "You show a preference for extroverted recharging methods.",
+        "You are likely an ambivert, finding balance between social and solitary activities.",
+        "You prefer introverted recharging methods, needing quiet time for restoration.",
+        "You are a highly introverted individual who needs significant alone time to recharge."
+      ],
       explanation: "Measures extraversion",
       category: 'big-five',
       subcategory: 'extraversion'
@@ -119,7 +161,12 @@ export async function getBigFiveQuestions(): Promise<PsychometricQuestion[]> {
         "I consider the situation carefully first",
         "I focus on my own needs first"
       ],
-      correctAnswer: -1,
+      optionInterpretations: [
+        "You demonstrate high agreeableness, readily offering support and assistance.",
+        "You show balanced agreeableness, offering help when appropriate while respecting your own needs.",
+        "You exhibit moderate agreeableness, carefully considering requests before responding.",
+        "You demonstrate lower agreeableness, prioritizing your own needs over those of others."
+      ],
       explanation: "Measures agreeableness",
       category: 'big-five',
       subcategory: 'agreeableness'
@@ -132,7 +179,12 @@ export async function getBigFiveQuestions(): Promise<PsychometricQuestion[]> {
         "I need time to process and adapt",
         "I find changes very disturbing"
       ],
-      correctAnswer: -1,
+      optionInterpretations: [
+        "You demonstrate low neuroticism, adapting easily and maintaining positivity.",
+        "You show moderate neuroticism, experiencing initial stress but adjusting effectively.",
+        "You exhibit higher neuroticism, needing time to process and adapt to changes.",
+        "You display high neuroticism, finding unexpected changes significantly disruptive."
+      ],
       explanation: "Measures neuroticism",
       category: 'big-five',
       subcategory: 'neuroticism'
@@ -150,7 +202,12 @@ export async function getMBTIQuestions(): Promise<PsychometricQuestion[]> {
         "Through a mix of social and solitary activities",
         "It depends on the situation"
       ],
-      correctAnswer: -1,
+      optionInterpretations: [
+        "You show strong extroversion tendencies, gaining energy from social interaction",
+        "You display classic introversion traits, needing solitude to recharge",
+        "You exhibit ambiversion, balancing social and solitary needs",
+        "You show situational adaptability in energy management"
+      ],
       explanation: "Measures Introversion vs Extraversion",
       category: 'mbti',
       subcategory: 'IE'
@@ -163,7 +220,12 @@ export async function getMBTIQuestions(): Promise<PsychometricQuestion[]> {
         "A combination of both",
         "It depends on the context"
       ],
-      correctAnswer: -1,
+      optionInterpretations: [
+        "You prefer a Sensing approach, relying on concrete data and tangible evidence.",
+        "You favor an Intuitive approach, focusing on patterns and possibilities.",
+        "You effectively combine both Sensing and Intuitive approaches in decision-making.",
+        "You adapt your approach based on the situation's needs."
+      ],
       explanation: "Measures Sensing vs Intuition",
       category: 'mbti',
       subcategory: 'SN'
@@ -176,7 +238,12 @@ export async function getMBTIQuestions(): Promise<PsychometricQuestion[]> {
         "A mix of planned and spontaneous",
         "Depends on the activity"
       ],
-      correctAnswer: -1,
+      optionInterpretations: [
+        "You prefer a Judging approach, valuing structure and organization.",
+        "You favor a Perceiving approach, preferring flexibility and open-ended plans.",
+        "You effectively balance Judging and Perceiving tendencies in your planning.",
+        "Your approach to planning is highly contextual."
+      ],
       explanation: "Measures Judging vs Perceiving",
       category: 'mbti',
       subcategory: 'JP'
@@ -189,7 +256,12 @@ export async function getMBTIQuestions(): Promise<PsychometricQuestion[]> {
         "Considering both logic and feelings",
         "It varies by situation"
       ],
-      correctAnswer: -1,
+      optionInterpretations: [
+        "You primarily use a Thinking approach, basing decisions on logic and reason.",
+        "You predominantly use a Feeling approach, prioritizing values and emotions.",
+        "You effectively integrate both Thinking and Feeling in your decision-making.",
+        "Your decision-making style adapts to the specific context."
+      ],
       explanation: "Measures Thinking vs Feeling",
       category: 'mbti',
       subcategory: 'TF'
@@ -202,7 +274,12 @@ export async function getMBTIQuestions(): Promise<PsychometricQuestion[]> {
         "Using a mix of both styles",
         "Adapting to the listener"
       ],
-      correctAnswer: -1,
+      optionInterpretations: [
+        "You favor a direct and efficient communication style.",
+        "You prefer a more evocative and nuanced communication style.",
+        "You effectively use various communication styles based on the context.",
+        "You show strong adaptability in your communication approach."
+      ],
       explanation: "Measures Sensing vs Intuition",
       category: 'mbti',
       subcategory: 'SN'
@@ -215,7 +292,12 @@ export async function getMBTIQuestions(): Promise<PsychometricQuestion[]> {
         "Participate when I have something to add",
         "Vary based on the group dynamics"
       ],
-      correctAnswer: -1,
+      optionInterpretations: [
+        "You demonstrate strong extroversion, actively leading and participating in group discussions.",
+        "You exhibit introverted tendencies, preferring to observe before contributing.",
+        "You show a balanced approach, participating when you have relevant input.",
+        "You adapt your behavior based on the group's dynamics."
+      ],
       explanation: "Measures Introversion vs Extraversion",
       category: 'mbti',
       subcategory: 'IE'
@@ -228,7 +310,12 @@ export async function getMBTIQuestions(): Promise<PsychometricQuestion[]> {
         "Balance planning with flexibility",
         "Adapt based on the project"
       ],
-      correctAnswer: -1,
+      optionInterpretations: [
+        "You are a Judging type, preferring structured work and advance planning.",
+        "You are a Perceiving type, working in spurts when inspiration strikes.",
+        "You are an ambivert, balancing structure and flexibility.",
+        "You adapt to the project's demands."
+      ],
       explanation: "Measures Judging vs Perceiving",
       category: 'mbti',
       subcategory: 'JP'
@@ -241,7 +328,12 @@ export async function getMBTIQuestions(): Promise<PsychometricQuestion[]> {
         "Both details and possibilities",
         "Whatever seems most relevant"
       ],
-      correctAnswer: -1,
+      optionInterpretations: [
+        "You prefer a Sensing approach, focusing on concrete information and details.",
+        "You favor an Intuitive approach, considering the overall context and potential.",
+        "You effectively combine Sensing and Intuitive approaches.",
+        "Your approach is contextual."
+      ],
       explanation: "Measures Sensing vs Intuition",
       category: 'mbti',
       subcategory: 'SN'
@@ -254,7 +346,12 @@ export async function getMBTIQuestions(): Promise<PsychometricQuestion[]> {
         "Balance facts with emotional impact",
         "Adapt to the specific situation"
       ],
-      correctAnswer: -1,
+      optionInterpretations: [
+        "You use a Thinking approach, addressing conflict objectively.",
+        "You use a Feeling approach, prioritizing emotional considerations.",
+        "You combine Thinking and Feeling approaches.",
+        "Your approach depends on the situation."
+      ],
       explanation: "Measures Thinking vs Feeling",
       category: 'mbti',
       subcategory: 'TF'
@@ -267,7 +364,12 @@ export async function getMBTIQuestions(): Promise<PsychometricQuestion[]> {
         "A mix of organization and flexibility",
         "Whatever works for the current task"
       ],
-      correctAnswer: -1,
+      optionInterpretations: [
+        "You prefer a Judging approach, valuing order and structure.",
+        "You favor a Perceiving approach, preferring adaptability and creativity.",
+        "You balance Judging and Perceiving preferences.",
+        "Your workspace preference depends on the demands of the task."
+      ],
       explanation: "Measures Judging vs Perceiving",
       category: 'mbti',
       subcategory: 'JP'
@@ -285,7 +387,12 @@ export async function getRavensQuestions(): Promise<PsychometricQuestion[]> {
         "Pattern C: Triangle with alternating shapes",
         "Pattern D: Rectangle with mixed elements"
       ],
-      correctAnswer: 0,
+      optionInterpretations: [
+        "Correct: Demonstrates strong pattern recognition and logical reasoning skills.",
+        "Incorrect: May indicate a need to strengthen pattern identification skills.",
+        "Incorrect: Suggests further development is needed in recognizing complex patterns.",
+        "Incorrect: May suggest difficulty in applying logical reasoning to pattern analysis."
+      ],
       explanation: "Tests pattern recognition and logical reasoning",
       category: 'ravens',
       code: `
@@ -302,7 +409,12 @@ export async function getRavensQuestions(): Promise<PsychometricQuestion[]> {
         "A triangle with changing orientation",
         "A hexagon with varying patterns"
       ],
-      correctAnswer: 0,
+      optionInterpretations: [
+        "Correct: Demonstrates strong spatial reasoning and pattern completion abilities.",
+        "Incorrect: May indicate a need to enhance spatial visualization skills.",
+        "Incorrect: Suggests further development is required in recognizing geometric progressions.",
+        "Incorrect: May suggest difficulty in applying deductive reasoning to spatial patterns."
+      ],
       explanation: "Tests spatial reasoning and pattern completion",
       category: 'ravens'
     },
@@ -314,7 +426,12 @@ export async function getRavensQuestions(): Promise<PsychometricQuestion[]> {
         "Triangle with center dot",
         "Rectangle with vertical lines"
       ],
-      correctAnswer: 0,
+      optionInterpretations: [
+        "Correct: Shows a strong ability to analyze and extrapolate matrix patterns.",
+        "Incorrect: May indicate a need to improve matrix reasoning skills.",
+        "Incorrect: Suggests further development in analyzing spatial relationships within matrices.",
+        "Incorrect: May suggest challenges in understanding the rules governing matrix patterns."
+      ],
       explanation: "Tests matrix reasoning and pattern analysis",
       category: 'ravens'
     },
@@ -326,7 +443,12 @@ export async function getRavensQuestions(): Promise<PsychometricQuestion[]> {
         "Pattern following only column rules",
         "Random pattern breaking the sequence"
       ],
-      correctAnswer: 0,
+      optionInterpretations: [
+        "Correct: Demonstrates proficiency in applying multiple rules to complete patterns.",
+        "Incorrect: May indicate difficulty in considering multiple dimensions simultaneously.",
+        "Incorrect: Suggests a need to strengthen pattern recognition skills across multiple axes.",
+        "Incorrect: May signal challenges in understanding pattern consistency and rules."
+      ],
       explanation: "Tests matrix pattern completion",
       category: 'ravens'
     },
@@ -338,7 +460,12 @@ export async function getRavensQuestions(): Promise<PsychometricQuestion[]> {
         "Mirror image of adjacent shape",
         "Random unrelated shape"
       ],
-      correctAnswer: 0,
+      optionInterpretations: [
+        "Correct: Shows strong spatial reasoning and rule deduction skills.",
+        "Incorrect: May indicate a need to improve the ability to identify spatial relationships.",
+        "Incorrect: Suggests further practice in recognizing transformations and symmetries.",
+        "Incorrect: May suggest difficulties in applying logical principles to spatial problems."
+      ],
       explanation: "Tests spatial reasoning and rule deduction",
       category: 'ravens'
     },
@@ -350,7 +477,12 @@ export async function getRavensQuestions(): Promise<PsychometricQuestion[]> {
         "Pattern following only addition rule",
         "Pattern breaking established rules"
       ],
-      correctAnswer: 0,
+      optionInterpretations: [
+        "Correct: Demonstrates strong rule application and pattern recognition skills.",
+        "Incorrect: May indicate difficulty in applying multiple rules simultaneously.",
+        "Incorrect: Suggests a need to strengthen pattern recognition across different rule sets.",
+        "Incorrect: May suggest difficulties in understanding and applying established rules."
+      ],
       explanation: "Tests rule application and pattern recognition",
       category: 'ravens'
     },
@@ -362,7 +494,12 @@ export async function getRavensQuestions(): Promise<PsychometricQuestion[]> {
         "Combination of previous shapes",
         "Unrelated shape"
       ],
-      correctAnswer: 0,
+      optionInterpretations: [
+        "Correct: Demonstrates strong sequential pattern recognition skills.",
+        "Incorrect: May indicate a need to strengthen sequential reasoning abilities.",
+        "Incorrect: Suggests further development in recognizing complex sequential patterns.",
+        "Incorrect: May suggest challenges in identifying the logical progression in sequences."
+      ],
       explanation: "Tests sequential pattern recognition",
       category: 'ravens'
     },
@@ -374,7 +511,12 @@ export async function getRavensQuestions(): Promise<PsychometricQuestion[]> {
         "Element following only color rule",
         "Element breaking pattern rules"
       ],
-      correctAnswer: 0,
+      optionInterpretations: [
+        "Correct: Shows a strong ability to apply multiple rules in pattern completion.",
+        "Incorrect: May indicate a need to improve pattern analysis across different attributes.",
+        "Incorrect: Suggests further development in recognizing patterns based on individual attributes.",
+        "Incorrect: May suggest challenges in applying consistent rules to pattern completion."
+      ],
       explanation: "Tests multiple rule application",
       category: 'ravens'
     },
@@ -386,7 +528,12 @@ export async function getRavensQuestions(): Promise<PsychometricQuestion[]> {
         "Inverse of opposite shape",
         "Random shape"
       ],
-      correctAnswer: 0,
+      optionInterpretations: [
+        "Correct: Demonstrates strong matrix transformation understanding and application.",
+        "Incorrect: May indicate a need to enhance the ability to identify matrix transformation rules.",
+        "Incorrect: Suggests further development in recognizing spatial transformations in matrices.",
+        "Incorrect: May suggest difficulties in applying transformation rules to matrix patterns."
+      ],
       explanation: "Tests matrix transformation understanding",
       category: 'ravens'
     },
@@ -398,7 +545,12 @@ export async function getRavensQuestions(): Promise<PsychometricQuestion[]> {
         "Combination of first and last patterns",
         "Unrelated pattern"
       ],
-      correctAnswer: 0,
+      optionInterpretations: [
+        "Correct: Shows a strong understanding of series completion and pattern recognition.",
+        "Incorrect: May indicate a need to enhance series completion skills.",
+        "Incorrect: Suggests further practice in identifying sequential patterns and relationships.",
+        "Incorrect: May suggest challenges in understanding the logical progression in series."
+      ],
       explanation: "Tests series completion and pattern recognition",
       category: 'ravens'
     }
@@ -415,7 +567,12 @@ export async function getSJTQuestions(): Promise<PsychometricQuestion[]> {
         "Raise the concern with your supervisor",
         "Document the incident and wait for another opportunity to showcase your contribution"
       ],
-      correctAnswer: 1,
+      optionInterpretations: [
+        "Direct confrontation, which can be effective but may create tension.",
+        "A more diplomatic approach, prioritizing a private resolution.",
+        "Escalating the issue to management, potentially bypassing direct communication.",
+        "A passive approach, potentially delaying resolution and risking further issues."
+      ],
       explanation: "Tests professional judgment and conflict resolution skills",
       category: 'sjt'
     },
@@ -427,7 +584,12 @@ export async function getSJTQuestions(): Promise<PsychometricQuestion[]> {
         "Take over their tasks to meet deadlines",
         "Ignore the situation and focus on your work"
       ],
-      correctAnswer: 0,
+      optionInterpretations: [
+        "Proactive problem-solving, addressing the root cause of the issue.",
+        "Immediate escalation, potentially overlooking potential for resolution.",
+        "Taking on extra work, which may not address the underlying problem.",
+        "Passive avoidance, neglecting a key team responsibility."
+      ],
       explanation: "Tests leadership and problem-solving approach",
       category: 'sjt'
     },
@@ -439,7 +601,12 @@ export async function getSJTQuestions(): Promise<PsychometricQuestion[]> {
         "Fix it quietly without telling anyone",
         "Wait to see if the client notices"
       ],
-      correctAnswer: 0,
+      optionInterpretations: [
+        "Demonstrates responsibility and professional integrity.",
+        "Neglects professional responsibility, risking client dissatisfaction.",
+        "May create mistrust and undermine accountability.",
+        "Passive approach that avoids responsibility and potential repercussions."
+      ],
       explanation: "Tests integrity and professional responsibility",
       category: 'sjt'
     },
@@ -451,7 +618,12 @@ export async function getSJTQuestions(): Promise<PsychometricQuestion[]> {
         "Report it to HR immediately",
         "Ignore it to avoid conflict"
       ],
-      correctAnswer: 1,
+      optionInterpretations: [
+        "Direct but professional approach, upholding workplace standards.",
+        "Indirect approach, attempting a private resolution but delaying action.",
+        "Immediate escalation to HR, bypassing direct communication.",
+        "Passive approach, potentially allowing inappropriate behavior to continue."
+      ],
       explanation: "Tests professional conduct and conflict handling",
       category: 'sjt'
     },
@@ -463,7 +635,12 @@ export async function getSJTQuestions(): Promise<PsychometricQuestion[]> {
         "Complete what you can and ignore the rest",
         "Ask a colleague to secretly help you"
       ],
-      correctAnswer: 0,
+      optionInterpretations: [
+        "Demonstrates effective time management and clear communication.",
+        "May lead to burnout and lack of transparency.",
+        "Neglects responsibilities, potentially impacting project success.",
+        "Undermines teamwork and ethical practices."
+      ],
       explanation: "Tests time management and communication skills",
       category: 'sjt'
     },
@@ -475,7 +652,12 @@ export async function getSJTQuestions(): Promise<PsychometricQuestion[]> {
         "Immediately offer to redo the work",
         "Escalate to your manager"
       ],
-      correctAnswer: 0,
+      optionInterpretations: [
+        "Prioritizes client satisfaction and seeks collaborative solutions.",
+        "May neglect client concerns and damage the relationship.",
+        "May be unnecessarily costly and time-consuming.",
+        "May bypass potential for direct resolution and damage relationships."
+      ],
       explanation: "Tests client relationship management",
       category: 'sjt'
     },
@@ -487,7 +669,12 @@ export async function getSJTQuestions(): Promise<PsychometricQuestion[]> {
         "Ignore the policy quietly",
         "Threaten to quit"
       ],
-      correctAnswer: 0,
+      optionInterpretations: [
+        "Professional and constructive approach.",
+        "Indirect and potentially unproductive approach.",
+        "Passive resistance that may not address the underlying concerns.",
+        "Unprofessional and potentially damaging action."
+      ],
       explanation: "Tests professional communication and adaptation",
       category: 'sjt'
     },
@@ -499,7 +686,12 @@ export async function getSJTQuestions(): Promise<PsychometricQuestion[]> {
         "Tell them to figure it out",
         "Report their incompetence"
       ],
-      correctAnswer: 0,
+      optionInterpretations: [
+        "Demonstrates teamwork and leadership through mentorship.",
+        "Undermines team member growth and development.",
+        "Avoids responsibility and potentially hinders project progress.",
+        "Unprofessional and potentially damaging action."
+      ],
       explanation: "Tests teamwork and leadership",
       category: 'sjt'
     },
@@ -511,7 +703,12 @@ export async function getSJTQuestions(): Promise<PsychometricQuestion[]> {
         "Try to fix it yourself",
         "Ignore it as it's not your responsibility"
       ],
-      correctAnswer: 0,
+      optionInterpretations: [
+        "Demonstrates responsibility and follows established protocols.",
+        "May spread unnecessary alarm and breach confidentiality.",
+        "May create further risks or violate company policies.",
+        "Neglects professional responsibility, potentially exposing the company to risks."
+      ],
       explanation: "Tests responsibility and protocol adherence",
       category: 'sjt'
     },
@@ -523,7 +720,12 @@ export async function getSJTQuestions(): Promise<PsychometricQuestion[]> {
         "Accept the delay without action",
         "Blame the external factors"
       ],
-      correctAnswer: 0,
+      optionInterpretations: [
+        "Demonstrates proactive problem-solving and leadership.",
+        "May lead to burnout and resentment within the team.",
+        "Passive approach that does not address the problem.",
+        "Avoids responsibility and hinders collaborative problem-solving."
+      ],
       explanation: "Tests problem-solving and leadership",
       category: 'sjt'
     }
@@ -533,14 +735,19 @@ export async function getSJTQuestions(): Promise<PsychometricQuestion[]> {
 export async function getEQQuestions(): Promise<PsychometricQuestion[]> {
   return [
     {
-      question: "A team member appears visibly upset after receiving critical feedback. What would you do?",
+      question: "When a team member appears visibly upset after receiving feedback, what would you do?",
       options: [
-        "Give them space and time to process the feedback",
+        "Give them space and time to process",
         "Immediately try to cheer them up",
-        "Offer to discuss the feedback and help create an improvement plan",
+        "Offer to discuss the feedback and create an improvement plan",
         "Tell them to not take criticism personally"
       ],
-      correctAnswer: 2,
+      optionInterpretations: [
+        "You respect emotional boundaries and understand the need for processing time",
+        "You show empathy but may need to develop patience with others' emotional processes",
+        "You demonstrate strong emotional intelligence by offering practical support with empathy",
+        "You might benefit from developing more emotional sensitivity in professional situations"
+      ],
       explanation: "Tests emotional intelligence and empathy",
       category: 'eq'
     },
@@ -552,7 +759,12 @@ export async function getEQQuestions(): Promise<PsychometricQuestion[]> {
         "Let them argue it out",
         "Avoid the conflict"
       ],
-      correctAnswer: 0,
+      optionInterpretations: [
+        "You foster collaboration and constructive conflict resolution.",
+        "You may overlook valuable input and stifle creativity.",
+        "You allow conflict to escalate, potentially hindering team dynamics.",
+        "You avoid addressing the conflict, which may hinder progress and create resentment."
+      ],
       explanation: "Tests conflict resolution and emotional management",
       category: 'eq'
     },
@@ -564,7 +776,12 @@ export async function getEQQuestions(): Promise<PsychometricQuestion[]> {
         "Complain to colleagues",
         "Give up on some tasks"
       ],
-      correctAnswer: 0,
+      optionInterpretations: [
+        "You demonstrate self-awareness and effective stress management strategies.",
+        "You may risk burnout and reduced performance by ignoring your emotional state.",
+        "You may spread negativity and hinder team morale.",
+        "You may avoid responsibilities and create further issues."
+      ],
       explanation: "Tests self-awareness and stress management",
       category: 'eq'
     },
@@ -576,7 +793,12 @@ export async function getEQQuestions(): Promise<PsychometricQuestion[]> {
         "Compare it to your own achievements",
         "Ignore it to stay focused on work"
       ],
-      correctAnswer: 0,
+      optionInterpretations: [
+        "You demonstrate empathy and positive social engagement.",
+        "You show limited emotional expression and may appear distant.",
+        "You may create negativity and damage relationships.",
+        "You display a lack of social awareness and may appear unsupportive."
+      ],
       explanation: "Tests empathy and social awareness",
       category: 'eq'
     },
@@ -588,7 +810,12 @@ export async function getEQQuestions(): Promise<PsychometricQuestion[]> {
         "Become emotionally withdrawn",
         "Dismiss the feedback as incorrect"
       ],
-      correctAnswer: 0,
+      optionInterpretations: [
+        "You demonstrate a growth mindset and a willingness to learn.",
+        "You may hinder your development by becoming defensive.",
+        "You may limit opportunities for growth and improvement.",
+        "You may miss opportunities to improve performance."
+      ],
       explanation: "Tests feedback reception and emotional regulation",
       category: 'eq'
     },
@@ -600,7 +827,12 @@ export async function getEQQuestions(): Promise<PsychometricQuestion[]> {
         "Blame others or circumstances",
         "Minimize the importance of the mistake"
       ],
-      correctAnswer: 0,
+      optionInterpretations: [
+        "You demonstrate accountability and emotional maturity.",
+        "You avoid responsibility and may damage trust.",
+        "You hinder collaborative problem-solving and may damage relationships.",
+        "You demonstrate a lack of accountability and may hinder learning from mistakes."
+      ],
       explanation: "Tests accountability and emotional maturity",
       category: 'eq'
     },
@@ -612,7 +844,12 @@ export async function getEQQuestions(): Promise<PsychometricQuestion[]> {
         "Match their negativity",
         "Report them to management"
       ],
-      correctAnswer: 0,
+      optionInterpretations: [
+        "You demonstrate emotional intelligence and resilience.",
+        "You avoid addressing the issue, which may allow negativity to persist.",
+        "You may contribute to negativity and damage relationships.",
+        "You may escalate the issue unnecessarily."
+      ],
       explanation: "Tests emotional resilience and relationship management",
       category: 'eq'
     },
@@ -624,7 +861,12 @@ export async function getEQQuestions(): Promise<PsychometricQuestion[]> {
         "Resist the changes",
         "Disengage from the project"
       ],
-      correctAnswer: 0,
+      optionInterpretations: [
+        "You demonstrate adaptability and emotional regulation.",
+        "You may hinder team morale and productivity.",
+        "You may hinder project progress and create conflict.",
+        "You avoid responsibilities and may damage relationships."
+      ],
       explanation: "Tests adaptability and emotional stability",
       category: 'eq'
     },
@@ -636,7 +878,12 @@ export async function getEQQuestions(): Promise<PsychometricQuestion[]> {
         "Focus only on your own motivation",
         "Complain about management"
       ],
-      correctAnswer: 0,
+      optionInterpretations: [
+        "You demonstrate leadership and proactive problem-solving.",
+        "You avoid addressing the issue, which may allow morale to remain low.",
+        "You fail to engage and support your team.",
+        "You may spread negativity and undermine team morale."
+      ],
       explanation: "Tests leadership and emotional intelligence",
       category: 'eq'
     },
@@ -648,7 +895,12 @@ export async function getEQQuestions(): Promise<PsychometricQuestion[]> {
         "Become defensive or argumentative",
         "Comply while harboring resentment"
       ],
-      correctAnswer: 0,
+      optionInterpretations: [
+        "You demonstrate professionalism and open communication.",
+        "You avoid addressing potential issues, which may hinder your development.",
+        "You may damage relationships and hinder productive discussion.",
+        "You create resentment and limit opportunities for constructive feedback."
+      ],
       explanation: "Tests professional relationships and emotional regulation",
       category: 'eq'
     }

@@ -272,6 +272,66 @@ export function registerRoutes(app: Express): Server {
     res.status(201).json(result);
   });
 
+  // Process psychometric test results
+  app.post("/api/psychometric-results", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+
+    try {
+      const { testId, responses } = req.body;
+
+      // Get the test details to determine the category
+      const test = await storage.getTest(testId);
+      if (!test) {
+        return res.status(404).send("Test not found");
+      }
+
+      // Get the questions for this test type
+      let questions;
+      switch(test.type) {
+        case 'big-five':
+          questions = await getBigFiveQuestions();
+          break;
+        case 'mbti':
+          questions = await getMBTIQuestions();
+          break;
+        case 'ravens':
+          questions = await getRavensQuestions();
+          break;
+        case 'sjt':
+          questions = await getSJTQuestions();
+          break;
+        case 'eq':
+          questions = await getEQQuestions();
+          break;
+        default:
+          return res.status(400).send("Invalid test type");
+      }
+
+      // Process responses and collect interpretations
+      const processedResponses = responses.map((response, index) => ({
+        questionId: index,
+        selectedOption: response,
+        interpretation: questions[index].optionInterpretations[response]
+      }));
+
+      // Generate insights based on test type
+      const insights = await generatePsychometricInsights(test.type, processedResponses, questions);
+
+      // Store the results
+      const result = await storage.createPsychometricResult({
+        userId: req.user.id,
+        testId,
+        responses: processedResponses,
+        insights
+      });
+
+      res.status(201).json(result);
+    } catch (error) {
+      console.error('Error processing psychometric results:', error);
+      res.status(500).send("Failed to process test results");
+    }
+  });
+
   app.post("/api/logout", (req, res, next) => {
     req.logout((err) => {
       if (err) return next(err);
@@ -451,6 +511,148 @@ export function registerRoutes(app: Express): Server {
       res.status(500).send("Failed to fetch discussion slots");
     }
   });
+
+  // Helper function to generate insights based on response patterns
+  async function generatePsychometricInsights(
+    testType: string, 
+    responses: Array<{ questionId: number; selectedOption: number; interpretation: string }>,
+    questions: any[]
+  ) {
+    const insights = {
+      category: testType,
+      summary: "",
+      recommendations: [] as string[]
+    };
+
+    switch(testType) {
+      case 'big-five':
+        // Analyze Big Five traits
+        const traits = {
+          openness: 0,
+          conscientiousness: 0,
+          extraversion: 0,
+          agreeableness: 0,
+          neuroticism: 0
+        };
+
+        responses.forEach((response, index) => {
+          const question = questions[index];
+          if (question.subcategory) {
+            const weight = 4 - response.selectedOption; // Reverse score as needed
+            traits[question.subcategory] += weight;
+          }
+        });
+
+        insights.summary = `Based on your responses, you show ${
+          traits.openness > 8 ? 'high' : 'moderate'
+        } openness to experience, ${
+          traits.conscientiousness > 8 ? 'strong' : 'moderate'
+        } conscientiousness, ${
+          traits.extraversion > 8 ? 'high' : 'moderate'
+        } extraversion, ${
+          traits.agreeableness > 8 ? 'high' : 'moderate'
+        } agreeableness, and ${
+          traits.neuroticism > 8 ? 'high' : 'moderate'
+        } emotional stability.`;
+
+        insights.recommendations = [
+          "Focus on leveraging your strengths in your chosen career path",
+          "Consider ways to balance any extreme tendencies",
+          "Reflect on how your personality traits influence your work style"
+        ];
+        break;
+
+      case 'mbti':
+        // Calculate MBTI type preferences
+        const preferences = {
+          IE: 0, // Introversion vs Extraversion
+          SN: 0, // Sensing vs Intuition
+          TF: 0, // Thinking vs Feeling
+          JP: 0  // Judging vs Perceiving
+        };
+
+        responses.forEach((response, index) => {
+          const question = questions[index];
+          if (question.subcategory) {
+            const score = response.selectedOption < 2 ? 1 : -1;
+            preferences[question.subcategory] += score;
+          }
+        });
+
+        const type = [
+          preferences.IE > 0 ? 'I' : 'E',
+          preferences.SN > 0 ? 'S' : 'N',
+          preferences.TF > 0 ? 'T' : 'F',
+          preferences.JP > 0 ? 'J' : 'P'
+        ].join('');
+
+        insights.summary = `Your responses indicate an ${type} personality type. This suggests you tend to be more ${
+          preferences.IE > 0 ? 'introverted' : 'extraverted'
+        }, prefer ${
+          preferences.SN > 0 ? 'concrete information' : 'abstract concepts'
+        }, make decisions based on ${
+          preferences.TF > 0 ? 'logical analysis' : 'personal values'
+        }, and prefer ${
+          preferences.JP > 0 ? 'structured' : 'flexible'
+        } approaches.`;
+
+        insights.recommendations = [
+          "Consider roles that align with your natural preferences",
+          "Be aware of potential blind spots in your approach",
+          "Develop strategies to work effectively with different personality types"
+        ];
+        break;
+
+      case 'eq':
+        // Analyze emotional intelligence components
+        const eqScores = {
+          selfAwareness: 0,
+          selfRegulation: 0,
+          motivation: 0,
+          empathy: 0,
+          socialSkills: 0
+        };
+
+        responses.forEach(response => {
+          // Calculate EQ component scores based on response patterns
+          const score = 4 - response.selectedOption;
+          // Distribute scores across EQ components based on question focus
+          eqScores.selfAwareness += score * 0.2;
+          eqScores.selfRegulation += score * 0.2;
+          eqScores.motivation += score * 0.2;
+          eqScores.empathy += score * 0.2;
+          eqScores.socialSkills += score * 0.2;
+        });
+
+        insights.summary = "Your emotional intelligence profile shows " +
+          `${getEQLevel(eqScores.selfAwareness)} self-awareness, ` +
+          `${getEQLevel(eqScores.selfRegulation)} self-regulation, ` +
+          `${getEQLevel(eqScores.motivation)} motivation, ` +
+          `${getEQLevel(eqScores.empathy)} empathy, and ` +
+          `${getEQLevel(eqScores.socialSkills)} social skills.`;
+
+        insights.recommendations = [
+          "Practice mindfulness to enhance self-awareness",
+          "Develop strategies for emotional regulation in challenging situations",
+          "Seek opportunities to enhance interpersonal relationships"
+        ];
+        break;
+
+      // Add other test types as needed
+      default:
+        insights.summary = "Thank you for completing the assessment. Your responses have been recorded.";
+        insights.recommendations = ["Continue to develop your professional skills"];
+    }
+
+    return insights;
+  }
+
+  // Helper function for EQ level determination
+  function getEQLevel(score: number): string {
+    if (score >= 3.5) return "strong";
+    if (score >= 2.5) return "moderate";
+    return "developing";
+  }
 
   const httpServer = createServer(app);
   return httpServer;
