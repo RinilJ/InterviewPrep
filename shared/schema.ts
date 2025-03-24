@@ -1,15 +1,15 @@
-import { pgTable, text, serial, integer, boolean, timestamp, json, unique } from "drizzle-orm/pg-core";
+import { pgTable, serial, text, varchar, timestamp, integer, boolean, json, unique } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
-  username: text("username").notNull().unique(),
-  password: text("password").notNull(),
-  role: text("role", { enum: ["student", "teacher"] }).notNull(),
-  department: text("department", { enum: ["CS", "IT", "MCA"] }).notNull(),
-  year: text("year", { enum: ["1", "2", "3", "4"] }).notNull(),
-  batch: text("batch", { enum: ["A", "B", "C"] }).notNull(),
+  username: varchar("username", { length: 100 }).notNull().unique(),
+  password: varchar("password", { length: 100 }).notNull(),
+  role: varchar("role", { length: 20 }).notNull(),
+  department: varchar("department", { length: 50 }),
+  year: varchar("year", { length: 10 }),
+  batch: varchar("batch", { length: 10 }),
   teacherId: integer("teacher_id").references(() => users.id),
   createdAt: timestamp("created_at").defaultNow(),
 }, (table) => ({
@@ -77,3 +77,4 @@ export type Test = typeof tests.$inferSelect;
 export type TestResult = typeof testResults.$inferSelect;
 export type DiscussionSlot = typeof discussionSlots.$inferSelect;
 export type SlotBooking = typeof slotBookings.$inferSelect;
+export type NewUser = typeof users.$inferInsert;
