@@ -65,28 +65,49 @@ export class MemStorage implements IStorage {
 
   async createUser(user: Omit<User, "id" | "createdAt">): Promise<User> {
     const id = this.currentId++;
-    const newUser = { 
-      ...user, 
-      id, 
+
+    // Normalize and validate the user data
+    const normalizedUser = {
+      ...user,
+      id,
       createdAt: new Date(),
       department: String(user.department || "").trim().toUpperCase(),
       year: String(user.year || "").trim(),
-      batch: String(user.batch || "").trim().toUpperCase(),
-      teacherId: user.teacherId !== undefined ? Number(user.teacherId) : null
+      batch: String(user.batch || "").trim().toUpperCase()
     };
 
-    this.users.set(id, newUser);
-    console.log('Created user:', {
-      id: newUser.id,
-      username: newUser.username,
-      role: newUser.role,
-      department: newUser.department,
-      year: newUser.year,
-      batch: newUser.batch,
-      teacherId: newUser.teacherId
+    // Handle teacherId specifically
+    if (user.role === 'student' && user.teacherId) {
+      normalizedUser.teacherId = Number(user.teacherId);
+      console.log('Setting teacherId for student:', {
+        studentId: id,
+        teacherId: normalizedUser.teacherId
+      });
+    } else {
+      normalizedUser.teacherId = null;
+    }
+
+    // Log the full user object being created
+    console.log('Creating new user:', {
+      ...normalizedUser,
+      password: '[REDACTED]'
     });
 
-    return newUser;
+    this.users.set(id, normalizedUser);
+
+    // Verify the user was stored correctly
+    const storedUser = this.users.get(id);
+    console.log('Stored user verification:', {
+      id: storedUser?.id,
+      username: storedUser?.username,
+      role: storedUser?.role,
+      department: storedUser?.department,
+      year: storedUser?.year,
+      batch: storedUser?.batch,
+      teacherId: storedUser?.teacherId
+    });
+
+    return normalizedUser;
   }
 
   async findTeacher(department: string, year: string, batch: string): Promise<User | undefined> {
@@ -97,8 +118,9 @@ export class MemStorage implements IStorage {
 
     console.log('Finding teacher for:', { cleanDepartment, cleanYear, cleanBatch });
 
-    const teachers = Array.from(this.users.values());
-    console.log('Current users:', teachers.map(u => ({
+    // Get all users and log them
+    const allUsers = Array.from(this.users.values());
+    console.log('All users in system:', allUsers.map(u => ({
       id: u.id,
       username: u.username,
       role: u.role,
@@ -107,23 +129,39 @@ export class MemStorage implements IStorage {
       batch: u.batch
     })));
 
-    // Match teacher with exact matching credentials
-    const teacher = teachers.find(
-      (user) => 
-        user.role === 'teacher' &&
-        user.department === cleanDepartment &&
-        user.year === cleanYear &&
-        user.batch === cleanBatch
-    );
+    // Find matching teacher
+    const teacher = allUsers.find(user => {
+      const matches = {
+        isTeacher: user.role === 'teacher',
+        departmentMatch: user.department === cleanDepartment,
+        yearMatch: user.year === cleanYear,
+        batchMatch: user.batch === cleanBatch
+      };
 
-    console.log('Found teacher:', teacher ? {
-      id: teacher.id,
-      username: teacher.username,
-      role: teacher.role,
-      department: teacher.department,
-      year: teacher.year,
-      batch: teacher.batch
-    } : 'No teacher found');
+      const isMatch = Object.values(matches).every(match => match === true);
+
+      console.log('Teacher match evaluation:', {
+        userId: user.id,
+        username: user.username,
+        role: user.role,
+        matches,
+        isMatch
+      });
+
+      return isMatch;
+    });
+
+    if (teacher) {
+      console.log('Found matching teacher:', {
+        id: teacher.id,
+        username: teacher.username,
+        department: teacher.department,
+        year: teacher.year,
+        batch: teacher.batch
+      });
+    } else {
+      console.log('No matching teacher found');
+    }
 
     return teacher;
   }
@@ -134,10 +172,16 @@ export class MemStorage implements IStorage {
     const cleanYear = String(year).trim();
     const cleanBatch = String(batch).trim().toUpperCase();
 
-    console.log('Getting students for teacher:', { teacherId, cleanDepartment, cleanYear, cleanBatch });
+    console.log('Getting students for teacher:', {
+      teacherId,
+      department: cleanDepartment,
+      year: cleanYear,
+      batch: cleanBatch
+    });
 
+    // Get all users and log them
     const allUsers = Array.from(this.users.values());
-    console.log('Current users in system:', allUsers.map(u => ({
+    console.log('All users in system:', allUsers.map(u => ({
       id: u.id,
       username: u.username,
       role: u.role,
@@ -147,58 +191,46 @@ export class MemStorage implements IStorage {
       batch: u.batch
     })));
 
-    const students = allUsers.filter(
-      (user) => {
-        const isMatch = 
-          user.role === 'student' &&
-          user.teacherId === teacherId &&
-          user.department === cleanDepartment &&
-          user.year === cleanYear &&
-          user.batch === cleanBatch;
+    // Find matching students
+    const students = allUsers.filter(user => {
+      const matches = {
+        isStudent: user.role === 'student',
+        teacherMatch: Number(user.teacherId) === Number(teacherId),
+        departmentMatch: user.department === cleanDepartment,
+        yearMatch: user.year === cleanYear,
+        batchMatch: user.batch === cleanBatch
+      };
 
-        // Add detailed logging for each potential student match
-        console.log('Evaluating user for match:', {
-          userId: user.id,
-          username: user.username,
-          role: user.role,
-          actualTeacherId: user.teacherId,
-          expectedTeacherId: teacherId,
-          actualDepartment: user.department,
-          expectedDepartment: cleanDepartment,
-          actualYear: user.year,
-          expectedYear: cleanYear,
-          actualBatch: user.batch,
-          expectedBatch: cleanBatch,
-          isMatch: isMatch
-        });
+      const isMatch = Object.values(matches).every(match => match === true);
 
-        return isMatch;
-      }
-    );
+      console.log('Student match evaluation:', {
+        userId: user.id,
+        username: user.username,
+        matches,
+        isMatch
+      });
 
-    console.log('Found matching students:', students.map(s => ({
+      return isMatch;
+    });
+
+    console.log('Matched students:', students.map(s => ({
       id: s.id,
       username: s.username,
-      teacherId: s.teacherId,
-      department: s.department,
-      year: s.year,
-      batch: s.batch
+      teacherId: s.teacherId
     })));
 
+    // Add progress information
     const studentsWithProgress = await Promise.all(students.map(async (student) => {
       const results = await this.getTestResults(student.id);
-      const averageScore = results.length > 0
-        ? Math.round(results.reduce((sum, result) => sum + result.score, 0) / results.length)
-        : 0;
-
       return {
         ...student,
         testsCompleted: results.length,
-        averageScore
+        averageScore: results.length > 0
+          ? Math.round(results.reduce((sum, result) => sum + result.score, 0) / results.length)
+          : 0
       };
     }));
 
-    console.log('Final students with progress:', studentsWithProgress);
     return studentsWithProgress;
   }
 
@@ -235,7 +267,7 @@ export class MemStorage implements IStorage {
 
   async getDiscussionSlots(department: string, year: string, batch: string): Promise<DiscussionSlot[]> {
     return Array.from(this.discussionSlots.values()).filter(
-      (slot) => 
+      (slot) =>
         String(slot.department).trim() === String(department).trim() &&
         String(slot.year).trim() === String(year).trim() &&
         String(slot.batch).trim() === String(batch).trim()

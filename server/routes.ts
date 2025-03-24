@@ -44,38 +44,35 @@ export function registerRoutes(app: Express): Server {
         return res.status(400).send("Batch must be A, B, or C");
       }
 
-      console.log('Normalized registration data:', { cleanDepartment, cleanYear, cleanBatch });
-
       // For students, find their teacher first
       let teacherId = null;
       if (role === 'student') {
-        console.log('Looking for teacher with credentials:', { cleanDepartment, cleanYear, cleanBatch });
+        // Find teacher for this batch
         const classTeacher = await storage.findTeacher(cleanDepartment, cleanYear, cleanBatch);
         console.log('Found teacher for student:', classTeacher);
 
         if (!classTeacher) {
-          console.log('No teacher found for:', { cleanDepartment, cleanYear, cleanBatch });
           return res.status(400).send("No teacher found for this batch. Please ensure a teacher is registered first.");
         }
+
         teacherId = classTeacher.id;
         console.log('Setting teacherId for student:', teacherId);
       } else if (role === 'teacher') {
         // Check if a teacher already exists for this batch
         const existingTeacher = await storage.findTeacher(cleanDepartment, cleanYear, cleanBatch);
-        console.log('Existing teacher check:', existingTeacher);
         if (existingTeacher) {
-          return res.status(400).send("Class teacher for this batch already exists");
+          return res.status(400).send("A teacher for this batch already exists");
         }
       }
 
-      // Create the user with normalized data
+      // Create user with normalized data
       const user = await storage.createUser({
         ...userData,
         role,
         department: cleanDepartment,
         year: cleanYear,
         batch: cleanBatch,
-        teacherId
+        teacherId // This will be null for teachers and set for students
       });
 
       console.log('Created user:', {
