@@ -10,11 +10,7 @@ import { z } from "zod";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2 } from "lucide-react";
 import { useLocation } from "wouter";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/api";
-import { toast } from "@/components/ui/use-toast";
-import { InsertUser, SelectUser } from "@/types";
-
+import { useToast } from "@/hooks/use-toast";
 
 const loginSchema = z.object({
   username: z.string().min(1, "Username is required"),
@@ -35,31 +31,8 @@ const registerSchema = z.object({
 });
 
 export default function AuthPage() {
-  const { user, loginMutation } = useAuth();
-  const queryClient = useQueryClient();
+  const { user, loginMutation, registerMutation } = useAuth();
   const [, setLocation] = useLocation();
-
-  const registerMutation = useMutation({
-    mutationFn: async (credentials: InsertUser) => {
-      const res = await apiRequest("POST", "/api/register", credentials);
-      if (!res.ok) {
-        const error = await res.text();
-        throw new Error(error);
-      }
-      return await res.json();
-    },
-    onSuccess: (user: SelectUser) => {
-      queryClient.setQueryData(["/api/user"], user);
-      setLocation("/");
-    },
-    onError: (error: Error) => {
-      toast({
-        title: "Registration failed",
-        description: error.message,
-        variant: "destructive",
-      });
-    },
-  });
 
   if (user) {
     setLocation("/");
