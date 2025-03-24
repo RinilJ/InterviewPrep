@@ -28,7 +28,7 @@ async function checkAuth() {
 // Add periodic refresh of student list
 let refreshInterval;
 
-// Update initializeDashboard to include refresh mechanism
+// Initialize dashboard
 async function initializeDashboard() {
     const user = await checkAuth();
     if (!user) return;
@@ -38,12 +38,10 @@ async function initializeDashboard() {
     userElement.textContent = `${user.username} (${user.department})`;
 
     await refreshDashboard();
+    await loadDiscussionSlots();
 
     // Set up periodic refresh every 30 seconds
     refreshInterval = setInterval(refreshDashboard, 30000);
-
-    // Load discussion slots
-    await loadDiscussionSlots();
 }
 
 // Separate refresh function for reusability
@@ -77,19 +75,6 @@ async function refreshDashboard() {
                                 <i class="fas fa-clock"></i>
                                 Registered: ${formatDate(student.createdAt)}
                             </p>
-                            <div class="progress-section">
-                                <h4>Test Progress</h4>
-                                <div class="progress-stats">
-                                    <div class="stat">
-                                        <span class="label">Tests Completed</span>
-                                        <span class="value">${student.testsCompleted || 0}</span>
-                                    </div>
-                                    <div class="stat">
-                                        <span class="label">Average Score</span>
-                                        <span class="value">${student.averageScore || 0}%</span>
-                                    </div>
-                                </div>
-                            </div>
                         </div>
                     </div>
                 </div>
