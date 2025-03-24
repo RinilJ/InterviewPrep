@@ -35,7 +35,7 @@ async function initializeDashboard() {
 
     // Update user info with correct formatting
     const userElement = document.getElementById('userName');
-    userElement.textContent = `${user.username} (${user.department} - Year ${user.year}, Batch ${user.batch})`;
+    userElement.textContent = `${user.username} (${user.department})`;
 
     await refreshDashboard();
 
@@ -74,10 +74,6 @@ async function refreshDashboard() {
                         </h3>
                         <div class="student-details">
                             <p>
-                                <i class="fas fa-graduation-cap"></i>
-                                ${student.department} - Year ${student.year}, Batch ${student.batch}
-                            </p>
-                            <p>
                                 <i class="fas fa-clock"></i>
                                 Registered: ${formatDate(student.createdAt)}
                             </p>
@@ -95,12 +91,6 @@ async function refreshDashboard() {
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="student-actions">
-                        <button class="btn-secondary" onclick="viewProgress(${student.id})">
-                            <i class="fas fa-chart-line"></i>
-                            View Progress
-                        </button>
                     </div>
                 </div>
             `).join('');
@@ -285,6 +275,9 @@ function openModal() {
 function closeModal() {
     document.getElementById('createSlotModal').classList.add('hidden');
     document.getElementById('createSlotForm').reset();
+    document.getElementById('createSlotForm').dataset.mode = ''; //reset mode after closing
+    document.getElementById('modalTitle').textContent = 'Create Discussion Slot';
+    document.getElementById('submitBtn').textContent = 'Create Slot';
 }
 
 // Tab switching
@@ -300,6 +293,111 @@ document.querySelectorAll('.tab').forEach(tab => {
     });
 });
 
+
+// Function to edit discussion slot
+async function editSlot(slotId) {
+    try {
+        const response = await fetch(`/api/discussion-slots/${slotId}`);
+        if (!response.ok) {
+            throw new Error('Failed to fetch slot details');
+        }
+        const slot = await response.json();
+
+        // Show edit modal with current values
+        const form = document.getElementById('createSlotForm');
+        form.slotTopic.value = slot.topic;
+        form.slotDateTime.value = new Date(slot.startTime).toISOString().slice(0, 16);
+        form.maxParticipants.value = slot.maxParticipants;
+        form.slotDuration.value = (new Date(slot.endTime) - new Date(slot.startTime)) / 60000; // Calculate duration in minutes
+
+
+        // Update form for edit mode
+        form.dataset.mode = 'edit';
+        form.dataset.slotId = slotId;
+        document.getElementById('modalTitle').textContent = 'Edit Discussion Slot';
+        document.getElementById('submitBtn').textContent = 'Update Slot';
+
+        openModal();
+    } catch (error) {
+        console.error('Error editing slot:', error);
+        showToast('Error', 'Failed to load slot details');
+    }
+}
+
+// Function to cancel discussion slot
+async function cancelSlot(slotId) {
+    if (!confirm('Are you sure you want to cancel this discussion slot?')) {
+        return;
+    }
+
+    try {
+        const response = await fetch(`/api/discussion-slots/${slotId}`, {
+            method: 'DELETE'
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to cancel slot');
+        }
+
+        showToast('Success', 'Discussion slot cancelled successfully');
+        loadDiscussionSlots(); // Refresh the list
+    } catch (error) {
+        console.error('Error cancelling slot:', error);
+        showToast('Error', 'Failed to cancel discussion slot');
+    }
+}
+
+// Update createSlot function to handle both create and edit
+async function createSlot(e) {
+    e.preventDefault();
+    const form = e.target;
+    const submitButton = form.querySelector('button[type="submit"]');
+    const isEdit = form.dataset.mode === 'edit';
+
+    try {
+        submitButton.disabled = true;
+        submitButton.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${isEdit ? 'Updating...' : 'Creating...'}`;
+
+        const startTime = new Date(form.slotDateTime.value);
+        const endTime = new Date(startTime.getTime() + parseInt(form.slotDuration.value) * 60000);
+
+        const slotData = {
+            topic: form.slotTopic.value || 'Open Discussion',
+            startTime,
+            endTime,
+            maxParticipants: parseInt(form.maxParticipants.value)
+        };
+
+        const url = isEdit ? `/api/discussion-slots/${form.dataset.slotId}` : '/api/discussion-slots';
+        const method = isEdit ? 'PUT' : 'POST';
+
+        const response = await fetch(url, {
+            method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(slotData)
+        });
+
+        if (!response.ok) {
+            throw new Error(await response.text());
+        }
+
+        closeModal();
+        loadDiscussionSlots();
+        showToast('Success', `Discussion slot ${isEdit ? 'updated' : 'created'} successfully`);
+    } catch (error) {
+        console.error('Slot operation error:', error);
+        showToast('Error', `Failed to ${isEdit ? 'update' : 'create'} discussion slot`);
+    } finally {
+        submitButton.disabled = false;
+        submitButton.innerHTML = isEdit ? 'Update Slot' : 'Create Slot';
+    }
+}
+
+//Function to view participants (added based on context)
+async function viewParticipants(slotId){
+    //Implement view participants functionality here. This would likely involve fetching the list of participants for the slot.
+    showToast('Info', `Viewing participants for slot ${slotId} will be implemented soon.`)
+}
 
 // Event listeners
 document.addEventListener('DOMContentLoaded', initializeDashboard);
@@ -318,61 +416,3 @@ document.getElementById('logoutBtn').addEventListener('click', async () => {
         showToast('Error', 'Failed to logout');
     }
 });
-
-//Function to edit discussion slot (added based on context)
-async function editSlot(slotId){
-    //Implement edit functionality here.  This would likely involve fetching the slot data, populating a form, and submitting updates.
-    showToast('Info', `Editing slot ${slotId} will be implemented soon.`)
-}
-
-//Function to cancel discussion slot (added based on context)
-async function cancelSlot(slotId){
-    //Implement cancel functionality here. This would likely involve sending a delete request to the server.
-    showToast('Info', `Cancelling slot ${slotId} will be implemented soon.`)
-}
-
-//Function to view participants (added based on context)
-async function viewParticipants(slotId){
-    //Implement view participants functionality here. This would likely involve fetching the list of participants for the slot.
-    showToast('Info', `Viewing participants for slot ${slotId} will be implemented soon.`)
-}
-
-async function createSlot(e) {
-    e.preventDefault();
-    const form = e.target;
-    const submitButton = form.querySelector('button[type="submit"]');
-
-    try {
-        submitButton.disabled = true;
-        submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating...';
-
-        const startTime = new Date(form.slotDateTime.value);
-        const endTime = new Date(startTime.getTime() + parseInt(form.slotDuration.value) * 60000);
-
-        const response = await fetch('/api/discussion-slots', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                topic: form.slotTopic.value || 'Open Discussion',
-                startTime,
-                endTime,
-                maxParticipants: parseInt(form.maxParticipants.value)
-                // Note: department, year, and batch will be added by the server based on teacher's info
-            })
-        });
-
-        if (!response.ok) {
-            throw new Error(await response.text());
-        }
-
-        closeModal();
-        loadDiscussionSlots();
-        showToast('Success', 'Discussion slot created successfully');
-    } catch (error) {
-        console.error('Create slot error:', error);
-        showToast('Error', 'Failed to create discussion slot');
-    } finally {
-        submitButton.disabled = false;
-        submitButton.innerHTML = 'Create Slot';
-    }
-}

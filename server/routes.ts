@@ -497,6 +497,83 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
+  // Get a single discussion slot
+  app.get("/api/discussion-slots/:id", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+
+    try {
+      const slot = await storage.getDiscussionSlot(parseInt(req.params.id));
+      if (!slot) {
+        return res.status(404).send("Discussion slot not found");
+      }
+      res.json(slot);
+    } catch (error) {
+      console.error('Error fetching discussion slot:', error);
+      res.status(500).send("Failed to fetch discussion slot");
+    }
+  });
+
+  // Update a discussion slot
+  app.put("/api/discussion-slots/:id", async (req, res) => {
+    if (!req.isAuthenticated() || req.user.role !== "teacher") {
+      return res.sendStatus(401);
+    }
+
+    try {
+      const slotId = parseInt(req.params.id);
+      const slot = await storage.getDiscussionSlot(slotId);
+
+      if (!slot) {
+        return res.status(404).send("Discussion slot not found");
+      }
+
+      // Check if the teacher owns this slot
+      if (slot.mentorId !== req.user.id) {
+        return res.status(403).send("You can only edit your own discussion slots");
+      }
+
+      const updatedSlot = await storage.updateDiscussionSlot(slotId, {
+        ...req.body,
+        mentorId: req.user.id,
+        department: req.user.department,
+        year: req.user.year,
+        batch: req.user.batch
+      });
+
+      res.json(updatedSlot);
+    } catch (error) {
+      console.error('Error updating discussion slot:', error);
+      res.status(500).send("Failed to update discussion slot");
+    }
+  });
+
+  // Delete a discussion slot 
+  app.delete("/api/discussion-slots/:id", async (req, res) => {
+    if (!req.isAuthenticated() || req.user.role !== "teacher") {
+      return res.sendStatus(401);
+    }
+
+    try {
+      const slotId = parseInt(req.params.id);
+      const slot = await storage.getDiscussionSlot(slotId);
+
+      if (!slot) {
+        return res.status(404).send("Discussion slot not found");
+      }
+
+      // Check if the teacher owns this slot
+      if (slot.mentorId !== req.user.id) {
+        return res.status(403).send("You can only cancel your own discussion slots");
+      }
+
+      await storage.deleteDiscussionSlot(slotId);
+      res.sendStatus(200);
+    } catch (error) {
+      console.error('Error deleting discussion slot:', error);
+      res.status(500).send("Failed to delete discussion slot");
+    }
+  });
+
   app.post("/api/slot-bookings", async (req, res) => {
     if (!req.isAuthenticated() || req.user.role !== "student") {
       return res.sendStatus(401);

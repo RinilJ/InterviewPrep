@@ -26,6 +26,8 @@ export interface IStorage {
   createDiscussionSlot(slot: Omit<DiscussionSlot, "id">): Promise<DiscussionSlot>;
   getDiscussionSlots(department: string, year: string, batch: string): Promise<DiscussionSlot[]>;
   getDiscussionSlot(id: number): Promise<DiscussionSlot | undefined>;
+  updateDiscussionSlot(id: number, slot: Omit<DiscussionSlot, "id">): Promise<DiscussionSlot>;
+  deleteDiscussionSlot(id: number): Promise<void>;
 
   // Slot Bookings
   createSlotBooking(booking: Omit<SlotBooking, "id" | "bookedAt">): Promise<SlotBooking>;
@@ -260,6 +262,41 @@ export class MemStorage implements IStorage {
     console.log(`Created booking for slot ${booking.slotId}, new count: ${slot?.bookedCount}`);
 
     return newBooking;
+  }
+
+  async updateDiscussionSlot(id: number, slot: Omit<DiscussionSlot, "id">): Promise<DiscussionSlot> {
+    const existingSlot = this.discussionSlots.get(id);
+    if (!existingSlot) {
+      throw new Error("Discussion slot not found");
+    }
+
+    const updatedSlot = { ...slot, id };
+    this.discussionSlots.set(id, updatedSlot);
+
+    // Add booking count to the response
+    const bookings = await this.getSlotBookings(id);
+    return {
+      ...updatedSlot,
+      bookedCount: bookings.length
+    };
+  }
+
+  async deleteDiscussionSlot(id: number): Promise<void> {
+    if (!this.discussionSlots.has(id)) {
+      throw new Error("Discussion slot not found");
+    }
+
+    // Delete the slot and all its bookings
+    this.discussionSlots.delete(id);
+
+    // Delete all bookings for this slot
+    const bookingsToDelete = Array.from(this.slotBookings.values())
+      .filter(booking => booking.slotId === id)
+      .map(booking => booking.id);
+
+    bookingsToDelete.forEach(bookingId => {
+      this.slotBookings.delete(bookingId);
+    });
   }
 }
 
