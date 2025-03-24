@@ -88,6 +88,53 @@ function createTestCard(test) {
     `;
 }
 
+// Add this function to format test results based on type
+function formatTestResult(result) {
+    if (result.insights) {
+        try {
+            const insightData = typeof result.insights === 'string' 
+                ? JSON.parse(result.insights) 
+                : result.insights;
+
+            return `
+                <div class="history-card insight-card">
+                    <div class="history-info">
+                        <h3>${insightData.category}</h3>
+                        <div class="insights-list">
+                            ${insightData.insights.map(insight => 
+                                `<p class="insight-item">${insight}</p>`
+                            ).join('')}
+                        </div>
+                        ${insightData.recommendations ? `
+                            <div class="recommendations-list">
+                                <h4>Recommendations:</h4>
+                                ${insightData.recommendations.map(rec => 
+                                    `<p class="recommendation-item">${rec}</p>`
+                                ).join('')}
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+        } catch (error) {
+            console.error('Error parsing insights:', error);
+            return '';
+        }
+    } else {
+        // Regular test result display
+        return `
+            <div class="history-card">
+                <div class="history-info">
+                    <h3>${result.testId ? `Test ${result.testId}` : 'Practice Test'}</h3>
+                    <p><i class="far fa-calendar-alt"></i> ${formatDate(result.completedAt)}</p>
+                </div>
+                <div class="score">${result.score}%</div>
+            </div>
+        `;
+    }
+}
+
+
 // Load user data and initialize dashboard
 async function initializeDashboard() {
     const user = await checkAuth();
@@ -168,15 +215,7 @@ async function initializeDashboard() {
         // Load and display test history
         const historyContainer = document.getElementById('testHistory');
         historyContainer.innerHTML = results
-            .map(result => `
-                <div class="history-card">
-                    <div class="history-info">
-                        <h3>${result.testId ? `Test ${result.testId}` : 'Practice Test'}</h3>
-                        <p><i class="far fa-calendar-alt"></i> ${formatDate(result.completedAt)}</p>
-                    </div>
-                    <div class="score">${result.score}%</div>
-                </div>
-            `)
+            .map(result => formatTestResult(result))
             .join('');
 
     } catch (error) {
