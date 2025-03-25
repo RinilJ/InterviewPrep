@@ -8,28 +8,26 @@ function formatTime(seconds) {
 // Initialize results page
 window.addEventListener('DOMContentLoaded', () => {
     const testData = JSON.parse(sessionStorage.getItem('testResults'));
+    console.log('Loaded test results:', testData); // Debug log
+
     if (!testData) {
         window.location.href = '/dashboard.html';
         return;
     }
 
     const timeSpent = Math.round((new Date(testData.endTime) - new Date(testData.startTime)) / 1000);
+    const mainContent = document.querySelector('.main-content');
 
-    // For psychometric tests, show a different layout
+    // For psychometric tests
     if (testData.type && ['big-five', 'mbti', 'eq', 'sjt'].includes(testData.type)) {
-        const mainContent = document.querySelector('.main-content');
+        console.log('Processing psychometric test:', testData.type); // Debug log
 
-        // Check if any answers were provided
-        if (!testData.answers || testData.answers.every(answer => answer === null)) {
+        if (!testData.insights) {
+            console.error('No insights found in test data'); // Debug log
             mainContent.innerHTML = `
                 <div class="container mx-auto px-4 py-8">
-                    <h1 class="text-3xl font-bold mb-6">Test Incomplete</h1>
-                    <div class="bg-white rounded-lg shadow p-6">
-                        <p class="text-lg mb-4">No responses were provided for this test.</p>
-                        <div class="text-sm text-gray-600">
-                            Time spent: ${formatTime(timeSpent)}
-                        </div>
-                    </div>
+                    <h1 class="text-3xl font-bold mb-6">Test Results Unavailable</h1>
+                    <p>Unable to load test results. Please try taking the test again.</p>
                     <div class="text-center mt-8">
                         <a href="/dashboard.html" class="inline-block bg-primary text-white px-6 py-2 rounded-lg hover:bg-opacity-90">
                             Return to Dashboard
@@ -37,122 +35,111 @@ window.addEventListener('DOMContentLoaded', () => {
                     </div>
                 </div>
             `;
+            return;
+        }
+
+        // For MBTI test
+        if (testData.type === 'mbti') {
+            console.log('MBTI insights:', testData.insights); // Debug log
+
+            // Extract personality type from insights
+            const personalityType = testData.insights.insights[0].split(' - ')[0].split('is ')[1];
+            const description = testData.insights.insights[0].split(' - ')[1];
+
+            // Separate insights into categories
+            const characteristics = testData.insights.insights.filter(insight => 
+                insight.startsWith('•') && !insight.includes('prefer') && !insight.includes('career')
+            );
+
+            const preferences = testData.insights.insights.filter(insight => 
+                insight.startsWith('•') && insight.includes('prefer')
+            );
+
+            const careers = testData.insights.insights.filter(insight => 
+                insight.startsWith('•') && insight.includes('career')
+            );
+
+            mainContent.innerHTML = `
+                <div class="container mx-auto px-4 py-8">
+                    <div class="mbti-results">
+                        <div class="personality-type">
+                            <h2>Your MBTI Type: ${personalityType}</h2>
+                            <p>${description}</p>
+                        </div>
+
+                        <div class="characteristics-section">
+                            <h3 class="section-title">Key Characteristics</h3>
+                            ${characteristics.map(char => `
+                                <div class="trait-card">
+                                    <p>${char.replace('•', '')}</p>
+                                </div>
+                            `).join('')}
+                        </div>
+
+                        <div class="preferences-section">
+                            <h3 class="section-title">Your Preferences</h3>
+                            ${preferences.map(pref => `
+                                <div class="trait-card">
+                                    <p>${pref.replace('•', '')}</p>
+                                </div>
+                            `).join('')}
+                        </div>
+
+                        <div class="careers-section">
+                            <h3 class="section-title">Recommended Career Paths</h3>
+                            <div class="career-grid">
+                                ${careers.map(career => `
+                                    <div class="career-item">
+                                        <p>${career.replace('•', '')}</p>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+
+                        <div class="text-sm text-gray-600 mt-6">
+                            Time taken: ${formatTime(timeSpent)}
+                        </div>
+
+                        <div class="text-center mt-8">
+                            <a href="/dashboard.html" class="inline-block bg-primary text-white px-6 py-2 rounded-lg hover:bg-opacity-90">
+                                Return to Dashboard
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            `;
         } else {
-            // Show insights based on test type
-            const insights = testData.insights || {};
-
-            // Special handling for MBTI test
-            if (testData.type === 'mbti') {
-                const personalityType = insights.insights[0].split(' - ')[0].split('is ')[1];
-
-                mainContent.innerHTML = `
-                    <div class="container mx-auto px-4 py-8">
-                        <h1 class="text-3xl font-bold mb-6">MBTI Personality Assessment Results</h1>
-                        <div class="bg-white rounded-lg shadow p-6">
-                            <div class="mb-6">
-                                <h2 class="text-2xl font-bold text-primary mb-2">Your Personality Type: ${personalityType}</h2>
-                                <p class="text-lg mb-4">${insights.insights[0].split(' - ')[1]}</p>
+            // Default display for other psychometric tests
+            mainContent.innerHTML = `
+                <div class="container mx-auto px-4 py-8">
+                    <h1 class="text-3xl font-bold mb-6">${testData.insights.category || 'Personality Assessment'}</h1>
+                    <div class="bg-white rounded-lg shadow p-6">
+                        ${testData.insights.insights.map(insight => `
+                            <div class="insight-item mb-4 p-4 bg-gray-50 rounded-lg">
+                                <p class="text-lg">${insight}</p>
                             </div>
+                        `).join('')}
 
-                            <div class="mb-6">
-                                <h3 class="text-xl font-semibold mb-3">Key Characteristics</h3>
-                                <div class="grid gap-2">
-                                    ${insights.insights
-                                        .filter(insight => insight.startsWith('•'))
-                                        .slice(1, 4) 
-                                        .map(char => `
-                                            <div class="p-3 bg-gray-50 rounded-lg">
-                                                <p class="text-gray-800">${char}</p>
-                                            </div>
-                                        `).join('')}
-                                </div>
-                            </div>
-
-                            <div class="mb-6">
-                                <h3 class="text-xl font-semibold mb-3">Your Preferences</h3>
-                                <div class="grid gap-2">
-                                    ${insights.insights
-                                        .filter(insight => insight.startsWith('•'))
-                                        .slice(4, 8) 
-                                        .map(pref => `
-                                            <div class="p-3 bg-gray-50 rounded-lg">
-                                                <p class="text-gray-800">${pref}</p>
-                                            </div>
-                                        `).join('')}
-                                </div>
-                            </div>
-
-                            <div class="mb-6">
-                                <h3 class="text-xl font-semibold mb-3">Recommended Career Paths</h3>
-                                <div class="grid gap-2">
-                                    ${insights.insights
-                                        .filter(insight => insight.startsWith('•'))
-                                        .slice(8) 
-                                        .map(career => `
-                                            <div class="p-3 bg-gray-50 rounded-lg">
-                                                <p class="text-gray-800">${career}</p>
-                                            </div>
-                                        `).join('')}
-                                </div>
-                            </div>
-
-                            <div class="text-sm text-gray-600 mt-6">
-                                Time taken: ${formatTime(timeSpent)}
-                            </div>
-                        </div>
-                        <div class="text-center mt-8">
-                            <a href="/dashboard.html" class="inline-block bg-primary text-white px-6 py-2 rounded-lg hover:bg-opacity-90">
-                                Return to Dashboard
-                            </a>
+                        <div class="text-sm text-gray-600 mt-6">
+                            Time taken: ${formatTime(timeSpent)}
                         </div>
                     </div>
-                `;
-            } else {
-                // Default display for other psychometric tests
-                mainContent.innerHTML = `
-                    <div class="container mx-auto px-4 py-8">
-                        <h1 class="text-3xl font-bold mb-6">${insights.category || 'Personality Assessment'}</h1>
-                        <div class="bg-white rounded-lg shadow p-6">
-                            ${insights.insights ? `
-                                <div class="insights-section mb-6">
-                                    ${insights.insights.map(insight => 
-                                        `<div class="insight-item mb-4 p-4 bg-gray-50 rounded-lg">
-                                            <p class="text-lg">${insight}</p>
-                                        </div>`
-                                    ).join('')}
-                                </div>
-                            ` : ''}
 
-                            ${insights.recommendations ? `
-                                <div class="recommendations-section mt-6 pt-6 border-t">
-                                    <h3 class="text-xl font-semibold mb-4">Career Recommendations</h3>
-                                    ${insights.recommendations.map(rec => 
-                                        `<div class="recommendation-item mb-3 p-3 border-l-4 border-primary bg-gray-50 rounded-r-lg">
-                                            <p>${rec}</p>
-                                        </div>`
-                                    ).join('')}
-                                </div>
-                            ` : ''}
-
-                            <div class="text-sm text-gray-600 mt-6">
-                                Time taken: ${formatTime(timeSpent)}
-                            </div>
-                        </div>
-                        <div class="text-center mt-8">
-                            <a href="/dashboard.html" class="inline-block bg-primary text-white px-6 py-2 rounded-lg hover:bg-opacity-90">
-                                Return to Dashboard
-                            </a>
-                        </div>
+                    <div class="text-center mt-8">
+                        <a href="/dashboard.html" class="inline-block bg-primary text-white px-6 py-2 rounded-lg hover:bg-opacity-90">
+                            Return to Dashboard
+                        </a>
                     </div>
-                `;
-            }
+                </div>
+            `;
         }
     } else {
-        // For non-psychometric tests, show the regular score display
+        // For non-psychometric tests
+        const score = testData.score || 0;
         const correctAnswers = testData.questions.filter(q => q.isCorrect).length;
         const incorrectAnswers = testData.questions.length - correctAnswers;
 
-        document.getElementById('scorePercentage').textContent = `${testData.score}%`;
+        document.getElementById('scorePercentage').textContent = `${score}%`;
         document.getElementById('correctAnswers').textContent = correctAnswers;
         document.getElementById('incorrectAnswers').textContent = incorrectAnswers;
         document.getElementById('timeTaken').textContent = formatTime(timeSpent);
