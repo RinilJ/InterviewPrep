@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Test Results</title>
     <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         .container {
             max-width: 800px;
@@ -81,34 +82,36 @@
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="score-section">
-            <h1>Test Results</h1>
-            <div class="score-display" id="scorePercentage">-%</div>
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <h3>Correct Answers</h3>
-                    <p id="correctAnswers">-</p>
+    <div class="main-content">
+        <div class="container">
+            <div class="score-section">
+                <h1>Test Results</h1>
+                <div class="score-display" id="scorePercentage">-%</div>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3>Correct Answers</h3>
+                        <p id="correctAnswers">-</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Incorrect Answers</h3>
+                        <p id="incorrectAnswers">-</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Time Taken</h3>
+                        <p id="timeTaken">-</p>
+                    </div>
                 </div>
-                <div class="stat-card">
-                    <h3>Incorrect Answers</h3>
-                    <p id="incorrectAnswers">-</p>
-                </div>
-                <div class="stat-card">
-                    <h3>Time Taken</h3>
-                    <p id="timeTaken">-</p>
-                </div>
+                <div class="feedback" id="performanceFeedback"></div>
             </div>
-            <div class="feedback" id="performanceFeedback"></div>
-        </div>
 
-        <div class="actions">
-            <button onclick="window.location.href='/dashboard.html'" class="btn-primary">
-                Back to Dashboard
-            </button>
-        </div>
+            <div class="actions">
+                <button onclick="window.location.href='/dashboard.html'" class="btn-primary">
+                    Back to Dashboard
+                </button>
+            </div>
 
-        <div id="reviewContent"></div>
+            <div id="reviewContent"></div>
+        </div>
     </div>
 
     <script src="/js/test-results.js"></script>
