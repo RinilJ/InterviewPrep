@@ -103,18 +103,16 @@ export class MemStorage implements IStorage {
             normalizedUser.batch
         );
 
+        // Handle case where no teacher is assigned yet
         if (!assignedTeacher) {
-            throw new Error("No teacher assigned for this batch yet");
+            normalizedUser.teacherId = null; // Allow registration but without teacher assignment
+        } else {
+            normalizedUser.teacherId = assignedTeacher.id;
         }
-
-        normalizedUser.teacherId = assignedTeacher.id;
     }
 
     this.users.set(id, normalizedUser);
-
-    // Minimal logging for debugging
     console.log(`Created ${normalizedUser.role} with ID: ${id}`);
-
     return normalizedUser;
   }
 
