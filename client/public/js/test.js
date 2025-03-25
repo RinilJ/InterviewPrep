@@ -119,7 +119,9 @@ async function submitTest() {
             startTime: currentTest.startTime,
             endTime: new Date().toISOString(),
             questions: currentTest.questions,
-            type: currentTest.type // Ensure type is passed to results page
+            answers: currentTest.answers,
+            type: currentTest.type,
+            insights: responseData.insights
         };
 
         console.log('Storing test results:', resultsData);
@@ -127,6 +129,9 @@ async function submitTest() {
 
         // Clear current test data
         sessionStorage.removeItem('currentTest');
+        
+        // Ensure redirect happens after data is stored
+        window.location.href = '/test-results.html';
 
         // Redirect to results page
         window.location.href = '/test-results.html';
