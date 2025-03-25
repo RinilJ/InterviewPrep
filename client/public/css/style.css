@@ -1065,3 +1065,88 @@ nav {
         grid-template-columns: 1fr;
     }
 }
+
+/* MBTI Results Styles */
+.mbti-results {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.personality-type {
+  background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+  color: white;
+  padding: 2rem;
+  border-radius: 0.75rem;
+  margin-bottom: 2rem;
+}
+
+.personality-type h2 {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+}
+
+.personality-type p {
+  font-size: 1.1rem;
+  opacity: 0.9;
+  line-height: 1.6;
+}
+
+.characteristics-section,
+.preferences-section,
+.careers-section {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 0.75rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.section-title {
+  color: var(--primary-color);
+  font-size: 1.5rem;
+  margin-bottom: 1.25rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid var(--border-color);
+}
+
+.trait-card {
+  background: rgba(22, 101, 52, 0.05);
+  padding: 1rem;
+  border-radius:0.5rem;
+  margin-bottom: 1rem;
+  border-left: 3px solid var(--primary-color);
+}
+
+.trait-card p {
+  color: var(--text-color);
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.career-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.career-item {
+  background: rgba(22, 101, 52, 0.02);
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  text-align: center;
+  border: 1px solid var(--border-color);
+}
+
+@media (max-width: 768px) {
+  .personality-type {
+    padding: 1.5rem;
+  }
+
+  .personality-type h2 {
+    font-size: 1.5rem;
+  }
+
+  .section-title {
+    font-size: 1.25rem;
+  }
+}

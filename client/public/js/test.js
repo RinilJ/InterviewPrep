@@ -39,6 +39,104 @@ function initializeTest() {
     setupNavigation();
 }
 
+function calculateMBTIScores(answers, questions) {
+    // Initialize dichotomy scores
+    const scores = {
+        EI: 0, // Extraversion vs Introversion
+        SN: 0, // Sensing vs Intuition
+        TF: 0, // Thinking vs Feeling
+        JP: 0  // Judging vs Perceiving
+    };
+
+    // Process each answer based on its subcategory
+    questions.forEach((question, index) => {
+        const answer = answers[index];
+        if (answer === null) return; // Skip unanswered questions
+
+        switch(question.subcategory) {
+            case 'IE':
+                scores.EI += answer;
+                break;
+            case 'SN':
+                scores.SN += answer;
+                break;
+            case 'TF':
+                scores.TF += answer;
+                break;
+            case 'JP':
+                scores.JP += answer;
+                break;
+        }
+    });
+
+    // Return array of scores in the order expected by the server
+    return [
+        scores.EI / 3, // Average score for E/I
+        scores.SN / 3, // Average score for S/N
+        scores.TF / 3, // Average score for T/F
+        scores.JP / 3  // Average score for J/P
+    ];
+}
+
+async function submitTest() {
+    clearInterval(timer);
+    saveCurrentAnswer();
+
+    try {
+        let testResults = {
+            testId: currentTest.id,
+            type: currentTest.type,
+            answers: currentTest.answers
+        };
+
+        // For MBTI tests, calculate preference scores
+        if (currentTest.type === 'mbti') {
+            console.log('Processing MBTI test answers:', currentTest.answers);
+            testResults.answers = calculateMBTIScores(currentTest.answers, currentTest.questions);
+            console.log('Calculated MBTI scores:', testResults.answers);
+        }
+
+        // Submit test result
+        const response = await fetch('/api/test-results', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(testResults)
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to submit test results');
+        }
+
+        // Get the response data which includes insights for psychometric tests
+        const responseData = await response.json();
+        console.log('Test submission response:', responseData);
+
+        // Store results for the results page
+        sessionStorage.setItem('testResults', JSON.stringify({
+            ...responseData,
+            startTime: currentTest.startTime,
+            endTime: new Date().toISOString(),
+            questions: currentTest.questions
+        }));
+
+        // Clear current test data and redirect to results page
+        sessionStorage.removeItem('currentTest');
+        window.location.href = '/test-results.html';
+    } catch (error) {
+        console.error('Error submitting test:', error);
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'error-message';
+        errorDiv.textContent = 'Failed to submit test results. Please try again.';
+        document.querySelector('.test-container').prepend(errorDiv);
+
+        setTimeout(() => {
+            errorDiv.remove();
+        }, 5000);
+    }
+}
+
 function displayQuestion(index) {
     const question = currentTest.questions[index];
     const container = document.getElementById('questionContainer');
@@ -138,75 +236,4 @@ function startTimer(seconds) {
         }
         timeLeft--;
     }, 1000);
-}
-
-async function submitTest() {
-    clearInterval(timer);
-    saveCurrentAnswer();
-
-    // Store results
-    let correctAnswers = 0;
-    const results = {
-        questions: currentTest.questions.map((question, index) => ({
-            ...question,
-            userAnswer: currentTest.answers[index],
-            isCorrect: currentTest.answers[index] === question.correctAnswer
-        })),
-        startTime: currentTest.startTime,
-        endTime: new Date().toISOString(),
-        category: currentTest.category,
-        language: currentTest.language,
-        type: currentTest.type // Add type for psychometric tests
-    };
-
-    results.questions.forEach(question => {
-        if (question.isCorrect) correctAnswers++;
-    });
-
-    const score = Math.round((correctAnswers / currentTest.questions.length) * 100);
-    results.score = score;
-
-    try {
-        // Submit test result
-        const response = await fetch('/api/test-results', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                testId: currentTest.id,
-                score: score,
-                answers: currentTest.answers,
-                type: currentTest.type // Add type for psychometric tests
-            })
-        });
-
-        if (!response.ok) {
-            throw new Error('Failed to submit test results');
-        }
-
-        // Get the response data which includes insights for psychometric tests
-        const responseData = await response.json();
-
-        // Store results for the results page, including any insights
-        sessionStorage.setItem('testResults', JSON.stringify({
-            ...results,
-            insights: responseData.insights // Include insights in the stored results
-        }));
-
-        // Clear current test data and redirect to results page
-        sessionStorage.removeItem('currentTest');
-        window.location.href = '/test-results.html';
-    } catch (error) {
-        console.error('Error submitting test:', error);
-        const errorDiv = document.createElement('div');
-        errorDiv.className = 'error-message';
-        errorDiv.textContent = 'Failed to submit test results. Please try again.';
-        document.querySelector('.test-container').prepend(errorDiv);
-
-        // Remove error message after 5 seconds
-        setTimeout(() => {
-            errorDiv.remove();
-        }, 5000);
-    }
 }

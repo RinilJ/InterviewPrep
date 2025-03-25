@@ -38,44 +38,114 @@ window.addEventListener('DOMContentLoaded', () => {
                 </div>
             `;
         } else {
-            // Show insights only if we have answers
+            // Show insights based on test type
             const insights = testData.insights || {};
-            mainContent.innerHTML = `
-                <div class="container mx-auto px-4 py-8">
-                    <h1 class="text-3xl font-bold mb-6">${insights.category || 'Personality Assessment'}</h1>
-                    <div class="bg-white rounded-lg shadow p-6">
-                        ${insights.insights ? `
-                            <div class="insights-section mb-6">
-                                ${insights.insights.map(insight => 
-                                    `<div class="insight-item mb-4 p-4 bg-gray-50 rounded-lg">
-                                        <p class="text-lg">${insight}</p>
-                                    </div>`
-                                ).join('')}
-                            </div>
-                        ` : ''}
 
-                        ${insights.recommendations ? `
-                            <div class="recommendations-section mt-6 pt-6 border-t">
-                                <h3 class="text-xl font-semibold mb-4">Career Recommendations</h3>
-                                ${insights.recommendations.map(rec => 
-                                    `<div class="recommendation-item mb-3 p-3 border-l-4 border-primary bg-gray-50 rounded-r-lg">
-                                        <p>${rec}</p>
-                                    </div>`
-                                ).join('')}
-                            </div>
-                        ` : ''}
+            // Special handling for MBTI test
+            if (testData.type === 'mbti') {
+                const personalityType = insights.insights[0].split(' - ')[0].split('is ')[1];
 
-                        <div class="text-sm text-gray-600 mt-6">
-                            Time taken: ${formatTime(timeSpent)}
+                mainContent.innerHTML = `
+                    <div class="container mx-auto px-4 py-8">
+                        <h1 class="text-3xl font-bold mb-6">MBTI Personality Assessment Results</h1>
+                        <div class="bg-white rounded-lg shadow p-6">
+                            <div class="mb-6">
+                                <h2 class="text-2xl font-bold text-primary mb-2">Your Personality Type: ${personalityType}</h2>
+                                <p class="text-lg mb-4">${insights.insights[0].split(' - ')[1]}</p>
+                            </div>
+
+                            <div class="mb-6">
+                                <h3 class="text-xl font-semibold mb-3">Key Characteristics</h3>
+                                <div class="grid gap-2">
+                                    ${insights.insights
+                                        .filter(insight => insight.startsWith('•'))
+                                        .slice(1, 4) 
+                                        .map(char => `
+                                            <div class="p-3 bg-gray-50 rounded-lg">
+                                                <p class="text-gray-800">${char}</p>
+                                            </div>
+                                        `).join('')}
+                                </div>
+                            </div>
+
+                            <div class="mb-6">
+                                <h3 class="text-xl font-semibold mb-3">Your Preferences</h3>
+                                <div class="grid gap-2">
+                                    ${insights.insights
+                                        .filter(insight => insight.startsWith('•'))
+                                        .slice(4, 8) 
+                                        .map(pref => `
+                                            <div class="p-3 bg-gray-50 rounded-lg">
+                                                <p class="text-gray-800">${pref}</p>
+                                            </div>
+                                        `).join('')}
+                                </div>
+                            </div>
+
+                            <div class="mb-6">
+                                <h3 class="text-xl font-semibold mb-3">Recommended Career Paths</h3>
+                                <div class="grid gap-2">
+                                    ${insights.insights
+                                        .filter(insight => insight.startsWith('•'))
+                                        .slice(8) 
+                                        .map(career => `
+                                            <div class="p-3 bg-gray-50 rounded-lg">
+                                                <p class="text-gray-800">${career}</p>
+                                            </div>
+                                        `).join('')}
+                                </div>
+                            </div>
+
+                            <div class="text-sm text-gray-600 mt-6">
+                                Time taken: ${formatTime(timeSpent)}
+                            </div>
+                        </div>
+                        <div class="text-center mt-8">
+                            <a href="/dashboard.html" class="inline-block bg-primary text-white px-6 py-2 rounded-lg hover:bg-opacity-90">
+                                Return to Dashboard
+                            </a>
                         </div>
                     </div>
-                    <div class="text-center mt-8">
-                        <a href="/dashboard.html" class="inline-block bg-primary text-white px-6 py-2 rounded-lg hover:bg-opacity-90">
-                            Return to Dashboard
-                        </a>
+                `;
+            } else {
+                // Default display for other psychometric tests
+                mainContent.innerHTML = `
+                    <div class="container mx-auto px-4 py-8">
+                        <h1 class="text-3xl font-bold mb-6">${insights.category || 'Personality Assessment'}</h1>
+                        <div class="bg-white rounded-lg shadow p-6">
+                            ${insights.insights ? `
+                                <div class="insights-section mb-6">
+                                    ${insights.insights.map(insight => 
+                                        `<div class="insight-item mb-4 p-4 bg-gray-50 rounded-lg">
+                                            <p class="text-lg">${insight}</p>
+                                        </div>`
+                                    ).join('')}
+                                </div>
+                            ` : ''}
+
+                            ${insights.recommendations ? `
+                                <div class="recommendations-section mt-6 pt-6 border-t">
+                                    <h3 class="text-xl font-semibold mb-4">Career Recommendations</h3>
+                                    ${insights.recommendations.map(rec => 
+                                        `<div class="recommendation-item mb-3 p-3 border-l-4 border-primary bg-gray-50 rounded-r-lg">
+                                            <p>${rec}</p>
+                                        </div>`
+                                    ).join('')}
+                                </div>
+                            ` : ''}
+
+                            <div class="text-sm text-gray-600 mt-6">
+                                Time taken: ${formatTime(timeSpent)}
+                            </div>
+                        </div>
+                        <div class="text-center mt-8">
+                            <a href="/dashboard.html" class="inline-block bg-primary text-white px-6 py-2 rounded-lg hover:bg-opacity-90">
+                                Return to Dashboard
+                            </a>
+                        </div>
                     </div>
-                </div>
-            `;
+                `;
+            }
         }
     } else {
         // For non-psychometric tests, show the regular score display

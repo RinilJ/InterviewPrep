@@ -270,52 +270,64 @@ export function registerRoutes(app: Express): Server {
     if (!req.isAuthenticated()) return res.sendStatus(401);
 
     try {
-      const { testId, answers, type } = req.body;
+        const { testId, answers, type } = req.body;
+        console.log('Processing test results:', { type, answersLength: answers.length });
 
-      // For psychometric tests, generate insights instead of numerical score
-      if (type && ['big-five', 'mbti', 'eq', 'sjt'].includes(type)) {
-        let insights;
-        switch (type) {
-          case 'big-five':
-            insights = generateBigFiveInsights(answers);
-            break;
-          case 'mbti':
-            insights = generateMBTIInsights(answers);
-            break;
-          case 'eq':
-            insights = generateEQInsights(answers);
-            break;
-          case 'sjt':
-            insights = generateSJTInsights(answers);
-            break;
+        // For psychometric tests, generate insights instead of numerical score
+        if (type && ['big-five', 'mbti', 'eq', 'sjt'].includes(type)) {
+            let insights;
+
+            // For MBTI, ensure we have enough answers to analyze all dichotomies
+            if (type === 'mbti') {
+                console.log('Processing MBTI answers:', answers);
+                if (answers.length < 4) {
+                    return res.status(400).send("Insufficient answers for MBTI analysis");
+                }
+                insights = generateMBTIInsights(answers);
+            } else {
+                switch (type) {
+                    case 'big-five':
+                        insights = generateBigFiveInsights(answers);
+                        break;
+                    case 'eq':
+                        insights = generateEQInsights(answers);
+                        break;
+                    case 'sjt':
+                        insights = generateSJTInsights(answers);
+                        break;
+                }
+            }
+
+            console.log('Generated insights:', insights);
+
+            // Store the insights in the test results
+            const result = await storage.createTestResult({
+                userId: req.user.id,
+                testId,
+                score: -1, // Use -1 to indicate this is a psychometric test
+                insights: JSON.stringify(insights), // Store insights as JSON string
+                type // Add test type to help with frontend display
+            });
+
+            return res.status(201).json({
+                ...result,
+                insights,
+                type
+            });
         }
 
-        // Store the insights in the test results
+        // For non-psychometric tests, continue with normal scoring
+        const parsed = insertTestResultSchema.parse(req.body);
         const result = await storage.createTestResult({
-          userId: req.user.id,
-          testId,
-          score: -1, // Use -1 to indicate this is a psychometric test
-          insights: JSON.stringify(insights) // Store insights as JSON string
+            ...parsed,
+            userId: req.user.id
         });
-
-        return res.status(201).json({
-          ...result,
-          insights
-        });
-      }
-
-      // For non-psychometric tests, continue with normal scoring
-      const parsed = insertTestResultSchema.parse(req.body);
-      const result = await storage.createTestResult({
-        ...parsed,
-        userId: req.user.id
-      });
-      res.status(201).json(result);
+        res.status(201).json(result);
     } catch (error) {
-      console.error('Error creating test result:', error);
-      res.status(500).send("Failed to save test results");
+        console.error('Error creating test result:', error);
+        res.status(500).send("Failed to save test results: " + error.message);
     }
-  });
+});
 
   app.post("/api/logout", (req, res, next) => {
     req.logout((err) => {
