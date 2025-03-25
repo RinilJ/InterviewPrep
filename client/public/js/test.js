@@ -114,15 +114,21 @@ async function submitTest() {
         console.log('Test submission response:', responseData);
 
         // Store results for the results page
-        sessionStorage.setItem('testResults', JSON.stringify({
+        const resultsData = {
             ...responseData,
             startTime: currentTest.startTime,
             endTime: new Date().toISOString(),
-            questions: currentTest.questions
-        }));
+            questions: currentTest.questions,
+            type: currentTest.type // Ensure type is passed to results page
+        };
 
-        // Clear current test data and redirect to results page
+        console.log('Storing test results:', resultsData);
+        sessionStorage.setItem('testResults', JSON.stringify(resultsData));
+
+        // Clear current test data
         sessionStorage.removeItem('currentTest');
+
+        // Redirect to results page
         window.location.href = '/test-results.html';
     } catch (error) {
         console.error('Error submitting test:', error);
