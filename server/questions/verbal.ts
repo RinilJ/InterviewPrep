@@ -1,8 +1,92 @@
 import { Question } from '../types';
 
 // Direction Sense Questions (L01)
-async function getDirectionSenseQuestions(): Promise<Question[]> {
+export async function getDirectionSenseQuestions(): Promise<Question[]> {
   return [
+    {
+      question: "A person walks 2 km towards North, then turns right and walks 3 km. He again turns right and walks 2 km. How far and in which direction is he from his starting point?",
+      options: ["3 km East", "3 km West", "3 km North", "3 km South"],
+      correctAnswer: 0,
+      explanation: "After walking North, East, and South, he ends up 3 km East of starting point"
+    },
+    {
+      question: "From point A, Raj walks 4 km East to point B, then 3 km North to point C. What is the shortest distance from point A to point C?",
+      options: ["5 km", "7 km", "6 km", "4 km"],
+      correctAnswer: 0,
+      explanation: "Using Pythagorean theorem: √(4² + 3²) = 5 km"
+    },
+    {
+      question: "Starting from school, a student walks 15m North, then 10m East, then 5m South, and finally 10m West. How far is he from school?",
+      options: ["10m North", "10m South", "5m North", "15m North"],
+      correctAnswer: 2,
+      explanation: "Net movement: North(15-5=10m), East(10-10=0m), resulting in 10m North"
+    },
+    {
+      question: "A man walks 5 km towards South and then turns to the right. After walking 3 km he turns to the left and walks 5 km. Which direction is he moving now?",
+      options: ["North", "South", "East", "West"],
+      correctAnswer: 1,
+      explanation: "After turning left from East direction, he moves South"
+    },
+    {
+      question: "If South-East becomes North, North-East becomes West, then what will South-West become?",
+      options: ["East", "North-West", "South", "East-North"],
+      correctAnswer: 0,
+      explanation: "When rotated clockwise by 135°, SW becomes E"
+    },
+    {
+      question: "Walking 6 km towards East, then turning 45° right and walking 4 km, what is the direction from starting point?",
+      options: ["South-East", "North-East", "South", "East"],
+      correctAnswer: 1,
+      explanation: "Final direction from start is North-East"
+    },
+    {
+      question: "A person walks 1 km towards East then takes three consecutive right turns, walking 1 km each time. Where is he now relative to starting point?",
+      options: ["1 km West", "1 km East", "At starting point", "1 km North"],
+      correctAnswer: 2,
+      explanation: "Three right turns form three sides of a square, returning to start"
+    },
+    {
+      question: "If you're facing North and turn 90° clockwise twice, then 45° anticlockwise, which direction are you facing?",
+      options: ["South-East", "South-West", "North-East", "North-West"],
+      correctAnswer: 1,
+      explanation: "North -> East -> South -> South-West"
+    },
+    {
+      question: "Standing at point X, walking 3 km North to Y, then 4 km East to Z. What is the shortest distance back to X?",
+      options: ["5 km", "7 km", "4 km", "3 km"],
+      correctAnswer: 0,
+      explanation: "Forms right triangle, distance = √(3² + 4²) = 5 km"
+    },
+    {
+      question: "Walking North-East for 2 km, then South-East for 2 km. What direction is the starting point?",
+      options: ["West", "North-West", "South-West", "East"],
+      correctAnswer: 2,
+      explanation: "Starting point is in South-West direction"
+    },
+    {
+      question: "A person walks East for 5m, North for 12m, West for 5m. What is their position relative to start?",
+      options: ["12m North", "12m South", "5m East", "5m West"],
+      correctAnswer: 0,
+      explanation: "East and West cancel out, leaving 12m North displacement"
+    },
+    {
+      question: "Starting facing North, turn 270° clockwise. Which direction are you facing?",
+      options: ["East", "West", "North", "South"],
+      correctAnswer: 1,
+      explanation: "270° clockwise from North equals facing West"
+    },
+    {
+      question: "Walk 4 km East, 3 km North, 4 km West, 5 km South. How far are you from the starting point?",
+      options: ["2 km South", "2 km North", "2 km East", "2 km West"],
+      correctAnswer: 0,
+      explanation: "East-West cancels, North-South gives 2 km South"
+    },
+    {
+      question: "From point P, walk 6 km East to Q, then 8 km North to R. The straight distance from P to R is:",
+      options: ["10 km", "14 km", "8 km", "6 km"],
+      correctAnswer: 0,
+      explanation: "Using Pythagorean theorem: √(6² + 8²) = 10 km"
+    },
     {
       question: "Starting from point A, John walks 3 km North, then 4 km East, and finally 3 km South. How far is he from point A?",
       options: ["4 km", "5 km", "6 km", "7 km"],
@@ -250,7 +334,7 @@ async function getCodingDecodingQuestions(): Promise<Question[]> {
       explanation: "Each letter is shifted two positions forward"
     },
     {
-      question: "If LONDON is coded as 12-15-14-4-15-14, how is PARIS coded?",
+      question: "If 'LONDON' is coded as 12-15-14-4-15-14, how is 'PARIS' coded?",
       options: ["16-1-18-9-19", "17-2-19-10-20", "15-0-17-8-18", "16-2-18-9-18"],
       correctAnswer: 0,
       explanation: "Each letter is converted to its position in alphabet"
