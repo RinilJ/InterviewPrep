@@ -70,7 +70,7 @@ export class MemStorage implements IStorage {
   async createUser(user: Omit<User, "id" | "createdAt">): Promise<User> {
     const id = this.currentId++;
 
-    // Normalize and validate the user data
+    // Normalize and validate user data
     const normalizedUser = {
       ...user,
       id,
@@ -82,39 +82,35 @@ export class MemStorage implements IStorage {
 
     // For teachers, check if a teacher already exists for this batch
     if (user.role === 'teacher') {
-      const existingTeacher = await this.findTeacher(
-        normalizedUser.department,
-        normalizedUser.year,
-        normalizedUser.batch
+      // Find teacher with exact department, year, and batch match
+      const existingTeacher = Array.from(this.users.values()).find(t =>
+        t.role === 'teacher' &&
+        t.department === normalizedUser.department &&
+        t.year === normalizedUser.year &&
+        t.batch === normalizedUser.batch
       );
 
       if (existingTeacher) {
         throw new Error("Class teacher for this batch already exists");
       }
 
-      // Teachers don't have a teacherId
       normalizedUser.teacherId = null;
     }
     // For students, find and assign their teacher with exact matching
     else if (user.role === 'student') {
-      const teacher = await this.findTeacher(
-        normalizedUser.department,
-        normalizedUser.year,
-        normalizedUser.batch
+      // Find teacher with exact department, year, and batch match
+      const assignedTeacher = Array.from(this.users.values()).find(t =>
+        t.role === 'teacher' &&
+        t.department === normalizedUser.department &&
+        t.year === normalizedUser.year &&
+        t.batch === normalizedUser.batch
       );
 
-      if (!teacher) {
+      if (!assignedTeacher) {
         throw new Error("No teacher found for your batch. Please ensure a teacher is registered first.");
       }
 
-      // Only assign teacher if department, year, and batch match exactly
-      if (teacher.department === normalizedUser.department &&
-          teacher.year === normalizedUser.year &&
-          teacher.batch === normalizedUser.batch) {
-        normalizedUser.teacherId = teacher.id;
-      } else {
-        throw new Error("No matching teacher found for your batch.");
-      }
+      normalizedUser.teacherId = assignedTeacher.id;
     }
 
     this.users.set(id, normalizedUser);
@@ -155,14 +151,14 @@ export class MemStorage implements IStorage {
     const cleanYear = String(year).trim();
     const cleanBatch = String(batch).trim().toUpperCase();
 
-    // Find matching students with strict matching of department, year, and batch
-    const students = Array.from(this.users.values()).filter(user => {
-      return user.role === 'student' &&
-        Number(user.teacherId) === Number(teacherId) &&
-        user.department === cleanDepartment &&
-        user.year === cleanYear &&
-        user.batch === cleanBatch;
-    });
+    // Find students with exact matching of department, year, and batch
+    const students = Array.from(this.users.values()).filter(user =>
+      user.role === 'student' &&
+      user.teacherId === teacherId &&
+      user.department === cleanDepartment &&
+      user.year === cleanYear &&
+      user.batch === cleanBatch
+    );
 
     // Log only the count and basic info
     console.log('Found students:', {
@@ -173,19 +169,7 @@ export class MemStorage implements IStorage {
       batch: cleanBatch
     });
 
-    // Add progress information
-    const studentsWithProgress = await Promise.all(students.map(async (student) => {
-      const results = await this.getTestResults(student.id);
-      return {
-        ...student,
-        testsCompleted: results.length,
-        averageScore: results.length > 0
-          ? Math.round(results.reduce((sum, result) => sum + result.score, 0) / results.length)
-          : 0
-      };
-    }));
-
-    return studentsWithProgress;
+    return students;
   }
 
   async getTests(): Promise<Test[]> {
