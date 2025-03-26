@@ -6,6 +6,7 @@
     <title>Teacher Dashboard - Interview Preparation Platform</title>
     <link rel="stylesheet" href="/css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <div class="dashboard">
@@ -104,15 +105,14 @@
                     <div class="analytics-grid">
                         <div class="analytics-card">
                             <h3>Test Performance</h3>
-                            <div id="testPerformanceChart" class="chart-container"></div>
+                            <canvas id="testPerformanceChart" class="chart-container"></canvas>
                         </div>
                         <div class="analytics-card">
                             <h3>Topic Wise Progress</h3>
-                            <div id="topicProgressChart" class="chart-container"></div>
+                            <canvas id="topicProgressChart" class="chart-container"></canvas>
                         </div>
                     </div>
 
-                    <!-- Add new section for student test history -->
                     <div class="student-history-section">
                         <div class="section-header">
                             <h3><i class="fas fa-history"></i> Student Test History</h3>
@@ -150,7 +150,7 @@
                             <small>Leave empty for open discussion</small>
                         </div>
                     </div>
-                    
+
                     <div class="form-section">
                         <h3><i class="fas fa-clock"></i> Timing Details</h3>
                         <div class="form-row">

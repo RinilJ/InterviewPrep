@@ -450,12 +450,19 @@ app.post("/api/logout", (req, res, next) => {
       const testResults = await storage.getTestResults(studentId);
 
       // Format results to include test type and date
-      const formattedResults = testResults.map(result => ({
-        ...result,
-        type: result.type || 'aptitude',
-        date: result.completedAt,
-        testName: result.testId || 'Practice Test'
-      }));
+      const formattedResults = testResults.map(result => {
+        let type = result.type || 'aptitude';
+        // Check if testId starts with L, N, or Q to identify aptitude tests
+        if (result.testId && /^[LNQ]\d+/.test(result.testId)) {
+          type = 'aptitude';
+        }
+        return {
+          ...result,
+          type,
+          date: result.completedAt,
+          testName: result.testId || 'Practice Test'
+        };
+      });
 
       res.json(formattedResults);
     } catch (error) {
