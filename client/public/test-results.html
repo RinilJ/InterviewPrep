@@ -52,32 +52,61 @@
             border-radius: var(--border-radius);
             box-shadow: var(--card-shadow);
         }
-        .options {
-            margin: 10px 0;
-        }
-        .option {
-            padding: 10px;
-            margin: 5px 0;
-            border-radius: var(--border-radius);
-            border: 1px solid var(--border-color);
-        }
-        .option.correct {
-            background: var(--success-light);
-            border-color: var(--success);
-        }
-        .option.selected:not(.correct) {
-            background: var(--danger-light);
-            border-color: var(--danger);
-        }
-        .explanation {
-            margin-top: 10px;
+        .time-taken {
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin: 20px 0;
             padding: 10px;
             background: var(--background);
             border-radius: var(--border-radius);
         }
-        .actions {
+        .dashboard-btn {
+            display: inline-block;
+            padding: 12px 24px;
+            background: var(--primary);
+            color: white;
+            text-decoration: none;
+            border-radius: var(--border-radius);
+            font-weight: 500;
+            transition: all 0.3s ease;
             text-align: center;
             margin: 20px 0;
+            width: 100%;
+            max-width: 200px;
+        }
+        .dashboard-btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+        .actions {
+            text-align: center;
+            margin: 30px 0;
+        }
+        .career-section {
+            background: var(--card-background);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            margin: 20px 0;
+            box-shadow: var(--card-shadow);
+        }
+        .career-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .career-item {
+            background: var(--background);
+            padding: 15px;
+            border-radius: var(--border-radius);
+            text-align: center;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+        .career-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
     </style>
 </head>
@@ -98,19 +127,24 @@
                     </div>
                     <div class="stat-card">
                         <h3>Time Taken</h3>
-                        <p id="timeTaken">-</p>
+                        <p id="timeTaken" class="time-taken">-</p>
                     </div>
                 </div>
                 <div class="feedback" id="performanceFeedback"></div>
             </div>
 
-            <div class="actions">
-                <button onclick="window.location.href='/dashboard.html'" class="btn-primary">
-                    Back to Dashboard
-                </button>
+            <div id="reviewContent"></div>
+            <div class="career-section">
+                <h2>Career Paths</h2>
+                <div class="career-grid">
+                    </div>
             </div>
 
-            <div id="reviewContent"></div>
+            <div class="actions">
+                <a href="/dashboard.html" class="dashboard-btn">
+                    <i class="fas fa-arrow-left mr-2"></i> Return to Dashboard
+                </a>
+            </div>
         </div>
     </div>
 

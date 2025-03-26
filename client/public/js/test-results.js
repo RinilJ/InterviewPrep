@@ -8,7 +8,7 @@ function formatTime(seconds) {
 // Initialize results page
 window.addEventListener('DOMContentLoaded', () => {
     const testData = JSON.parse(sessionStorage.getItem('testResults'));
-    console.log('Loaded test results:', testData); // Debug log
+    console.log('Loaded test results:', testData);
 
     if (!testData) {
         window.location.href = '/dashboard.html';
@@ -20,16 +20,14 @@ window.addEventListener('DOMContentLoaded', () => {
 
     // For psychometric tests
     if (testData.type && ['big-five', 'mbti', 'eq', 'sjt'].includes(testData.type)) {
-        console.log('Processing psychometric test:', testData.type); // Debug log
-
         if (!testData.insights) {
-            console.error('No insights found in test data'); // Debug log
+            console.error('No insights found in test data');
             mainContent.innerHTML = `
-                <div class="container mx-auto px-4 py-8">
-                    <h1 class="text-3xl font-bold mb-6">Test Results Unavailable</h1>
+                <div class="container">
+                    <h1>Test Results Unavailable</h1>
                     <p>Unable to load test results. Please try taking the test again.</p>
-                    <div class="text-center mt-8">
-                        <a href="/dashboard.html" class="inline-block bg-primary text-white px-6 py-2 rounded-lg hover:bg-opacity-90">
+                    <div class="actions">
+                        <a href="/dashboard.html" class="dashboard-btn">
                             Return to Dashboard
                         </a>
                     </div>
@@ -40,27 +38,35 @@ window.addEventListener('DOMContentLoaded', () => {
 
         // For MBTI test
         if (testData.type === 'mbti') {
-            console.log('MBTI insights:', testData.insights); // Debug log
+            console.log('MBTI insights:', testData.insights);
 
             // Extract personality type from insights
-            const personalityType = testData.insights.insights[0].split(' - ')[0].split('is ')[1];
-            const description = testData.insights.insights[0].split(' - ')[1];
+            const personalityTypeInfo = testData.insights.insights[0].split(' - ');
+            const personalityType = personalityTypeInfo[0].split('is ')[1];
+            const description = personalityTypeInfo[1];
 
-            // Separate insights into categories
-            const characteristics = testData.insights.insights.filter(insight => 
-                insight.startsWith('•') && !insight.includes('prefer') && !insight.includes('career')
+            // Get all insights after the type description
+            const allInsights = testData.insights.insights.slice(1);
+
+            // Filter insights by category
+            const characteristics = allInsights.filter(insight => 
+                insight.startsWith('•') && 
+                !insight.toLowerCase().includes('prefer') && 
+                !insight.toLowerCase().includes('career')
             );
 
-            const preferences = testData.insights.insights.filter(insight => 
-                insight.startsWith('•') && insight.includes('prefer')
+            const preferences = allInsights.filter(insight => 
+                insight.startsWith('•') && 
+                insight.toLowerCase().includes('prefer')
             );
 
-            const careers = testData.insights.insights.filter(insight => 
-                insight.startsWith('•') && insight.includes('career')
+            const careers = allInsights.filter(insight => 
+                insight.startsWith('•') && 
+                insight.toLowerCase().includes('career')
             );
 
             mainContent.innerHTML = `
-                <div class="container mx-auto px-4 py-8">
+                <div class="container">
                     <div class="mbti-results">
                         <div class="personality-type">
                             <h2>Your MBTI Type: ${personalityType}</h2>
@@ -71,7 +77,7 @@ window.addEventListener('DOMContentLoaded', () => {
                             <h3 class="section-title">Key Characteristics</h3>
                             ${characteristics.map(char => `
                                 <div class="trait-card">
-                                    <p>${char.replace('•', '')}</p>
+                                    <p>${char.replace('•', '').trim()}</p>
                                 </div>
                             `).join('')}
                         </div>
@@ -80,29 +86,29 @@ window.addEventListener('DOMContentLoaded', () => {
                             <h3 class="section-title">Your Preferences</h3>
                             ${preferences.map(pref => `
                                 <div class="trait-card">
-                                    <p>${pref.replace('•', '')}</p>
+                                    <p>${pref.replace('•', '').trim()}</p>
                                 </div>
                             `).join('')}
                         </div>
 
-                        <div class="careers-section">
+                        <div class="career-section">
                             <h3 class="section-title">Recommended Career Paths</h3>
                             <div class="career-grid">
                                 ${careers.map(career => `
                                     <div class="career-item">
-                                        <p>${career.replace('•', '')}</p>
+                                        <p>${career.replace('•', '').trim()}</p>
                                     </div>
                                 `).join('')}
                             </div>
                         </div>
 
-                        <div class="text-sm text-gray-600 mt-6">
+                        <div class="time-taken">
                             Time taken: ${formatTime(timeSpent)}
                         </div>
 
-                        <div class="text-center mt-8">
-                            <a href="/dashboard.html" class="inline-block bg-primary text-white px-6 py-2 rounded-lg hover:bg-opacity-90">
-                                Return to Dashboard
+                        <div class="actions">
+                            <a href="/dashboard.html" class="dashboard-btn">
+                                <i class="fas fa-arrow-left"></i> Return to Dashboard
                             </a>
                         </div>
                     </div>
@@ -111,23 +117,23 @@ window.addEventListener('DOMContentLoaded', () => {
         } else {
             // Default display for other psychometric tests
             mainContent.innerHTML = `
-                <div class="container mx-auto px-4 py-8">
-                    <h1 class="text-3xl font-bold mb-6">${testData.insights.category || 'Personality Assessment'}</h1>
-                    <div class="bg-white rounded-lg shadow p-6">
+                <div class="container">
+                    <h1>${testData.insights.category || 'Personality Assessment'}</h1>
+                    <div class="insights-section">
                         ${testData.insights.insights.map(insight => `
-                            <div class="insight-item mb-4 p-4 bg-gray-50 rounded-lg">
-                                <p class="text-lg">${insight}</p>
+                            <div class="insight-item">
+                                <p>${insight}</p>
                             </div>
                         `).join('')}
-
-                        <div class="text-sm text-gray-600 mt-6">
-                            Time taken: ${formatTime(timeSpent)}
-                        </div>
                     </div>
 
-                    <div class="text-center mt-8">
-                        <a href="/dashboard.html" class="inline-block bg-primary text-white px-6 py-2 rounded-lg hover:bg-opacity-90">
-                            Return to Dashboard
+                    <div class="time-taken">
+                        Time taken: ${formatTime(timeSpent)}
+                    </div>
+
+                    <div class="actions">
+                        <a href="/dashboard.html" class="dashboard-btn">
+                            <i class="fas fa-arrow-left"></i> Return to Dashboard
                         </a>
                     </div>
                 </div>
@@ -147,34 +153,29 @@ window.addEventListener('DOMContentLoaded', () => {
         // Show questions review
         const reviewContent = document.getElementById('reviewContent');
         testData.questions.forEach((question, index) => {
-            const reviewHtml = `
+            reviewContent.innerHTML += `
                 <div class="review-item ${question.isCorrect ? 'correct' : 'incorrect'}">
                     <h3>Question ${index + 1}</h3>
                     <p>${question.question}</p>
-                    ${question.code ? `<pre class="code-block"><code>${question.code}</code></pre>` : ''}
+                    ${question.code ? `<pre><code>${question.code}</code></pre>` : ''}
                     <div class="options">
                         ${question.options.map((option, i) => `
-                            <div class="option 
-                                ${i === question.correctAnswer ? 'correct' : ''} 
-                                ${i === question.userAnswer ? 'selected' : ''}">
+                            <div class="option ${i === question.correctAnswer ? 'correct' : ''} 
+                                           ${i === question.userAnswer ? 'selected' : ''}">
                                 ${option}
                                 ${i === question.correctAnswer ? ' ✓' : ''}
                                 ${i === question.userAnswer && i !== question.correctAnswer ? ' ✗' : ''}
                             </div>
                         `).join('')}
                     </div>
-                    <div class="explanation">
-                        <h4>Explanation:</h4>
-                        <p>${question.explanation}</p>
-                    </div>
+                    ${question.explanation ? `
+                        <div class="explanation">
+                            <h4>Explanation:</h4>
+                            <p>${question.explanation}</p>
+                        </div>
+                    ` : ''}
                 </div>
             `;
-            reviewContent.innerHTML += reviewHtml;
         });
-    }
-
-    // Highlight code blocks if present
-    if (typeof hljs !== 'undefined') {
-        hljs.highlightAll();
     }
 });
