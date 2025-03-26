@@ -122,7 +122,7 @@ export class MemStorage implements IStorage {
     const cleanYear = String(year).trim();
     const cleanBatch = String(batch).trim().toUpperCase();
 
-    // Find matching teacher
+    // Find matching teacher with exact matching
     const teacher = Array.from(this.users.values()).find(user => {
       return user.role === 'teacher' &&
         user.department === cleanDepartment &&
@@ -149,7 +149,7 @@ export class MemStorage implements IStorage {
     const cleanYear = String(year).trim();
     const cleanBatch = String(batch).trim().toUpperCase();
 
-    // Find matching students
+    // Find matching students with exact matching
     const students = Array.from(this.users.values()).filter(user => {
       return user.role === 'student' &&
         Number(user.teacherId) === Number(teacherId) &&
