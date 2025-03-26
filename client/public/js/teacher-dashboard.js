@@ -424,29 +424,43 @@ async function loadStudentTestHistory(studentId) {
             return;
         }
 
-        historyContainer.innerHTML = history.map(test => `
-            <div class="test-history-item ${test.type}">
-                <div class="test-info">
-                    <h4>
-                        <i class="fas ${test.type === 'technical' ? 'fa-code' : 
-                                     test.type === 'mbti' ? 'fa-user' : 
-                                     test.type === 'aptitude' ? 'fa-brain' : 'fa-question-circle'}"></i>
-                        ${test.testName}
-                    </h4>
-                    <span class="test-type">${test.type.charAt(0).toUpperCase() + test.type.slice(1)}</span>
-                </div>
-                <div class="test-details">
-                    <div class="detail">
-                        <i class="fas fa-chart-line"></i>
-                        <span>Score: ${test.score >= 0 ? `${test.score}%` : 'N/A'}</span>
+        historyContainer.innerHTML = history.map(test => {
+            // Determine the test type icon
+            let typeIcon = 'fa-brain'; // Default icon for aptitude tests
+            if (test.type === 'technical') {
+                typeIcon = 'fa-code';
+            } else if (test.type === 'mbti') {
+                typeIcon = 'fa-user';
+            }
+
+            // Format the test name
+            let testName = test.testName || 'Practice Test';
+            if (test.testId && /^[LNQ]\d+/.test(test.testId)) {
+                testName = `Aptitude Test (${test.testId})`;
+            }
+
+            return `
+                <div class="test-history-item ${test.type}">
+                    <div class="test-info">
+                        <h4>
+                            <i class="fas ${typeIcon}"></i>
+                            ${testName}
+                        </h4>
+                        <span class="test-type">${test.type.charAt(0).toUpperCase() + test.type.slice(1)}</span>
                     </div>
-                    <div class="detail">
-                        <i class="far fa-calendar-alt"></i>
-                        <span>Date: ${formatTestDate(test.date)}</span>
+                    <div class="test-details">
+                        <div class="detail">
+                            <i class="fas fa-chart-line"></i>
+                            <span>Score: ${test.score >= 0 ? `${test.score}%` : 'N/A'}</span>
+                        </div>
+                        <div class="detail">
+                            <i class="far fa-calendar-alt"></i>
+                            <span>Date: ${formatTestDate(test.date)}</span>
+                        </div>
                     </div>
                 </div>
-            </div>
-        `).join('');
+            `;
+        }).join('');
     } catch (error) {
         console.error('Error loading test history:', error);
         showToast('Error', 'Failed to load student test history');
