@@ -346,7 +346,7 @@ app.get("/api/student/average-score", async (req, res) => {
         const results = await storage.getTestResults(req.user.id);
 
         // Filter out psychometric tests (score = -1) and calculate average
-        const scoredTests = results.filter(test => test.score !== -1);
+        const scoredTests = results.filter(test => test.score >= 0);
 
         if (scoredTests.length === 0) {
             return res.json({ average: 0, totalTests: 0 });
@@ -364,7 +364,7 @@ app.get("/api/student/average-score", async (req, res) => {
     }
 });
 
-  app.post("/api/logout", (req, res, next) => {
+app.post("/api/logout", (req, res, next) => {
     req.logout((err) => {
       if (err) return next(err);
       res.sendStatus(200);

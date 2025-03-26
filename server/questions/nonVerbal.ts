@@ -113,8 +113,39 @@ export async function getLogicalVennQuestions(): Promise<Question[]> {
       correctAnswer: 0,
       explanation: "A hammer is only a tool, not electronic or for communication"
     },
-    // Add 90 more similar questions with increasing complexity...
-    // Each should test understanding of set relationships and logical reasoning
+    {
+      question: "In a Venn diagram of 'Athletes', 'Students', and 'Volunteers', where would a student athlete who doesn't volunteer be placed?",
+      options: [
+        "Intersection of Athletes and Students only",
+        "In all three circles",
+        "Only in Athletes",
+        "Outside all circles"
+      ],
+      correctAnswer: 0,
+      explanation: "A student athlete who doesn't volunteer belongs in the intersection of Athletes and Students circles only"
+    },
+    {
+      question: "In a Venn diagram of 'Smartphones', 'Touchscreen devices', and 'Android devices', where would an iPhone be placed?",
+      options: [
+        "Intersection of Smartphones and Touchscreen devices",
+        "In all three circles",
+        "Only in Smartphones",
+        "Outside all circles"
+      ],
+      correctAnswer: 0,
+      explanation: "An iPhone is both a smartphone and a touchscreen device, but not an Android device"
+    },
+    {
+      question: "In a Venn diagram of 'Remote workers', 'Tech professionals', and 'Freelancers', where would a full-time office-based software developer be placed?",
+      options: [
+        "Only in Tech professionals",
+        "Intersection of Remote workers and Tech professionals",
+        "In all three circles",
+        "Outside all circles"
+      ],
+      correctAnswer: 0,
+      explanation: "A full-time office-based software developer is only in the Tech professionals circle"
+    }
   ];
 }
 
@@ -180,16 +211,27 @@ export async function getDiceCubeQuestions(): Promise<Question[]> {
       correctAnswer: 0,
       explanation: "Interior cubes have no painted faces. In a 4×4×4 cube, there are 2×2×2 = 8 interior cubes"
     },
-    // Add 90 more similar questions with increasing complexity...
-    // Include questions about:
-    // - Dice probabilities
-    // - Cube painting and cutting
-    // - Spatial reasoning
-    // - Dice patterns and relationships
+    {
+      question: "A cube has numbers 1-6 on its faces. If 4 is on top and you rotate the cube 90° clockwise, what number appears on top?",
+      options: ["3", "5", "2", "1"],
+      correctAnswer: 2,
+      explanation: "When rotating 90° clockwise, the number that was on the right face (2) comes to the top"
+    },
+    {
+      question: "A cube is painted red, blue, and green on pairs of opposite faces. If red is on top and blue is on the front, what color is on the right face?",
+      options: ["Green", "Red", "Blue", "Cannot determine"],
+      correctAnswer: 0,
+      explanation: "If red and blue are on opposite pairs, green must be on the remaining pair of faces including the right face"
+    },
+    {
+      question: "A large cube is made up of 27 smaller cubes and is painted yellow on all faces. How many small cubes have exactly two yellow faces?",
+      options: ["12", "8", "6", "4"],
+      correctAnswer: 0,
+      explanation: "Edge cubes (not corners) have exactly two painted faces, and there are 12 such cubes"
+    }
   ];
 }
 
-// Figure Series Questions (N03)
 export async function getFigureSeriesQuestions(): Promise<Question[]> {
   return [
     {
@@ -252,11 +294,27 @@ export async function getFigureSeriesQuestions(): Promise<Question[]> {
       correctAnswer: 0,
       explanation: "Pattern alternates between ■□■ and □■□"
     },
-    // Continue with 90 more similar questions with increasing complexity...
+    {
+      question: "Complete the pattern: ⬡→⬢→⬡⬢→⬢⬡→?",
+      options: ["⬡⬢⬡", "⬢⬡⬢", "⬡⬢", "⬢⬡"],
+      correctAnswer: 0,
+      explanation: "The pattern shows alternating hexagons with an increasing sequence"
+    },
+    {
+      question: "What comes next: ◐→◑→◐◑→◑◐→?",
+      options: ["◐◑◐", "◑◐◑", "◐◑", "◑◐"],
+      correctAnswer: 0,
+      explanation: "The pattern alternates between half-filled circles with an increasing sequence"
+    },
+    {
+      question: "Find the next in sequence: ▣→▤→▣▤→▤▣→?",
+      options: ["▣▤▣", "▤▣▤", "▣▤", "▤▣"],
+      correctAnswer: 0,
+      explanation: "The pattern shows alternating squares with dots following an increasing sequence"
+    }
   ];
 }
 
-// Pattern Completion Questions (N04)
 export async function getPatternCompletionQuestions(): Promise<Question[]> {
   return [
     {
@@ -319,6 +377,23 @@ export async function getPatternCompletionQuestions(): Promise<Question[]> {
       correctAnswer: 0,
       explanation: "Pattern alternates between diamond-heart-diamond and heart-diamond-heart"
     },
-    // Continue with 90 more pattern completion questions with increasing complexity...
+    {
+      question: "Complete the grid pattern: ⬡⬢⬡, ⬢⬡⬢, ⬡⬢⬡, ?",
+      options: ["⬢⬡⬢", "⬡⬢⬡", "⬢⬢⬡", "⬡⬡⬢"],
+      correctAnswer: 0,
+      explanation: "The pattern alternates between hexagon arrangements in rows"
+    },
+    {
+      question: "What completes this sequence: ◐◐◑, ◑◑◐, ◐◐◑, ?",
+      options: ["◑◑◐", "◐◐◑", "◑◐◑", "◐◑◐"],
+      correctAnswer: 0,
+      explanation: "The pattern alternates between specific arrangements of half-filled circles"
+    },
+    {
+      question: "Find the missing pattern: ▣▤▣, ▤▣▤, ▣▤▣, ?",
+      options: ["▤▣▤", "▣▤▣", "▤▤▣", "▣▣▤"],
+      correctAnswer: 0,
+      explanation: "The pattern alternates between arrangements of dotted squares"
+    }
   ];
 }

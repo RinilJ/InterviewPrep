@@ -75,78 +75,126 @@ export async function getPercentageQuestions(): Promise<Question[]> {
       correctAnswer: 0,
       explanation: "After 40% discount, 60% = $36, so 100% = $36/0.6 = $60"
     },
-    // Add 88 more percentage questions with increasing complexity...
-    // Include questions about:
-    // - Compound percentage changes
-    // - Business scenarios (profit/loss percentages)
-    // - Real-world applications
-    // - Advanced percentage calculations
-  ];
-}
-
-export async function getProfitLossQuestions(): Promise<Question[]> {
-  return [
     {
-      question: "A merchant buys an article for $800 and sells it for $1000. What is the percentage of profit?",
-      options: ["25%", "20%", "30%", "15%"],
+      question: "A store increases prices by 20% and then offers a 20% discount. What is the final price of an item originally priced at $100?",
+      options: ["$96", "$100", "$104", "$92"],
       correctAnswer: 0,
-      explanation: "Profit = $200, Percentage profit = (200/800) × 100 = 25%"
+      explanation: "First increase: $120, then 20% discount on $120 = $96 (not $100 due to compound effect)"
     },
     {
-      question: "If a shopkeeper sells a book at $60 which cost him $45, what is his profit percentage?",
-      options: ["33.33%", "25%", "30%", "35%"],
+      question: "In a class of 200 students, 55% are girls. After 20 new students join, of whom 15 are girls, what is the new percentage of girls?",
+      options: ["54%", "56%", "53%", "55%"],
       correctAnswer: 0,
-      explanation: "Profit = $15, Profit percentage = (15/45) × 100 = 33.33%"
+      explanation: "Original girls: 110, New total: 220, New girls: 125, Percentage = (125/220) × 100 = 54%"
     },
     {
-      question: "A trader had 100 kgs of rice. He sold 20% at 10% profit and rest at 20% profit. What is his total profit percentage?",
-      options: ["18%", "15%", "16%", "17%"],
+      question: "If a company's profits increase by 50% one year and decrease by 40% the next year, what is the overall percentage change?",
+      options: ["-10%", "-5%", "10%", "0%"],
       correctAnswer: 0,
-      explanation: "20 kgs at 10% profit and 80 kgs at 20% profit: ((20×10) + (80×20))/100 = 18%"
+      explanation: "If initial profit is x, after increase: 1.5x, after decrease: 1.5x × 0.6 = 0.9x, so -10% overall"
     },
     {
-      question: "A man buys a watch for $100 and sells it at a loss of 10%. What is the selling price?",
-      options: ["$90", "$95", "$85", "$80"],
+      question: "A solution contains 20% alcohol. How much water should be added to 100ml of this solution to make it 15% alcohol?",
+      options: ["33.33ml", "25ml", "30ml", "35ml"],
       correctAnswer: 0,
-      explanation: "10% of $100 = $10 (loss), so selling price = $100 - $10 = $90"
+      explanation: "Using C₁V₁ = C₂V₂: 20 × 100 = 15(100 + x), solving for x gives 33.33ml"
     },
     {
-      question: "If selling price is $920 and loss is 8%, what is the cost price?",
-      options: ["$1000", "$980", "$960", "$940"],
+      question: "Three numbers are in the ratio 2:3:5. If the second number is increased by 50%, what is the new ratio?",
+      options: ["4:9:10", "4:6:10", "2:4.5:5", "2:3:7.5"],
       correctAnswer: 0,
-      explanation: "If $920 is 92% (100% - 8%), then 100% (CP) = $920 ÷ 0.92 = $1000"
+      explanation: "Original ratio 2:3:5, after 50% increase in second number: 2:4.5:5, simplifying = 4:9:10"
     },
     {
-      question: "A fruit seller buys oranges at 5 for $2 and sells at 4 for $2. What is his loss percentage?",
-      options: ["20%", "25%", "15%", "10%"],
+      question: "A businessman invested $12000, part of which at 8% and the rest at 10%. If the total annual interest is $1040, how much was invested at 8%?",
+      options: ["$8000", "$7000", "$6000", "$9000"],
       correctAnswer: 0,
-      explanation: "CP of 4 oranges = $1.60, SP = $2.00, Loss = 20%"
+      explanation: "Let x be invested at 8%, solving: 0.08x + 0.1(12000-x) = 1040 gives x = 8000"
     },
     {
-      question: "On selling a bicycle for $1440, a shopkeeper gains 20%. What is the cost price?",
-      options: ["$1200", "$1300", "$1100", "$1400"],
+      question: "The population of a town increased by 25% in the first year and decreased by 20% in the second year. If the final population is 20000, what was the initial population?",
+      options: ["20000", "18000", "22000", "24000"],
       correctAnswer: 0,
-      explanation: "If $1440 is 120%, then CP (100%) = $1440 ÷ 1.2 = $1200"
+      explanation: "Working backwards: 20000 ÷ 0.8 × 0.8 = 20000"
     },
     {
-      question: "A TV is sold at $7500 with a profit of 25%. What was its cost price?",
-      options: ["$6000", "$6500", "$5500", "$7000"],
+      question: "A car depreciates by 15% in the first year and 10% in each subsequent year. What percentage of its original value remains after 3 years?",
+      options: ["69.615%", "65%", "70%", "68%"],
       correctAnswer: 0,
-      explanation: "If $7500 is 125%, then CP (100%) = $7500 ÷ 1.25 = $6000"
+      explanation: "After 1st year: 85%, 2nd year: 85% × 0.9 = 76.5%, 3rd year: 76.5% × 0.9 = 69.615%"
     },
     {
-      question: "By selling 33 items, there is a loss equal to selling price of 11 items. The loss percentage is:",
+      question: "In an exam, 70% students passed in English and 65% in Math. If 15% failed in both, what percentage passed in both subjects?",
+      options: ["50%", "45%", "55%", "40%"],
+      correctAnswer: 0,
+      explanation: "Using P(A∪B) = P(A) + P(B) - P(A∩B), 85% = 70% + 65% - P(A∩B), so P(A∩B) = 50%"
+    },
+    {
+      question: "A mixture contains milk and water in the ratio 5:3. If 4 liters of water is added, the ratio becomes 5:4. Find the initial quantity of milk.",
+      options: ["20 liters", "15 liters", "25 liters", "18 liters"],
+      correctAnswer: 0,
+      explanation: "Let milk be x, then: x/5 = (3x/5 + 4)/4, solving gives x = 20"
+    },
+    {
+      question: "A retailer buys 100 items at $20 each. He sells 80% of them at a profit of 25% and the rest at a loss of 20%. What is his overall profit/loss percentage?",
+      options: ["16%", "12%", "14%", "18%"],
+      correctAnswer: 0,
+      explanation: "Profit on 80 items = 400, Loss on 20 items = 80, Net profit = 320 on cost of 2000 = 16%"
+    },
+    {
+      question: "A shopkeeper marks his goods 60% above cost price and allows a discount of 25%. What is his profit percentage?",
+      options: ["20%", "25%", "15%", "30%"],
+      correctAnswer: 0,
+      explanation: "Marked price = 160%, After 25% discount = 120%, so profit = 20%"
+    },
+    {
+      question: "On selling an article for $540, the loss is equal to the cost price of another identical article. What is the cost price of the article?",
+      options: ["$1080", "$960", "$1200", "$900"],
+      correctAnswer: 0,
+      explanation: "Let CP be x, then x - 540 = x, solving gives x = 1080"
+    },
+    {
+      question: "A person buys 12 pens for $100 and sells them at 10 pens for $100. Find the profit or loss percentage.",
+      options: ["20% profit", "20% loss", "25% profit", "15% profit"],
+      correctAnswer: 0,
+      explanation: "CP of 10 pens = 83.33, SP = 100, Profit = 20%"
+    },
+    {
+      question: "A trader had 100 kgs of rice. He sold 40% at 20% profit and rest at 10% loss. What is his overall profit/loss percentage?",
+      options: ["2% profit", "5% profit", "2% loss", "No profit no loss"],
+      correctAnswer: 0,
+      explanation: "Profit on 40kg = 8, Loss on 60kg = 6, Net profit = 2 on 100 = 2%"
+    },
+    {
+      question: "An article is sold at three consecutive discounts of 20%, 10% and 5%. What is the net discount percentage?",
+      options: ["31.6%", "35%", "30%", "33%"],
+      correctAnswer: 0,
+      explanation: "After discounts: 0.8 × 0.9 × 0.95 = 0.684, so net discount = 31.6%"
+    },
+    {
+      question: "A merchant buys an article for $800. At what price should he mark it to gain 25% after allowing a discount of 20%?",
+      options: ["$1250", "$1200", "$1300", "$1150"],
+      correctAnswer: 0,
+      explanation: "Required SP = 1000, so marked price = 1000/0.8 = 1250"
+    },
+    {
+      question: "By selling 33 items, there is a loss equal to SP of 11 items. The loss percentage is:",
       options: ["25%", "30%", "33.33%", "20%"],
       correctAnswer: 0,
       explanation: "Loss = SP of 11 items, Total SP = SP of 33 items, Loss% = (11/44) × 100 = 25%"
     },
     {
-      question: "A man sells two articles at $100 each. On one he gains 25% and on other he loses 25%. His total gain/loss percentage is:",
-      options: ["Loss 6.25%", "No profit no loss", "Gain 6.25%", "Loss 12.5%"],
+      question: "A shopkeeper sold an article at 20% above the cost price. Had he sold it for $50 more, his profit would have been 30%. Find the cost price.",
+      options: ["$500", "$450", "$550", "$600"],
       correctAnswer: 0,
-      explanation: "Gain on first = $20, Loss on second = $33.33, Net loss = 6.25%"
+      explanation: "Let CP = x, then 1.2x + 50 = 1.3x, solving gives x = 500"
     },
-    // Add 90 more profit and loss questions...
+    {
+      question: "On selling a watch for $150, a shopkeeper loses 25%. To gain 25%, at what price should he sell it?",
+      options: ["$250", "$225", "$200", "$275"],
+      correctAnswer: 0,
+      explanation: "CP = 150/0.75 = 200, For 25% profit, SP = 200 × 1.25 = 250"
+    }
   ];
 }
 
@@ -410,7 +458,7 @@ export async function getAverageQuestions(): Promise<Question[]> {
       explanation: "Numbers are 46,48,50,52,54; largest is 54"
     },
     {
-      question: "The average of three numbers is 36. If one number is 45, what is the average of other two numbers?",
+      question: "The average of three numbers is 36. If onenumber is 45, what is the averageof other two numbers?",
       options: ["31.5", "32.5", "30.5", "33.5"],
       correctAnswer: 0,
       explanation: "Sum of other two = (36×3 - 45), their average = (36×3 - 45)/2 = 31.5"
