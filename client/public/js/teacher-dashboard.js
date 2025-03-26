@@ -399,8 +399,103 @@ async function viewParticipants(slotId){
     showToast('Info', `Viewing participants for slot ${slotId} will be implemented soon.`)
 }
 
+// Function to format date nicely
+function formatTestDate(dateString) {
+    return new Date(dateString).toLocaleString();
+}
+
+// Load student test history when a student is selected
+async function loadStudentTestHistory(studentId) {
+    try {
+        const response = await fetch(`/api/teacher/student/${studentId}/test-history`);
+        if (!response.ok) {
+            throw new Error('Failed to fetch test history');
+        }
+        const history = await response.json();
+
+        const historyContainer = document.getElementById('studentTestHistory');
+        if (history.length === 0) {
+            historyContainer.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-history"></i>
+                    <p>No test history available</p>
+                    <p class="subtitle">Student hasn't completed any tests yet</p>
+                </div>`;
+            return;
+        }
+
+        historyContainer.innerHTML = history.map(test => `
+            <div class="test-history-item ${test.type}">
+                <div class="test-info">
+                    <h4>
+                        <i class="fas ${test.type === 'technical' ? 'fa-code' : 
+                                     test.type === 'mbti' ? 'fa-user' : 
+                                     test.type === 'aptitude' ? 'fa-brain' : 'fa-question-circle'}"></i>
+                        ${test.testName}
+                    </h4>
+                    <span class="test-type">${test.type.charAt(0).toUpperCase() + test.type.slice(1)}</span>
+                </div>
+                <div class="test-details">
+                    <div class="detail">
+                        <i class="fas fa-chart-line"></i>
+                        <span>Score: ${test.score >= 0 ? `${test.score}%` : 'N/A'}</span>
+                    </div>
+                    <div class="detail">
+                        <i class="far fa-calendar-alt"></i>
+                        <span>Date: ${formatTestDate(test.date)}</span>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    } catch (error) {
+        console.error('Error loading test history:', error);
+        showToast('Error', 'Failed to load student test history');
+    }
+}
+
+// Setup student history section
+async function setupStudentHistory() {
+    try {
+        const response = await fetch('/api/teacher/students');
+        if (!response.ok) {
+            throw new Error('Failed to fetch students');
+        }
+        const students = await response.json();
+
+        const studentSelect = document.getElementById('studentSelect');
+        if (!students.length) {
+            studentSelect.innerHTML = '<option value="">No students found</option>';
+            return;
+        }
+
+        studentSelect.innerHTML = `
+            <option value="">Select a student...</option>
+            ${students.map(student => `
+                <option value="${student.id}">${student.username}</option>
+            `).join('')}
+        `;
+
+        studentSelect.addEventListener('change', (e) => {
+            const studentId = e.target.value;
+            if (studentId) {
+                loadStudentTestHistory(studentId);
+            } else {
+                document.getElementById('studentTestHistory').innerHTML = '';
+            }
+        });
+    } catch (error) {
+        console.error('Error setting up student history:', error);
+        showToast('Error', 'Failed to load students');
+    }
+}
+
+// Add to your existing initialization code
+document.addEventListener('DOMContentLoaded', async () => {
+    await initializeDashboard();
+    await setupStudentHistory();
+});
+
 // Event listeners
-document.addEventListener('DOMContentLoaded', initializeDashboard);
 document.querySelectorAll('.btn-filter').forEach(button => {
     button.addEventListener('click', () => loadDiscussionSlots(button.dataset.filter));
 });

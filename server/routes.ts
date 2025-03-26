@@ -432,6 +432,37 @@ app.post("/api/logout", (req, res, next) => {
       }
   });
 
+  // Add this new endpoint after other teacher endpoints
+  app.get("/api/teacher/student/:id/test-history", async (req, res) => {
+    if (!req.isAuthenticated() || req.user.role !== "teacher") {
+      return res.sendStatus(401);
+    }
+
+    try {
+      const studentId = parseInt(req.params.id);
+      const student = await storage.getUser(studentId);
+
+      // Verify student belongs to this teacher
+      if (!student || student.teacherId !== req.user.id) {
+        return res.status(403).send("Unauthorized to view this student's history");
+      }
+
+      const testResults = await storage.getTestResults(studentId);
+
+      // Format results to include test type and date
+      const formattedResults = testResults.map(result => ({
+        ...result,
+        type: result.type || 'aptitude',
+        date: result.completedAt,
+        testName: result.testId || 'Practice Test'
+      }));
+
+      res.json(formattedResults);
+    } catch (error) {
+      console.error('Error fetching student test history:', error);
+      res.status(500).send("Failed to fetch test history");
+    }
+  });
 
   app.post("/api/forgot-password", async (req, res) => {
     const { email } = req.body;

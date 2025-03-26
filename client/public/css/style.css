@@ -881,7 +881,6 @@ nav {
     color: var(--text-color);
     opacity: 0.7;
     font-size: 0.95rem;
-    margin-top: 0.75rem;
 }
 
 .section-header {
@@ -1107,7 +1106,7 @@ nav {
 
 .characteristics-section,
 .preferences-section,
-.career-section {
+..career-section {
     background: white;
     padding: 2rem;
     border-radius: 1rem;
@@ -1669,5 +1668,136 @@ nav {
     .print-btn {
         width: 100%;
         justify-content: center;
+    }
+}
+
+/* Student Test History Section Styles */
+.student-history-section {
+    margin-top: 2rem;
+    background: white;
+    padding: 1.5rem;
+    border-radius: 0.75rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.student-select-container {
+    margin-bottom: 1.5rem;
+}
+
+.student-select {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+    font-size: 1rem;
+    color: var(--text-color);
+}
+
+.test-history-container {
+    display: grid;
+    gap: 1rem;
+}
+
+.test-history-item {
+    background: white;
+    padding: 1.25rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--border-color);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.test-history-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.test-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.test-info h4 {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-color);
+    font-size: 1.1rem;
+}
+
+.test-info i {
+    color: var(--primary-color);
+}
+
+.test-type {
+    font-size: 0.875rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: 1rem;
+    background: rgba(22, 101, 52, 0.1);
+    color: var(--primary-color);
+}
+
+.test-details {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.detail {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.95rem;
+    color: var(--text-color);
+}
+
+.detail i {
+    color: var(--primary-color);
+    opacity: 0.8;
+}
+
+/* Empty state styling */
+.empty-state {
+    text-align: center;
+    padding: 3rem 2rem;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 1rem;
+    border: 2px dashed var(--border-color);
+}
+
+.empty-state i {
+    font-size: 2.5rem;
+    color: var(--primary-color);
+    opacity: 0.5;
+    margin-bottom: 1.25rem;
+}
+
+.empty-state p {
+    color: var(--text-color);
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+}
+
+.empty-state .subtitle {
+    color: var(--text-color);
+    opacity: 0.7;
+    font-size: 0.95rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .test-details {
+        grid-template-columns: 1fr;
+    }
+
+    .test-info {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+
+    .test-type {
+        align-self: flex-start;
     }
 }
