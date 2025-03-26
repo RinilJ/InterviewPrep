@@ -80,9 +80,9 @@ export class MemStorage implements IStorage {
       batch: String(user.batch || "").trim().toUpperCase()
     };
 
-    // For teachers, check if a teacher already exists for this batch
+    // For teachers, check if a teacher already exists with EXACT SAME department, year, and batch
     if (user.role === 'teacher') {
-      // Find teacher with exact department, year, and batch match
+      // Find teacher with exact match of ALL THREE: department, year, and batch
       const existingTeacher = Array.from(this.users.values()).find(t =>
         t.role === 'teacher' &&
         t.department === normalizedUser.department &&
@@ -90,8 +90,9 @@ export class MemStorage implements IStorage {
         t.batch === normalizedUser.batch
       );
 
+      // Only prevent registration if ALL THREE match
       if (existingTeacher) {
-        throw new Error("Class teacher for this batch already exists");
+        throw new Error("A teacher already exists for this exact department, year, and batch combination");
       }
 
       normalizedUser.teacherId = null;
