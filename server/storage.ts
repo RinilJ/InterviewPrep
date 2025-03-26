@@ -80,21 +80,21 @@ export class MemStorage implements IStorage {
       batch: String(user.batch || "").trim().toUpperCase()
     };
 
-    // For teachers, check if any other teacher has the exact same combination
+    // For teachers, check if a teacher already exists with EXACT SAME department, year, and batch
     if (user.role === 'teacher') {
       // Get all existing teachers
       const existingTeachers = Array.from(this.users.values()).filter(t => t.role === 'teacher');
 
-      // Check if there's a teacher with EXACT SAME combination
-      const existingTeacher = existingTeachers.find(t => 
+      // Check if there's a teacher with EXACT SAME department, year, AND batch
+      const duplicateTeacher = existingTeachers.some(t =>
         t.department === normalizedUser.department &&
         t.year === normalizedUser.year &&
-        t.batch === normalizedUser.batch
+        t.batch === normalizedUser.batch &&
+        t.id !== normalizedUser.id
       );
 
-      if (existingTeacher) {
-        const error = `A teacher already exists for department: ${existingTeacher.department}, year: ${existingTeacher.year}, batch: ${existingTeacher.batch}. Please choose a different combination.`;
-        throw new Error(error);
+      if (duplicateTeacher) {
+        throw new Error("A teacher already exists for this exact department, year, and batch combination");
       }
 
       normalizedUser.teacherId = null;
