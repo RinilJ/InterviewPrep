@@ -404,7 +404,7 @@ function formatTestDate(dateString) {
     return new Date(dateString).toLocaleString();
 }
 
-// Load student test history when a student is selected
+// Only keep the analytics code that updates test history display
 async function loadStudentTestHistory(studentId) {
     try {
         const response = await fetch(`/api/teacher/student/${studentId}/test-history`);
@@ -489,176 +489,10 @@ async function setupStudentHistory() {
     }
 }
 
-// Add these functions for analytics charts
-
-// Function to generate test performance chart
-async function generateTestPerformanceChart() {
-  try {
-    const response = await fetch('/api/teacher/students');
-    if (!response.ok) {
-      throw new Error('Failed to fetch students');
-    }
-    const students = await response.json();
-
-    // Get test history for each student
-    const performanceData = await Promise.all(students.map(async student => {
-      const historyResponse = await fetch(`/api/teacher/student/${student.id}/test-history`);
-      const history = await historyResponse.json();
-
-      // Calculate average scores by test type
-      const scores = history.reduce((acc, test) => {
-        if (test.score >= 0) { // Exclude psychometric tests
-          if (!acc[test.type]) {
-            acc[test.type] = [];
-          }
-          acc[test.type].push(test.score);
-        }
-        return acc;
-      }, {});
-
-      // Calculate averages
-      return {
-        student: student.username,
-        averages: Object.entries(scores).map(([type, scores]) => ({
-          type,
-          average: scores.length ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : 0
-        }))
-      };
-    }));
-
-    // Create chart
-    const chartContainer = document.getElementById('testPerformanceChart');
-    if (!chartContainer) return;
-
-    const chartData = {
-      labels: performanceData.map(data => data.student),
-      datasets: ['aptitude', 'technical'].map(type => ({
-        label: type.charAt(0).toUpperCase() + type.slice(1),
-        data: performanceData.map(data => {
-          const typeData = data.averages.find(avg => avg.type === type);
-          return typeData ? typeData.average : 0;
-        }),
-        backgroundColor: type === 'aptitude' ? 'rgba(22, 101, 52, 0.6)' : 'rgba(59, 130, 246, 0.6)'
-      }))
-    };
-
-    // Use Chart.js to render
-    new Chart(chartContainer, {
-      type: 'bar',
-      data: chartData,
-      options: {
-        responsive: true,
-        scales: {
-          y: {
-            beginAtZero: true,
-            max: 100,
-            title: {
-              display: true,
-              text: 'Average Score (%)'
-            }
-          }
-        },
-        plugins: {
-          title: {
-            display: true,
-            text: 'Student Test Performance by Category'
-          }
-        }
-      }
-    });
-  } catch (error) {
-    console.error('Error generating test performance chart:', error);
-  }
-}
-
-// Function to generate topic wise progress chart
-async function generateTopicProgressChart() {
-  try {
-    const response = await fetch('/api/teacher/students');
-    if (!response.ok) {
-      throw new Error('Failed to fetch students');
-    }
-    const students = await response.json();
-
-    // Get all test results and aggregate by topic
-    const allResults = await Promise.all(students.map(async student => {
-      const historyResponse = await fetch(`/api/teacher/student/${student.id}/test-history`);
-      return await historyResponse.json();
-    }));
-
-    // Flatten and group by topic
-    const topicData = allResults.flat().reduce((acc, test) => {
-      if (test.testId && test.score >= 0) {
-        const topic = test.testId.substring(0, 3); // Get topic identifier (e.g., L01, Q01)
-        if (!acc[topic]) {
-          acc[topic] = {
-            attempts: 0,
-            totalScore: 0
-          };
-        }
-        acc[topic].attempts++;
-        acc[topic].totalScore += test.score;
-      }
-      return acc;
-    }, {});
-
-    // Calculate averages and prepare chart data
-    const topics = Object.keys(topicData).sort();
-    const averages = topics.map(topic => ({
-      topic,
-      average: Math.round(topicData[topic].totalScore / topicData[topic].attempts)
-    }));
-
-    // Create chart
-    const chartContainer = document.getElementById('topicProgressChart');
-    if (!chartContainer) return;
-
-    const chartData = {
-      labels: averages.map(data => data.topic),
-      datasets: [{
-        label: 'Average Score',
-        data: averages.map(data => data.average),
-        backgroundColor: 'rgba(22, 101, 52, 0.6)',
-        borderColor: 'rgba(22, 101, 52, 1)',
-        borderWidth: 1
-      }]
-    };
-
-    // Use Chart.js to render
-    new Chart(chartContainer, {
-      type: 'line',
-      data: chartData,
-      options: {
-        responsive: true,
-        scales: {
-          y: {
-            beginAtZero: true,
-            max: 100,
-            title: {
-              display: true,
-              text: 'Average Score (%)'
-            }
-          }
-        },
-        plugins: {
-          title: {
-            display: true,
-            text: 'Topic Wise Progress'
-          }
-        }
-      }
-    });
-  } catch (error) {
-    console.error('Error generating topic progress chart:', error);
-  }
-}
-
-// Add to your existing initialization code
+// Initialize the dashboard
 document.addEventListener('DOMContentLoaded', async () => {
     await initializeDashboard();
     await setupStudentHistory();
-    await generateTestPerformanceChart();
-    await generateTopicProgressChart();
 });
 
 // Event listeners
