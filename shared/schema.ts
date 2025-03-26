@@ -13,8 +13,7 @@ export const users = pgTable("users", {
   teacherId: integer("teacher_id").references(() => users.id),
   createdAt: timestamp("created_at").defaultNow(),
 }, (table) => ({
-  teacherConstraint: unique().on(table.department, table.year, table.batch)
-    .where(sql`${table.role} = 'teacher'`)
+  teacherConstraint: unique("teacher_constraint").on(table.department, table.year, table.batch)
 }));
 
 // Update insert schema with strict validation

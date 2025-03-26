@@ -1,8 +1,12 @@
+import { db } from "./db";
 import session from "express-session";
-import createMemoryStore from "memorystore";
-import { User, Test, TestResult, DiscussionSlot, SlotBooking } from "@shared/schema";
+import connectPg from "connect-pg-simple";
+import { users, tests, testResults, discussionSlots, slotBookings } from "@shared/schema";
+import { eq, and } from "drizzle-orm";
+import { pool } from "./db";
+import type { User, Test, TestResult, DiscussionSlot, SlotBooking } from "@shared/schema";
 
-const MemoryStore = createMemoryStore(session);
+const PostgresSessionStore = connectPg(session);
 
 export interface IStorage {
   // Auth
@@ -36,205 +40,135 @@ export interface IStorage {
   sessionStore: session.Store;
 }
 
-export class MemStorage implements IStorage {
-  private users: Map<number, User>;
-  private tests: Map<number, Test>;
-  private testResults: Map<number, TestResult>;
-  private discussionSlots: Map<number, DiscussionSlot>;
-  private slotBookings: Map<number, SlotBooking>;
-  private currentId: number;
+export class DatabaseStorage implements IStorage {
   sessionStore: session.Store;
 
   constructor() {
-    this.users = new Map();
-    this.tests = new Map();
-    this.testResults = new Map();
-    this.discussionSlots = new Map();
-    this.slotBookings = new Map();
-    this.currentId = 1;
-    this.sessionStore = new MemoryStore({
-      checkPeriod: 86400000,
+    this.sessionStore = new PostgresSessionStore({
+      pool,
+      createTableIfMissing: true,
     });
   }
 
   async getUser(id: number): Promise<User | undefined> {
-    return this.users.get(id);
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user;
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
-      (user) => user.username === username,
-    );
+    const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user;
   }
 
   async createUser(user: Omit<User, "id" | "createdAt">): Promise<User> {
-    const id = this.currentId++;
-
-    // Normalize and validate the user data
-    const normalizedUser = {
-        ...user,
-        id,
-        createdAt: new Date(),
-        department: String(user.department || "").trim().toUpperCase(),
-        year: String(user.year || "").trim(),
-        batch: String(user.batch || "").trim().toUpperCase()
-    };
-
-    // For teachers, check if a teacher already exists for this batch
-    if (user.role === 'teacher') {
-        const existingTeacher = await this.findTeacher(
-            normalizedUser.department,
-            normalizedUser.year,
-            normalizedUser.batch
-        );
-
-        if (existingTeacher) {
-            throw new Error("Class teacher for this batch already exists");
-        }
-
-        // Teachers don't have a teacherId
-        normalizedUser.teacherId = null;
-    }
-    // For students, find and assign their teacher
-    else if (user.role === 'student') {
-        const assignedTeacher = await this.findTeacher(
-            normalizedUser.department,
-            normalizedUser.year,
-            normalizedUser.batch
-        );
-
-        // Handle case where no teacher is assigned yet
-        if (!assignedTeacher) {
-            normalizedUser.teacherId = null; // Allow registration but without teacher assignment
-        } else {
-            normalizedUser.teacherId = assignedTeacher.id;
-        }
-    }
-
-    this.users.set(id, normalizedUser);
-    console.log(`Created ${normalizedUser.role} with ID: ${id}`);
-    return normalizedUser;
+    const [newUser] = await db.insert(users).values(user).returning();
+    return newUser;
   }
 
   async findTeacher(department: string, year: string, batch: string): Promise<User | undefined> {
-    // Normalize input
-    const cleanDepartment = String(department).trim().toUpperCase();
-    const cleanYear = String(year).trim();
-    const cleanBatch = String(batch).trim().toUpperCase();
-
-    // Find matching teacher
-    const teacher = Array.from(this.users.values()).find(user => {
-      return user.role === 'teacher' &&
-        user.department === cleanDepartment &&
-        user.year === cleanYear &&
-        user.batch === cleanBatch;
-    });
-
-    // Log only the result
-    if (teacher) {
-      console.log('Found teacher:', {
-        id: teacher.id,
-        department: teacher.department,
-        year: teacher.year,
-        batch: teacher.batch
-      });
-    }
-
+    const [teacher] = await db
+      .select()
+      .from(users)
+      .where(
+        and(
+          eq(users.role, "teacher"),
+          eq(users.department, department),
+          eq(users.year, year),
+          eq(users.batch, batch)
+        )
+      );
     return teacher;
   }
 
   async getTeacherStudents(teacherId: number, department: string, year: string, batch: string): Promise<User[]> {
-    // Normalize input
-    const cleanDepartment = String(department).trim().toUpperCase();
-    const cleanYear = String(year).trim();
-    const cleanBatch = String(batch).trim().toUpperCase();
+    const students = await db
+      .select()
+      .from(users)
+      .where(
+        and(
+          eq(users.role, "student"),
+          eq(users.teacherId, teacherId),
+          eq(users.department, department),
+          eq(users.year, year),
+          eq(users.batch, batch)
+        )
+      );
 
-    // Find matching students
-    const students = Array.from(this.users.values()).filter(user => {
-      return user.role === 'student' &&
-        Number(user.teacherId) === Number(teacherId) &&
-        user.department === cleanDepartment &&
-        user.year === cleanYear &&
-        user.batch === cleanBatch;
-    });
+    // Add test statistics for each student
+    const studentsWithStats = await Promise.all(
+      students.map(async (student) => {
+        const results = await this.getTestResults(student.id);
+        return {
+          ...student,
+          testsCompleted: results.length,
+          averageScore: results.length > 0
+            ? Math.round(results.reduce((sum, result) => sum + result.score, 0) / results.length)
+            : 0
+        };
+      })
+    );
 
-    // Log only the count and basic info
-    console.log('Found students:', {
-      count: students.length,
-      teacherId,
-      department: cleanDepartment,
-      year: cleanYear,
-      batch: cleanBatch
-    });
-
-    // Add progress information
-    const studentsWithProgress = await Promise.all(students.map(async (student) => {
-      const results = await this.getTestResults(student.id);
-      return {
-        ...student,
-        testsCompleted: results.length,
-        averageScore: results.length > 0
-          ? Math.round(results.reduce((sum, result) => sum + result.score, 0) / results.length)
-          : 0
-      };
-    }));
-
-    return studentsWithProgress;
-  }
-
-  async getTests(): Promise<Test[]> {
-    return Array.from(this.tests.values());
+    return studentsWithStats;
   }
 
   async createTest(test: Omit<Test, "id">): Promise<Test> {
-    const id = this.currentId++;
-    const newTest = { ...test, id };
-    this.tests.set(id, newTest);
+    const [newTest] = await db.insert(tests).values(test).returning();
     return newTest;
   }
 
+  async getTests(): Promise<Test[]> {
+    return await db.select().from(tests);
+  }
+
   async createTestResult(result: Omit<TestResult, "id" | "completedAt">): Promise<TestResult> {
-    const id = this.currentId++;
-    const newResult = { ...result, id, completedAt: new Date() };
-    this.testResults.set(id, newResult);
+    const [newResult] = await db.insert(testResults).values(result).returning();
     return newResult;
   }
 
   async getTestResults(userId: number): Promise<TestResult[]> {
-    return Array.from(this.testResults.values()).filter(
-      (result) => result.userId === userId,
-    );
+    return await db
+      .select()
+      .from(testResults)
+      .where(eq(testResults.userId, userId));
   }
 
   async createDiscussionSlot(slot: Omit<DiscussionSlot, "id">): Promise<DiscussionSlot> {
-    const id = this.currentId++;
-    const newSlot = { ...slot, id };
-    this.discussionSlots.set(id, newSlot);
+    const [newSlot] = await db.insert(discussionSlots).values(slot).returning();
     return newSlot;
   }
 
   async getDiscussionSlots(department: string, year: string, batch: string): Promise<DiscussionSlot[]> {
-    const slots = Array.from(this.discussionSlots.values()).filter(
-      (slot) =>
-        String(slot.department).trim() === String(department).trim() &&
-        String(slot.year).trim() === String(year).trim() &&
-        String(slot.batch).trim() === String(batch).trim()
-    );
+    const slots = await db
+      .select()
+      .from(discussionSlots)
+      .where(
+        and(
+          eq(discussionSlots.department, department),
+          eq(discussionSlots.year, year),
+          eq(discussionSlots.batch, batch)
+        )
+      );
 
     // Add booking count for each slot
-    const slotsWithBookings = await Promise.all(slots.map(async (slot) => {
-      const bookings = await this.getSlotBookings(slot.id);
-      return {
-        ...slot,
-        bookedCount: bookings.length
-      };
-    }));
+    const slotsWithBookings = await Promise.all(
+      slots.map(async (slot) => {
+        const bookings = await this.getSlotBookings(slot.id);
+        return {
+          ...slot,
+          bookedCount: bookings.length
+        };
+      })
+    );
 
     return slotsWithBookings;
   }
 
   async getDiscussionSlot(id: number): Promise<DiscussionSlot | undefined> {
-    const slot = this.discussionSlots.get(id);
+    const [slot] = await db
+      .select()
+      .from(discussionSlots)
+      .where(eq(discussionSlots.id, id));
+
     if (!slot) return undefined;
 
     const bookings = await this.getSlotBookings(id);
@@ -244,34 +178,13 @@ export class MemStorage implements IStorage {
     };
   }
 
-  async getSlotBookings(slotId: number): Promise<SlotBooking[]> {
-    return Array.from(this.slotBookings.values()).filter(
-      (booking) => booking.slotId === slotId
-    );
-  }
-
-  async createSlotBooking(booking: Omit<SlotBooking, "id" | "bookedAt">): Promise<SlotBooking> {
-    const id = this.currentId++;
-    const newBooking = { ...booking, id, bookedAt: new Date() };
-    this.slotBookings.set(id, newBooking);
-
-    // After creating a booking, refresh the discussion slot data
-    const slot = await this.getDiscussionSlot(booking.slotId);
-    console.log(`Created booking for slot ${booking.slotId}, new count: ${slot?.bookedCount}`);
-
-    return newBooking;
-  }
-
   async updateDiscussionSlot(id: number, slot: Omit<DiscussionSlot, "id">): Promise<DiscussionSlot> {
-    const existingSlot = this.discussionSlots.get(id);
-    if (!existingSlot) {
-      throw new Error("Discussion slot not found");
-    }
+    const [updatedSlot] = await db
+      .update(discussionSlots)
+      .set(slot)
+      .where(eq(discussionSlots.id, id))
+      .returning();
 
-    const updatedSlot = { ...slot, id };
-    this.discussionSlots.set(id, updatedSlot);
-
-    // Add booking count to the response
     const bookings = await this.getSlotBookings(id);
     return {
       ...updatedSlot,
@@ -280,22 +193,28 @@ export class MemStorage implements IStorage {
   }
 
   async deleteDiscussionSlot(id: number): Promise<void> {
-    if (!this.discussionSlots.has(id)) {
-      throw new Error("Discussion slot not found");
-    }
+    // First delete all bookings for this slot
+    await db
+      .delete(slotBookings)
+      .where(eq(slotBookings.slotId, id));
 
-    // Delete the slot and all its bookings
-    this.discussionSlots.delete(id);
+    // Then delete the slot
+    await db
+      .delete(discussionSlots)
+      .where(eq(discussionSlots.id, id));
+  }
 
-    // Delete all bookings for this slot
-    const bookingsToDelete = Array.from(this.slotBookings.values())
-      .filter(booking => booking.slotId === id)
-      .map(booking => booking.id);
+  async createSlotBooking(booking: Omit<SlotBooking, "id" | "bookedAt">): Promise<SlotBooking> {
+    const [newBooking] = await db.insert(slotBookings).values(booking).returning();
+    return newBooking;
+  }
 
-    bookingsToDelete.forEach(bookingId => {
-      this.slotBookings.delete(bookingId);
-    });
+  async getSlotBookings(slotId: number): Promise<SlotBooking[]> {
+    return await db
+      .select()
+      .from(slotBookings)
+      .where(eq(slotBookings.slotId, slotId));
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();
