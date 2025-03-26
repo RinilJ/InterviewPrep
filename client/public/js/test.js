@@ -83,20 +83,50 @@ async function submitTest() {
     saveCurrentAnswer();
 
     try {
-        let testResults = {
-            testId: currentTest.id,
-            type: currentTest.type,
-            answers: currentTest.answers
-        };
+        // Format test results based on test type
+        let testResults = {};
 
-        // For MBTI tests, calculate preference scores
         if (currentTest.type === 'mbti') {
-            console.log('Processing MBTI test answers:', currentTest.answers);
-            testResults.answers = calculateMBTIScores(currentTest.answers, currentTest.questions);
-            console.log('Calculated MBTI scores:', testResults.answers);
+            console.log('Preparing MBTI test submission:', {
+                answers: currentTest.answers,
+                questions: currentTest.questions
+            });
+
+            // Ensure we have all required answers
+            if (!currentTest.answers || currentTest.answers.some(answer => answer === null)) {
+                throw new Error('Please answer all questions before submitting.');
+            }
+
+            // Normalize answers to be numbers between 1-5
+            const normalizedAnswers = currentTest.answers.map(answer => {
+                return typeof answer === 'number' ? answer + 1 : 3; // Default to neutral if invalid
+            });
+
+            testResults = {
+                testId: currentTest.id || 'mbti-assessment',
+                type: 'mbti',
+                answers: normalizedAnswers
+            };
+        } else {
+            // Handle other test types
+            let correctAnswers = 0;
+            currentTest.questions.forEach((question, index) => {
+                if (currentTest.answers[index] === question.correctAnswer) {
+                    correctAnswers++;
+                }
+            });
+
+            const score = Math.round((correctAnswers / currentTest.questions.length) * 100);
+            testResults = {
+                testId: currentTest.id,
+                score: score,
+                answers: currentTest.answers
+            };
         }
 
-        // Submit test result
+        console.log('Submitting test results:', testResults);
+
+        // Submit test results
         const response = await fetch('/api/test-results', {
             method: 'POST',
             headers: {
@@ -106,12 +136,13 @@ async function submitTest() {
         });
 
         if (!response.ok) {
-            throw new Error('Failed to submit test results');
+            const errorText = await response.text();
+            throw new Error(`Failed to submit test results: ${errorText}`);
         }
 
         // Get the response data which includes insights for psychometric tests
         const responseData = await response.json();
-        console.log('Test submission response:', responseData);
+        console.log('Server response:', responseData);
 
         // Store results for the results page
         const resultsData = {
@@ -119,9 +150,8 @@ async function submitTest() {
             startTime: currentTest.startTime,
             endTime: new Date().toISOString(),
             questions: currentTest.questions,
-            answers: currentTest.answers,
             type: currentTest.type,
-            insights: responseData.insights
+            answers: currentTest.answers
         };
 
         console.log('Storing test results:', resultsData);
@@ -129,19 +159,26 @@ async function submitTest() {
 
         // Clear current test data
         sessionStorage.removeItem('currentTest');
-        
-        // Ensure redirect happens after data is stored
-        window.location.href = '/test-results.html';
 
         // Redirect to results page
         window.location.href = '/test-results.html';
     } catch (error) {
         console.error('Error submitting test:', error);
+
+        // Show error message to user
         const errorDiv = document.createElement('div');
         errorDiv.className = 'error-message';
-        errorDiv.textContent = 'Failed to submit test results. Please try again.';
-        document.querySelector('.test-container').prepend(errorDiv);
+        errorDiv.textContent = error.message || 'Failed to submit test results. Please try again.';
 
+        const container = document.querySelector('.test-container');
+        // Remove any existing error messages
+        const existingError = container.querySelector('.error-message');
+        if (existingError) {
+            existingError.remove();
+        }
+        container.prepend(errorDiv);
+
+        // Remove error message after 5 seconds
         setTimeout(() => {
             errorDiv.remove();
         }, 5000);

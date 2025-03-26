@@ -270,20 +270,26 @@ export function registerRoutes(app: Express): Server {
     if (!req.isAuthenticated()) return res.sendStatus(401);
 
     try {
-        const { testId, answers, type } = req.body;
-        console.log('Processing test results:', { type, answersLength: answers.length });
+        const { testId, answers, type, testData } = req.body;
+        console.log('Processing test results:', { type, answers, testId });
 
-        // For psychometric tests, generate insights instead of numerical score
+        // For psychometric tests, generate insights
         if (type && ['big-five', 'mbti', 'eq', 'sjt'].includes(type)) {
             let insights;
 
-            // For MBTI, ensure we have enough answers to analyze all dichotomies
+            // For MBTI, generate personality insights
             if (type === 'mbti') {
-                console.log('Processing MBTI answers:', answers);
-                if (answers.length < 4) {
-                    return res.status(400).send("Insufficient answers for MBTI analysis");
+                if (!Array.isArray(answers) || answers.length === 0) {
+                    return res.status(400).send("Invalid answers format for MBTI test");
                 }
-                insights = generateMBTIInsights(answers);
+
+                try {
+                    insights = generateMBTIInsights(answers);
+                    console.log('Generated MBTI insights:', insights);
+                } catch (error) {
+                    console.error('Error generating MBTI insights:', error);
+                    return res.status(500).send("Failed to generate MBTI insights");
+                }
             } else {
                 switch (type) {
                     case 'big-five':
@@ -298,17 +304,17 @@ export function registerRoutes(app: Express): Server {
                 }
             }
 
-            console.log('Generated insights:', insights);
-
-            // Store the insights in the test results
+            // Store the test result with insights
             const result = await storage.createTestResult({
                 userId: req.user.id,
-                testId,
+                testId: testId || `${type}-assessment`,
                 score: -1, // Use -1 to indicate this is a psychometric test
-                insights: JSON.stringify(insights), // Store insights as JSON string
-                type // Add test type to help with frontend display
+                answers: JSON.stringify(answers),
+                insights: JSON.stringify(insights),
+                type
             });
 
+            // Return both the result and insights
             return res.status(201).json({
                 ...result,
                 insights,
@@ -317,15 +323,17 @@ export function registerRoutes(app: Express): Server {
         }
 
         // For non-psychometric tests, continue with normal scoring
-        const parsed = insertTestResultSchema.parse(req.body);
         const result = await storage.createTestResult({
-            ...parsed,
-            userId: req.user.id
+            userId: req.user.id,
+            testId,
+            score: testData.score,
+            answers: JSON.stringify(answers)
         });
+
         res.status(201).json(result);
     } catch (error) {
         console.error('Error creating test result:', error);
-        res.status(500).send("Failed to save test results: " + error.message);
+        res.status(500).send(`Failed to save test results: ${error.message}`);
     }
 });
 
