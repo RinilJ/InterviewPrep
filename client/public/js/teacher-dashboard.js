@@ -46,6 +46,61 @@ async function initializeDashboard() {
     await loadDiscussionSlots();
 }
 
+// Store all students for filtering
+let allStudents = [];
+
+// Function to filter and display students
+function filterStudents(searchText) {
+    const studentsList = document.getElementById('studentsList');
+    const filteredStudents = allStudents.filter(student => {
+        const searchLower = searchText.toLowerCase();
+        const usernameLower = student.username.toLowerCase();
+        const departmentLower = student.department.toLowerCase();
+        return usernameLower.includes(searchLower) ||
+               departmentLower.includes(searchLower);
+    });
+
+    if (filteredStudents.length === 0) {
+        studentsList.innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-search"></i>
+                <p>No students found matching "${searchText}"</p>
+                <p class="subtitle">Try a different search term</p>
+            </div>`;
+        return;
+    }
+
+    studentsList.innerHTML = filteredStudents.map(student => `
+        <div class="student-card">
+            <div class="student-info">
+                <h3>
+                    <i class="fas fa-user-graduate"></i>
+                    ${student.username}
+                </h3>
+                <div class="student-details">
+                    <p>
+                        <i class="fas fa-clock"></i>
+                        Registered: ${formatDate(student.createdAt)}
+                    </p>
+                    <div class="progress-section">
+                        <h4>Test Progress</h4>
+                        <div class="progress-stats">
+                            <div class="stat">
+                                <span class="label">Tests Completed</span>
+                                <span class="value">${student.testsCompleted || 0}</span>
+                            </div>
+                            <div class="stat">
+                                <span class="label">Average Score</span>
+                                <span class="value">${student.averageScore || 0}%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
 // Separate refresh function for reusability
 async function refreshDashboard() {
     try {
@@ -55,6 +110,7 @@ async function refreshDashboard() {
             throw new Error('Failed to fetch students');
         }
         const students = await studentsResponse.json();
+        allStudents = students; // Store for filtering
 
         const studentsList = document.getElementById('studentsList');
         if (students.length === 0) {
@@ -65,35 +121,8 @@ async function refreshDashboard() {
                     <p class="subtitle">Students will appear here once they register</p>
                 </div>`;
         } else {
-            studentsList.innerHTML = students.map(student => `
-                <div class="student-card">
-                    <div class="student-info">
-                        <h3>
-                            <i class="fas fa-user-graduate"></i>
-                            ${student.username}
-                        </h3>
-                        <div class="student-details">
-                            <p>
-                                <i class="fas fa-clock"></i>
-                                Registered: ${formatDate(student.createdAt)}
-                            </p>
-                            <div class="progress-section">
-                                <h4>Test Progress</h4>
-                                <div class="progress-stats">
-                                    <div class="stat">
-                                        <span class="label">Tests Completed</span>
-                                        <span class="value">${student.testsCompleted || 0}</span>
-                                    </div>
-                                    <div class="stat">
-                                        <span class="label">Average Score</span>
-                                        <span class="value">${student.averageScore || 0}%</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `).join('');
+            // Use the same rendering logic as filterStudents
+            filterStudents(''); // Show all students initially
         }
 
         // Update statistics
@@ -124,7 +153,7 @@ async function loadDiscussionSlots(filter = 'all') {
         const now = new Date();
         const filteredSlots = slots.filter(slot => {
             const slotDate = new Date(slot.startTime);
-            switch(filter) {
+            switch (filter) {
                 case 'upcoming':
                     return slotDate > now;
                 case 'past':
@@ -508,6 +537,12 @@ async function setupStudentHistory() {
 document.addEventListener('DOMContentLoaded', async () => {
     await initializeDashboard();
     await setupStudentHistory();
+    const searchInput = document.getElementById('studentSearch');
+    if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+            filterStudents(e.target.value.trim());
+        });
+    }
 });
 
 // Event listeners
