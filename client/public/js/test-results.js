@@ -113,9 +113,6 @@ window.addEventListener('DOMContentLoaded', () => {
                         <a href="/dashboard.html" class="dashboard-btn">
                             <i class="fas fa-arrow-left"></i> Return to Dashboard
                         </a>
-                        <button onclick="window.print()" class="print-btn">
-                            <i class="fas fa-print"></i> Print Results
-                        </button>
                     </div>
                 </div>
             `;
@@ -144,9 +141,6 @@ window.addEventListener('DOMContentLoaded', () => {
                         <a href="/dashboard.html" class="dashboard-btn">
                             <i class="fas fa-arrow-left"></i> Return to Dashboard
                         </a>
-                        <button onclick="window.print()" class="print-btn">
-                            <i class="fas fa-print"></i> Print Results
-                        </button>
                     </div>
                 </div>
             `;
@@ -215,9 +209,6 @@ window.addEventListener('DOMContentLoaded', () => {
                     <a href="/dashboard.html" class="dashboard-btn">
                         <i class="fas fa-arrow-left"></i> Return to Dashboard
                     </a>
-                    <button onclick="window.print()" class="print-btn">
-                        <i class="fas fa-print"></i> Print Results
-                    </button>
                 </div>
             </div>
         `;
