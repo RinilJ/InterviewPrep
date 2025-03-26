@@ -36,6 +36,7 @@ window.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        // For MBTI test
         if (testData.type === 'mbti') {
             // Extract personality type from insights
             const personalityTypeInfo = testData.insights.insights[0].split(' - ');
@@ -43,21 +44,23 @@ window.addEventListener('DOMContentLoaded', () => {
             const description = personalityTypeInfo[1];
             const allInsights = testData.insights.insights.slice(1);
 
-            // Filter insights by category - excluding careers from characteristics
-            const characteristics = allInsights.filter(insight => 
-                insight.startsWith('•') && 
-                !insight.toLowerCase().includes('prefer') && 
+            // Filter characteristics: exclude both preferences and career-related insights
+            const characteristics = allInsights.filter(insight =>
+                insight.startsWith('•') &&
+                !insight.toLowerCase().includes('prefer') &&
                 !insight.toLowerCase().includes('career')
             );
 
-            const preferences = allInsights.filter(insight => 
-                insight.startsWith('•') && 
-                insight.toLowerCase().includes('prefer')
+            // Filter preferences: those that mention 'prefer' but not career
+            const preferences = allInsights.filter(insight =>
+                insight.startsWith('•') &&
+                insight.toLowerCase().includes('prefer') &&
+                !insight.toLowerCase().includes('career')
             );
 
-            // Separate career-related insights
-            const careers = allInsights.filter(insight => 
-                insight.startsWith('•') && 
+            // Filter career paths: those that mention 'career'
+            const careerPaths = allInsights.filter(insight =>
+                insight.startsWith('•') &&
                 insight.toLowerCase().includes('career')
             );
 
@@ -90,7 +93,7 @@ window.addEventListener('DOMContentLoaded', () => {
                         <div class="career-section">
                             <h3 class="section-title">Recommended Career Paths</h3>
                             <div class="career-grid">
-                                ${careers.map(career => `
+                                ${careerPaths.map(career => `
                                     <div class="career-item">
                                         <p>${career.replace('•', '').trim()}</p>
                                     </div>
