@@ -80,42 +80,40 @@ export class MemStorage implements IStorage {
       batch: String(user.batch || "").trim().toUpperCase()
     };
 
-    // For teachers
+    // For teachers, check if a teacher already exists for this exact combination
     if (user.role === 'teacher') {
-      // Get existing teachers
+      // Get all existing teachers
       const existingTeachers = Array.from(this.users.values())
         .filter(t => t.role === 'teacher');
 
-      // Log the attempt
-      console.log('Attempting teacher registration:', {
-        new: {
-          department: normalizedUser.department,
-          year: normalizedUser.year,
-          batch: normalizedUser.batch
-        }
+      // Log registration attempt
+      console.log('Teacher registration attempt:', {
+        department: normalizedUser.department,
+        year: normalizedUser.year,
+        batch: normalizedUser.batch
       });
 
-      // Simple exact match check
-      const duplicate = existingTeachers.find(t => 
-        t.department === normalizedUser.department && 
-        t.year === normalizedUser.year && 
+      // Check if this exact combination already exists
+      const duplicateTeacher = existingTeachers.some(t => 
+        t.department === normalizedUser.department &&
+        t.year === normalizedUser.year &&
         t.batch === normalizedUser.batch
       );
 
-      // Only block if we found an exact match
-      if (duplicate) {
-        console.log('Found duplicate:', {
-          department: duplicate.department,
-          year: duplicate.year,
-          batch: duplicate.batch
-        });
-        throw new Error("A teacher already exists for this exact combination of department, year, and batch");
+      // Allow registration if at least one field is different
+      const hasUniqueField = existingTeachers.every(t => 
+        t.department !== normalizedUser.department ||
+        t.year !== normalizedUser.year ||
+        t.batch !== normalizedUser.batch
+      );
+
+      if (!hasUniqueField) {
+        throw new Error("A teacher already exists for this exact department, year, and batch combination");
       }
 
-      // If no exact match, allow registration
       normalizedUser.teacherId = null;
     }
-    // For students
+    // For students, find and assign their teacher
     else if (user.role === 'student') {
       const assignedTeacher = Array.from(this.users.values()).find(t =>
         t.role === 'teacher' &&
