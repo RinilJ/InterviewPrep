@@ -80,33 +80,42 @@ export class MemStorage implements IStorage {
       batch: String(user.batch || "").trim().toUpperCase()
     };
 
-    // For teachers, check if a teacher already exists for this exact combination
+    // For teachers
     if (user.role === 'teacher') {
-      // Get all existing teachers
+      // Get existing teachers
       const existingTeachers = Array.from(this.users.values())
         .filter(t => t.role === 'teacher');
 
-      // Log registration attempt
-      console.log('Teacher registration attempt:', {
-        department: normalizedUser.department,
-        year: normalizedUser.year,
-        batch: normalizedUser.batch
+      // Log the attempt
+      console.log('Attempting teacher registration:', {
+        new: {
+          department: normalizedUser.department,
+          year: normalizedUser.year,
+          batch: normalizedUser.batch
+        }
       });
 
-      // Allow registration if department, year, or batch is different
-      const exactDuplicate = existingTeachers.find(t => 
-        t.department === normalizedUser.department &&
-        t.year === normalizedUser.year &&
+      // Simple exact match check
+      const duplicate = existingTeachers.find(t => 
+        t.department === normalizedUser.department && 
+        t.year === normalizedUser.year && 
         t.batch === normalizedUser.batch
       );
 
-      if (exactDuplicate) {
-        throw new Error("A teacher already exists for this exact department, year, and batch combination");
+      // Only block if we found an exact match
+      if (duplicate) {
+        console.log('Found duplicate:', {
+          department: duplicate.department,
+          year: duplicate.year,
+          batch: duplicate.batch
+        });
+        throw new Error("A teacher already exists for this exact combination of department, year, and batch");
       }
 
+      // If no exact match, allow registration
       normalizedUser.teacherId = null;
     }
-    // For students, find and assign their teacher
+    // For students
     else if (user.role === 'student') {
       const assignedTeacher = Array.from(this.users.values()).find(t =>
         t.role === 'teacher' &&
