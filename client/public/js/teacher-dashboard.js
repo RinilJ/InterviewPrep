@@ -404,7 +404,7 @@ function formatTestDate(dateString) {
     return new Date(dateString).toLocaleString();
 }
 
-// Only keep the analytics code that updates test history display
+// Updated loadStudentTestHistory function
 async function loadStudentTestHistory(studentId) {
     try {
         const response = await fetch(`/api/teacher/student/${studentId}/test-history`);
@@ -425,18 +425,22 @@ async function loadStudentTestHistory(studentId) {
         }
 
         historyContainer.innerHTML = history.map(test => {
-            // Determine the test type icon
-            let typeIcon = 'fa-brain'; // Default icon for aptitude tests
-            if (test.type === 'technical') {
+            // Set icon based on test type
+            let typeIcon;
+            let typeLabel;
+
+            if (test.testId && /^[LNQ]\d+/.test(test.testId)) {
+                typeIcon = 'fa-brain';
+                typeLabel = 'Aptitude';
+            } else if (test.type === 'technical') {
                 typeIcon = 'fa-code';
+                typeLabel = 'Technical';
             } else if (test.type === 'mbti') {
                 typeIcon = 'fa-user';
-            }
-
-            // Format the test name
-            let testName = test.testName || 'Practice Test';
-            if (test.testId && /^[LNQ]\d+/.test(test.testId)) {
-                testName = `Aptitude Test (${test.testId})`;
+                typeLabel = 'MBTI';
+            } else {
+                typeIcon = 'fa-question-circle';
+                typeLabel = test.type.charAt(0).toUpperCase() + test.type.slice(1);
             }
 
             return `
@@ -444,9 +448,9 @@ async function loadStudentTestHistory(studentId) {
                     <div class="test-info">
                         <h4>
                             <i class="fas ${typeIcon}"></i>
-                            ${testName}
+                            ${test.testName}
                         </h4>
-                        <span class="test-type">${test.type.charAt(0).toUpperCase() + test.type.slice(1)}</span>
+                        <span class="test-type">${typeLabel}</span>
                     </div>
                     <div class="test-details">
                         <div class="detail">

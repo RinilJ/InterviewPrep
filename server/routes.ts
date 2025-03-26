@@ -451,16 +451,24 @@ app.post("/api/logout", (req, res, next) => {
 
       // Format results to include test type and date
       const formattedResults = testResults.map(result => {
-        let type = result.type || 'aptitude';
-        // Check if testId starts with L, N, or Q to identify aptitude tests
+        // Determine test type based on testId pattern
+        let type = result.type;
+        let testName = result.testId || 'Practice Test';
+
+        // Check for aptitude test patterns
         if (result.testId && /^[LNQ]\d+/.test(result.testId)) {
           type = 'aptitude';
+          const category = result.testId[0] === 'L' ? 'Verbal' : 
+                          result.testId[0] === 'N' ? 'Non-Verbal' : 
+                          'Quantitative';
+          testName = `${category} Aptitude (${result.testId})`;
         }
+
         return {
           ...result,
-          type,
+          type: type || 'aptitude', // Default to aptitude if no type specified
           date: result.completedAt,
-          testName: result.testId || 'Practice Test'
+          testName
         };
       });
 
