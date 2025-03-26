@@ -70,7 +70,7 @@ export class MemStorage implements IStorage {
   async createUser(user: Omit<User, "id" | "createdAt">): Promise<User> {
     const id = this.currentId++;
 
-    // Normalize and validate user data
+    // Normalize user data
     const normalizedUser = {
       ...user,
       id,
@@ -80,13 +80,25 @@ export class MemStorage implements IStorage {
       batch: String(user.batch || "").trim().toUpperCase()
     };
 
-    // For teachers, check if a teacher already exists with EXACT SAME department, year, and batch
+    // For teachers, check if a teacher already exists for this batch
     if (user.role === 'teacher') {
       // Get all existing teachers
       const existingTeachers = Array.from(this.users.values()).filter(t => t.role === 'teacher');
 
+      console.log('Existing teachers:', existingTeachers.map(t => ({
+        id: t.id,
+        department: t.department,
+        year: t.year,
+        batch: t.batch
+      })));
+      console.log('New teacher data:', {
+        department: normalizedUser.department,
+        year: normalizedUser.year,
+        batch: normalizedUser.batch
+      });
+
       // Check if there's a teacher with EXACT SAME department, year, AND batch
-      const duplicateTeacher = existingTeachers.some(t =>
+      const duplicateTeacher = existingTeachers.find(t =>
         t.department === normalizedUser.department &&
         t.year === normalizedUser.year &&
         t.batch === normalizedUser.batch &&
@@ -94,7 +106,13 @@ export class MemStorage implements IStorage {
       );
 
       if (duplicateTeacher) {
-        throw new Error("A teacher already exists for this exact department, year, and batch combination");
+        console.log('Found duplicate teacher:', {
+          id: duplicateTeacher.id,
+          department: duplicateTeacher.department,
+          year: duplicateTeacher.year,
+          batch: duplicateTeacher.batch
+        });
+        throw new Error(`A teacher already exists for department: ${duplicateTeacher.department}, year: ${duplicateTeacher.year}, batch: ${duplicateTeacher.batch}. Please choose a different combination.`);
       }
 
       normalizedUser.teacherId = null;
