@@ -50,18 +50,24 @@ export function registerRoutes(app: Express): Server {
         return res.status(400).send("Batch must be A, B, or C");
       }
 
-      // For students, find their teacher first
+      // For students, find their teacher first with exact matching of department, year, and batch
       let teacherId = null;
       if (role === 'student') {
-        // Find teacher for this batch
-        const classTeacher = await storage.findTeacher(cleanDepartment, cleanYear, cleanBatch);
-        console.log('Found teacher for student:', classTeacher);
+        // Find teacher for this batch with exact matching
+        const teachers = await storage.findTeacher(cleanDepartment, cleanYear, cleanBatch);
+        console.log('Found teacher for student:', teachers);
 
-        if (!classTeacher) {
+        const matchingTeacher = teachers.find(teacher => 
+          teacher.department === cleanDepartment &&
+          teacher.year === cleanYear &&
+          teacher.batch === cleanBatch
+        );
+
+        if (!matchingTeacher) {
           return res.status(400).send("No teacher found for this batch. Please ensure a teacher is registered first.");
         }
 
-        teacherId = classTeacher.id;
+        teacherId = matchingTeacher.id;
         console.log('Setting teacherId for student:', teacherId);
       } else if (role === 'teacher') {
         // Check if a teacher already exists for this batch
