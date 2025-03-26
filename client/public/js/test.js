@@ -119,8 +119,10 @@ async function submitTest() {
             const score = Math.round((correctAnswers / currentTest.questions.length) * 100);
             testResults = {
                 testId: currentTest.id,
+                type: currentTest.type,
                 score: score,
-                answers: currentTest.answers
+                answers: currentTest.answers,
+                testData: { score }
             };
         }
 
@@ -150,8 +152,7 @@ async function submitTest() {
             startTime: currentTest.startTime,
             endTime: new Date().toISOString(),
             questions: currentTest.questions,
-            type: currentTest.type,
-            answers: currentTest.answers
+            type: currentTest.type
         };
 
         console.log('Storing test results:', resultsData);
@@ -284,4 +285,43 @@ function startTimer(seconds) {
         }
         timeLeft--;
     }, 1000);
+}
+
+function calculateMBTIScores(answers, questions) {
+    // Initialize dichotomy scores
+    const scores = {
+        EI: 0, // Extraversion vs Introversion
+        SN: 0, // Sensing vs Intuition
+        TF: 0, // Thinking vs Feeling
+        JP: 0  // Judging vs Perceiving
+    };
+
+    // Process each answer based on its subcategory
+    questions.forEach((question, index) => {
+        const answer = answers[index];
+        if (answer === null) return; // Skip unanswered questions
+
+        switch(question.subcategory) {
+            case 'IE':
+                scores.EI += answer;
+                break;
+            case 'SN':
+                scores.SN += answer;
+                break;
+            case 'TF':
+                scores.TF += answer;
+                break;
+            case 'JP':
+                scores.JP += answer;
+                break;
+        }
+    });
+
+    // Return array of scores in the order expected by the server
+    return [
+        scores.EI / 3, // Average score for E/I
+        scores.SN / 3, // Average score for S/N
+        scores.TF / 3, // Average score for T/F
+        scores.JP / 3  // Average score for J/P
+    ];
 }
