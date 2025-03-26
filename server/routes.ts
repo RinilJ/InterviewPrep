@@ -378,13 +378,22 @@ app.post("/api/logout", (req, res, next) => {
     }
 
     try {
+      // Get students that match the teacher's department, year, and batch
       const students = await storage.getTeacherStudents(
         req.user.id,
         req.user.department,
         req.user.year,
         req.user.batch
       );
-      res.json(students);
+
+      // Return only students that match the teacher's department, year, and batch
+      const filteredStudents = students.filter(student =>
+        student.department === req.user.department &&
+        student.year === req.user.year &&
+        student.batch === req.user.batch
+      );
+
+      res.json(filteredStudents);
     } catch (error) {
       console.error('Error fetching teacher students:', error);
       res.status(500).send("Failed to fetch students");
@@ -453,8 +462,8 @@ app.post("/api/logout", (req, res, next) => {
       const formattedResults = testResults.map(result => {
         // Check for aptitude test patterns
         if (result.testId && /^[LNQ]\d+/.test(result.testId)) {
-          const category = result.testId[0] === 'L' ? 'Verbal' : 
-                          result.testId[0] === 'N' ? 'Non-Verbal' : 
+          const category = result.testId[0] === 'L' ? 'Verbal' :
+                          result.testId[0] === 'N' ? 'Non-Verbal' :
                           'Quantitative';
           return {
             ...result,
@@ -641,7 +650,7 @@ app.post("/api/logout", (req, res, next) => {
     }
   });
 
-  // Delete a discussion slot 
+  // Delete a discussion slot
   app.delete("/api/discussion-slots/:id", async (req, res) => {
     if (!req.isAuthenticated() || req.user.role !== "teacher") {
       return res.sendStatus(401);
