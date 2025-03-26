@@ -72,43 +72,49 @@ export class MemStorage implements IStorage {
 
     // Normalize and validate the user data
     const normalizedUser = {
-        ...user,
-        id,
-        createdAt: new Date(),
-        department: String(user.department || "").trim().toUpperCase(),
-        year: String(user.year || "").trim(),
-        batch: String(user.batch || "").trim().toUpperCase()
+      ...user,
+      id,
+      createdAt: new Date(),
+      department: String(user.department || "").trim().toUpperCase(),
+      year: String(user.year || "").trim(),
+      batch: String(user.batch || "").trim().toUpperCase()
     };
 
     // For teachers, check if a teacher already exists for this batch
     if (user.role === 'teacher') {
-        const existingTeacher = await this.findTeacher(
-            normalizedUser.department,
-            normalizedUser.year,
-            normalizedUser.batch
-        );
+      const existingTeacher = await this.findTeacher(
+        normalizedUser.department,
+        normalizedUser.year,
+        normalizedUser.batch
+      );
 
-        if (existingTeacher) {
-            throw new Error("Class teacher for this batch already exists");
-        }
+      if (existingTeacher) {
+        throw new Error("Class teacher for this batch already exists");
+      }
 
-        // Teachers don't have a teacherId
-        normalizedUser.teacherId = null;
+      // Teachers don't have a teacherId
+      normalizedUser.teacherId = null;
     }
-    // For students, find and assign their teacher
+    // For students, find and assign their teacher with exact matching
     else if (user.role === 'student') {
-        const assignedTeacher = await this.findTeacher(
-            normalizedUser.department,
-            normalizedUser.year,
-            normalizedUser.batch
-        );
+      const teacher = await this.findTeacher(
+        normalizedUser.department,
+        normalizedUser.year,
+        normalizedUser.batch
+      );
 
-        // Handle case where no teacher is assigned yet
-        if (!assignedTeacher) {
-            normalizedUser.teacherId = null; // Allow registration but without teacher assignment
-        } else {
-            normalizedUser.teacherId = assignedTeacher.id;
-        }
+      if (!teacher) {
+        throw new Error("No teacher found for your batch. Please ensure a teacher is registered first.");
+      }
+
+      // Only assign teacher if department, year, and batch match exactly
+      if (teacher.department === normalizedUser.department &&
+          teacher.year === normalizedUser.year &&
+          teacher.batch === normalizedUser.batch) {
+        normalizedUser.teacherId = teacher.id;
+      } else {
+        throw new Error("No matching teacher found for your batch.");
+      }
     }
 
     this.users.set(id, normalizedUser);
@@ -122,7 +128,7 @@ export class MemStorage implements IStorage {
     const cleanYear = String(year).trim();
     const cleanBatch = String(batch).trim().toUpperCase();
 
-    // Find matching teacher with exact matching
+    // Find matching teacher with exact matching of department, year, and batch
     const teacher = Array.from(this.users.values()).find(user => {
       return user.role === 'teacher' &&
         user.department === cleanDepartment &&
@@ -149,7 +155,7 @@ export class MemStorage implements IStorage {
     const cleanYear = String(year).trim();
     const cleanBatch = String(batch).trim().toUpperCase();
 
-    // Find matching students with exact matching
+    // Find matching students with strict matching of department, year, and batch
     const students = Array.from(this.users.values()).filter(user => {
       return user.role === 'student' &&
         Number(user.teacherId) === Number(teacherId) &&
