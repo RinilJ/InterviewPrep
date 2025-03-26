@@ -36,19 +36,14 @@ window.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // For MBTI test
         if (testData.type === 'mbti') {
-            console.log('MBTI insights:', testData.insights);
-
             // Extract personality type from insights
             const personalityTypeInfo = testData.insights.insights[0].split(' - ');
             const personalityType = personalityTypeInfo[0].split('is ')[1];
             const description = personalityTypeInfo[1];
-
-            // Get all insights after the type description
             const allInsights = testData.insights.insights.slice(1);
 
-            // Filter insights by category
+            // Filter insights by category - excluding careers from characteristics
             const characteristics = allInsights.filter(insight => 
                 insight.startsWith('•') && 
                 !insight.toLowerCase().includes('prefer') && 
@@ -60,6 +55,7 @@ window.addEventListener('DOMContentLoaded', () => {
                 insight.toLowerCase().includes('prefer')
             );
 
+            // Separate career-related insights
             const careers = allInsights.filter(insight => 
                 insight.startsWith('•') && 
                 insight.toLowerCase().includes('career')
@@ -118,37 +114,65 @@ window.addEventListener('DOMContentLoaded', () => {
             // Default display for other psychometric tests
             mainContent.innerHTML = `
                 <div class="container">
-                    <h1>${testData.insights.category || 'Personality Assessment'}</h1>
-                    <div class="insights-section">
-                        ${testData.insights.insights.map(insight => `
-                            <div class="insight-item">
-                                <p>${insight}</p>
-                            </div>
-                        `).join('')}
-                    </div>
+                    <div class="results-container">
+                        <h1 class="results-title">${testData.insights.category || 'Personality Assessment'}</h1>
+                        <div class="insights-section">
+                            ${testData.insights.insights.map(insight => `
+                                <div class="insight-item">
+                                    <p>${insight}</p>
+                                </div>
+                            `).join('')}
+                        </div>
 
-                    <div class="time-taken">
-                        Time taken: ${formatTime(timeSpent)}
-                    </div>
+                        <div class="time-taken">
+                            Time taken: ${formatTime(timeSpent)}
+                        </div>
 
-                    <div class="actions">
-                        <a href="/dashboard.html" class="dashboard-btn">
-                            <i class="fas fa-arrow-left"></i> Return to Dashboard
-                        </a>
+                        <div class="actions">
+                            <a href="/dashboard.html" class="dashboard-btn">
+                                <i class="fas fa-arrow-left"></i> Return to Dashboard
+                            </a>
+                        </div>
                     </div>
                 </div>
             `;
         }
     } else {
-        // For non-psychometric tests
+        // For technical and aptitude tests
         const score = testData.score || 0;
         const correctAnswers = testData.questions.filter(q => q.isCorrect).length;
         const incorrectAnswers = testData.questions.length - correctAnswers;
 
-        document.getElementById('scorePercentage').textContent = `${score}%`;
-        document.getElementById('correctAnswers').textContent = correctAnswers;
-        document.getElementById('incorrectAnswers').textContent = incorrectAnswers;
-        document.getElementById('timeTaken').textContent = formatTime(timeSpent);
+        mainContent.innerHTML = `
+            <div class="container">
+                <div class="score-section">
+                    <h1>Test Results</h1>
+                    <div class="score-display">${score}%</div>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <h3>Correct Answers</h3>
+                            <p>${correctAnswers}</p>
+                        </div>
+                        <div class="stat-card">
+                            <h3>Incorrect Answers</h3>
+                            <p>${incorrectAnswers}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="time-taken">
+                    Time taken: ${formatTime(timeSpent)}
+                </div>
+
+                <div id="reviewContent"></div>
+
+                <div class="actions">
+                    <a href="/dashboard.html" class="dashboard-btn">
+                        <i class="fas fa-arrow-left"></i> Return to Dashboard
+                    </a>
+                </div>
+            </div>
+        `;
 
         // Show questions review
         const reviewContent = document.getElementById('reviewContent');

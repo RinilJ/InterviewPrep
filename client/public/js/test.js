@@ -86,29 +86,17 @@ async function submitTest() {
         // Format test results based on test type
         let testResults = {};
 
-        if (currentTest.type === 'mbti') {
-            console.log('Preparing MBTI test submission:', {
-                answers: currentTest.answers,
-                questions: currentTest.questions
-            });
-
-            // Ensure we have all required answers
-            if (!currentTest.answers || currentTest.answers.some(answer => answer === null)) {
-                throw new Error('Please answer all questions before submitting.');
-            }
-
-            // Normalize answers to be numbers between 1-5
-            const normalizedAnswers = currentTest.answers.map(answer => {
-                return typeof answer === 'number' ? answer + 1 : 3; // Default to neutral if invalid
-            });
-
+        // For psychometric tests (MBTI, Big Five), don't calculate score
+        if (['mbti', 'big-five', 'eq'].includes(currentTest.type)) {
             testResults = {
-                testId: currentTest.id || 'mbti-assessment',
-                type: 'mbti',
-                answers: normalizedAnswers
+                testId: currentTest.id || `${currentTest.type}-assessment`,
+                type: currentTest.type,
+                answers: currentTest.answers,
+                score: -1, // Special value to indicate psychometric test
+                testData: { score: -1 }
             };
         } else {
-            // Handle other test types
+            // For technical and aptitude tests, calculate score normally
             let correctAnswers = 0;
             currentTest.questions.forEach((question, index) => {
                 if (currentTest.answers[index] === question.correctAnswer) {

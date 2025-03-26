@@ -322,18 +322,45 @@ export function registerRoutes(app: Express): Server {
             });
         }
 
-        // For non-psychometric tests, continue with normal scoring
+        // For technical and aptitude tests, calculate score normally
         const result = await storage.createTestResult({
             userId: req.user.id,
             testId,
             score: testData.score,
-            answers: JSON.stringify(answers)
+            answers: JSON.stringify(answers),
+            type: 'technical' // Add type for filtering
         });
 
         res.status(201).json(result);
     } catch (error) {
         console.error('Error creating test result:', error);
         res.status(500).send(`Failed to save test results: ${error.message}`);
+    }
+});
+
+// Add endpoint to get student averages (excluding psychometric tests)
+app.get("/api/student/average-score", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+
+    try {
+        const results = await storage.getTestResults(req.user.id);
+
+        // Filter out psychometric tests (score = -1) and calculate average
+        const scoredTests = results.filter(test => test.score !== -1);
+
+        if (scoredTests.length === 0) {
+            return res.json({ average: 0, totalTests: 0 });
+        }
+
+        const average = scoredTests.reduce((sum, test) => sum + test.score, 0) / scoredTests.length;
+
+        res.json({
+            average: Math.round(average),
+            totalTests: scoredTests.length
+        });
+    } catch (error) {
+        console.error('Error calculating average score:', error);
+        res.status(500).send("Failed to calculate average score");
     }
 });
 
