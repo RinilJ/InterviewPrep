@@ -432,19 +432,16 @@ async function loadStudentTestHistory(studentId) {
             if (test.testId && /^[LNQ]\d+/.test(test.testId)) {
                 typeIcon = 'fa-brain';
                 typeLabel = 'Aptitude';
-            } else if (test.type === 'technical') {
-                typeIcon = 'fa-code';
-                typeLabel = 'Technical';
             } else if (test.type === 'mbti') {
                 typeIcon = 'fa-user';
                 typeLabel = 'MBTI';
             } else {
-                typeIcon = 'fa-question-circle';
-                typeLabel = test.type.charAt(0).toUpperCase() + test.type.slice(1);
+                typeIcon = 'fa-pencil';
+                typeLabel = 'Practice';
             }
 
             return `
-                <div class="test-history-item ${test.type}">
+                <div class="test-history-item">
                     <div class="test-info">
                         <h4>
                             <i class="fas ${typeIcon}"></i>
