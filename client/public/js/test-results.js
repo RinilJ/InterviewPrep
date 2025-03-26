@@ -21,22 +21,18 @@ window.addEventListener('DOMContentLoaded', () => {
     // For psychometric tests
     if (testData.type && ['big-five', 'mbti', 'eq', 'sjt'].includes(testData.type)) {
         if (!testData.insights) {
-            console.error('No insights found in test data');
             mainContent.innerHTML = `
                 <div class="container">
                     <h1>Test Results Unavailable</h1>
                     <p>Unable to load test results. Please try taking the test again.</p>
                     <div class="actions">
-                        <a href="/dashboard.html" class="dashboard-btn">
-                            Return to Dashboard
-                        </a>
+                        <a href="/dashboard.html" class="dashboard-btn">Return to Dashboard</a>
                     </div>
                 </div>
             `;
             return;
         }
 
-        // For MBTI test
         if (testData.type === 'mbti') {
             // Extract personality type from insights
             const personalityTypeInfo = testData.insights.insights[0].split(' - ');
@@ -44,72 +40,82 @@ window.addEventListener('DOMContentLoaded', () => {
             const description = personalityTypeInfo[1];
             const allInsights = testData.insights.insights.slice(1);
 
-            // Filter characteristics: exclude both preferences and career-related insights
-            const characteristics = allInsights.filter(insight =>
-                insight.startsWith('•') &&
-                !insight.toLowerCase().includes('prefer') &&
-                !insight.toLowerCase().includes('career')
+            // Filter insights by category
+            const characteristics = allInsights.filter(insight => 
+                insight.startsWith('•') && 
+                !insight.toLowerCase().includes('career') && 
+                !insight.toLowerCase().includes('prefer')
             );
 
-            // Filter preferences: those that mention 'prefer' but not career
-            const preferences = allInsights.filter(insight =>
-                insight.startsWith('•') &&
+            const preferences = allInsights.filter(insight => 
+                insight.startsWith('•') && 
                 insight.toLowerCase().includes('prefer') &&
                 !insight.toLowerCase().includes('career')
             );
 
-            // Filter career paths: those that mention 'career'
-            const careerPaths = allInsights.filter(insight =>
-                insight.startsWith('•') &&
+            const careerPaths = allInsights.filter(insight => 
+                insight.startsWith('•') && 
                 insight.toLowerCase().includes('career')
             );
 
             mainContent.innerHTML = `
                 <div class="container">
-                    <div class="mbti-results">
-                        <div class="personality-type">
-                            <h2>Your MBTI Type: ${personalityType}</h2>
-                            <p>${description}</p>
+                    <div class="results-header">
+                        <h1>MBTI Personality Assessment Results</h1>
+                        <div class="meta-info">
+                            <span><i class="far fa-clock"></i> ${formatTime(timeSpent)}</span>
+                            <span><i class="far fa-calendar"></i> ${new Date().toLocaleDateString()}</span>
                         </div>
+                    </div>
 
-                        <div class="characteristics-section">
-                            <h3 class="section-title">Key Characteristics</h3>
-                            ${characteristics.map(char => `
-                                <div class="trait-card">
-                                    <p>${char.replace('•', '').trim()}</p>
-                                </div>
-                            `).join('')}
-                        </div>
+                    <div class="personality-type-card">
+                        <div class="type-badge">${personalityType}</div>
+                        <p class="type-description">${description}</p>
+                    </div>
 
-                        <div class="preferences-section">
-                            <h3 class="section-title">Your Preferences</h3>
-                            ${preferences.map(pref => `
-                                <div class="trait-card">
-                                    <p>${pref.replace('•', '').trim()}</p>
-                                </div>
-                            `).join('')}
-                        </div>
-
-                        <div class="career-section">
-                            <h3 class="section-title">Recommended Career Paths</h3>
-                            <div class="career-grid">
-                                ${careerPaths.map(career => `
-                                    <div class="career-item">
-                                        <p>${career.replace('•', '').trim()}</p>
+                    <div class="results-grid">
+                        <div class="result-section characteristics-section">
+                            <h2><i class="fas fa-fingerprint"></i> Key Characteristics</h2>
+                            <div class="traits-container">
+                                ${characteristics.map(char => `
+                                    <div class="trait-card">
+                                        <p>${char.replace('•', '').trim()}</p>
                                     </div>
                                 `).join('')}
                             </div>
                         </div>
 
-                        <div class="time-taken">
-                            Time taken: ${formatTime(timeSpent)}
+                        <div class="result-section preferences-section">
+                            <h2><i class="fas fa-heart"></i> Your Preferences</h2>
+                            <div class="traits-container">
+                                ${preferences.map(pref => `
+                                    <div class="trait-card">
+                                        <p>${pref.replace('•', '').trim()}</p>
+                                    </div>
+                                `).join('')}
+                            </div>
                         </div>
 
-                        <div class="actions">
-                            <a href="/dashboard.html" class="dashboard-btn">
-                                <i class="fas fa-arrow-left"></i> Return to Dashboard
-                            </a>
+                        <div class="result-section career-section">
+                            <h2><i class="fas fa-briefcase"></i> Recommended Career Paths</h2>
+                            <div class="career-grid">
+                                ${careerPaths.map(career => `
+                                    <div class="career-card">
+                                        <i class="fas fa-star"></i>
+                                        <p>${career.replace('•', '').trim()}</p>
+                                    </div>
+                                `).join('')}
+                            </div>
                         </div>
+                    </div>
+
+                    <div class="actions-footer">
+                        <a href="/dashboard.html" class="dashboard-btn">
+                            <i class="fas fa-arrow-left"></i> Return to Dashboard
+                        </a>
+                        <button onclick="window.print()" class="print-btn">
+                            <i class="fas fa-print"></i> Print Results
+                        </button>
                     </div>
                 </div>
             `;
@@ -117,25 +123,30 @@ window.addEventListener('DOMContentLoaded', () => {
             // Default display for other psychometric tests
             mainContent.innerHTML = `
                 <div class="container">
-                    <div class="results-container">
-                        <h1 class="results-title">${testData.insights.category || 'Personality Assessment'}</h1>
-                        <div class="insights-section">
-                            ${testData.insights.insights.map(insight => `
-                                <div class="insight-item">
-                                    <p>${insight}</p>
-                                </div>
-                            `).join('')}
+                    <div class="results-header">
+                        <h1>${testData.insights.category || 'Personality Assessment'}</h1>
+                        <div class="meta-info">
+                            <span><i class="far fa-clock"></i> ${formatTime(timeSpent)}</span>
+                            <span><i class="far fa-calendar"></i> ${new Date().toLocaleDateString()}</span>
                         </div>
+                    </div>
 
-                        <div class="time-taken">
-                            Time taken: ${formatTime(timeSpent)}
-                        </div>
+                    <div class="insights-section">
+                        ${testData.insights.insights.map(insight => `
+                            <div class="insight-card">
+                                <i class="fas fa-lightbulb"></i>
+                                <p>${insight}</p>
+                            </div>
+                        `).join('')}
+                    </div>
 
-                        <div class="actions">
-                            <a href="/dashboard.html" class="dashboard-btn">
-                                <i class="fas fa-arrow-left"></i> Return to Dashboard
-                            </a>
-                        </div>
+                    <div class="actions-footer">
+                        <a href="/dashboard.html" class="dashboard-btn">
+                            <i class="fas fa-arrow-left"></i> Return to Dashboard
+                        </a>
+                        <button onclick="window.print()" class="print-btn">
+                            <i class="fas fa-print"></i> Print Results
+                        </button>
                     </div>
                 </div>
             `;
@@ -145,34 +156,68 @@ window.addEventListener('DOMContentLoaded', () => {
         const score = testData.score || 0;
         const correctAnswers = testData.questions.filter(q => q.isCorrect).length;
         const incorrectAnswers = testData.questions.length - correctAnswers;
+        const accuracy = Math.round((correctAnswers / testData.questions.length) * 100);
 
         mainContent.innerHTML = `
             <div class="container">
-                <div class="score-section">
+                <div class="results-header">
                     <h1>Test Results</h1>
-                    <div class="score-display">${score}%</div>
+                    <div class="meta-info">
+                        <span><i class="far fa-clock"></i> ${formatTime(timeSpent)}</span>
+                        <span><i class="far fa-calendar"></i> ${new Date().toLocaleDateString()}</span>
+                    </div>
+                </div>
+
+                <div class="score-overview">
+                    <div class="score-circle">
+                        <div class="score-number">${score}%</div>
+                        <div class="score-label">Overall Score</div>
+                    </div>
+
                     <div class="stats-grid">
-                        <div class="stat-card">
-                            <h3>Correct Answers</h3>
-                            <p>${correctAnswers}</p>
+                        <div class="stat-card correct">
+                            <div class="stat-icon"><i class="fas fa-check"></i></div>
+                            <div class="stat-content">
+                                <h3>Correct Answers</h3>
+                                <p>${correctAnswers}</p>
+                            </div>
                         </div>
-                        <div class="stat-card">
-                            <h3>Incorrect Answers</h3>
-                            <p>${incorrectAnswers}</p>
+                        <div class="stat-card incorrect">
+                            <div class="stat-icon"><i class="fas fa-times"></i></div>
+                            <div class="stat-content">
+                                <h3>Incorrect Answers</h3>
+                                <p>${incorrectAnswers}</p>
+                            </div>
+                        </div>
+                        <div class="stat-card time">
+                            <div class="stat-icon"><i class="fas fa-clock"></i></div>
+                            <div class="stat-content">
+                                <h3>Time Taken</h3>
+                                <p>${formatTime(timeSpent)}</p>
+                            </div>
+                        </div>
+                        <div class="stat-card accuracy">
+                            <div class="stat-icon"><i class="fas fa-bullseye"></i></div>
+                            <div class="stat-content">
+                                <h3>Accuracy</h3>
+                                <p>${accuracy}%</p>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="time-taken">
-                    Time taken: ${formatTime(timeSpent)}
+                <div class="detailed-review">
+                    <h2>Question Review</h2>
+                    <div class="review-grid" id="reviewContent"></div>
                 </div>
 
-                <div id="reviewContent"></div>
-
-                <div class="actions">
+                <div class="actions-footer">
                     <a href="/dashboard.html" class="dashboard-btn">
                         <i class="fas fa-arrow-left"></i> Return to Dashboard
                     </a>
+                    <button onclick="window.print()" class="print-btn">
+                        <i class="fas fa-print"></i> Print Results
+                    </button>
                 </div>
             </div>
         `;
@@ -181,26 +226,37 @@ window.addEventListener('DOMContentLoaded', () => {
         const reviewContent = document.getElementById('reviewContent');
         testData.questions.forEach((question, index) => {
             reviewContent.innerHTML += `
-                <div class="review-item ${question.isCorrect ? 'correct' : 'incorrect'}">
-                    <h3>Question ${index + 1}</h3>
-                    <p>${question.question}</p>
-                    ${question.code ? `<pre><code>${question.code}</code></pre>` : ''}
-                    <div class="options">
-                        ${question.options.map((option, i) => `
-                            <div class="option ${i === question.correctAnswer ? 'correct' : ''} 
-                                           ${i === question.userAnswer ? 'selected' : ''}">
-                                ${option}
-                                ${i === question.correctAnswer ? ' ✓' : ''}
-                                ${i === question.userAnswer && i !== question.correctAnswer ? ' ✗' : ''}
-                            </div>
-                        `).join('')}
+                <div class="review-card ${question.isCorrect ? 'correct' : 'incorrect'}">
+                    <div class="question-header">
+                        <span class="question-number">Question ${index + 1}</span>
+                        <span class="result-badge ${question.isCorrect ? 'correct' : 'incorrect'}">
+                            ${question.isCorrect ? '<i class="fas fa-check"></i> Correct' : '<i class="fas fa-times"></i> Incorrect'}
+                        </span>
                     </div>
-                    ${question.explanation ? `
-                        <div class="explanation">
-                            <h4>Explanation:</h4>
-                            <p>${question.explanation}</p>
+
+                    <div class="question-content">
+                        <p class="question-text">${question.question}</p>
+                        ${question.code ? `<pre><code class="language-${question.language || 'plaintext'}">${question.code}</code></pre>` : ''}
+
+                        <div class="options-grid">
+                            ${question.options.map((option, i) => `
+                                <div class="option 
+                                    ${i === question.correctAnswer ? 'correct' : ''} 
+                                    ${i === question.userAnswer ? 'selected' : ''}">
+                                    ${option}
+                                    ${i === question.correctAnswer ? ' <i class="fas fa-check"></i>' : ''}
+                                    ${i === question.userAnswer && i !== question.correctAnswer ? ' <i class="fas fa-times"></i>' : ''}
+                                </div>
+                            `).join('')}
                         </div>
-                    ` : ''}
+
+                        ${question.explanation ? `
+                            <div class="explanation">
+                                <h4><i class="fas fa-info-circle"></i> Explanation:</h4>
+                                <p>${question.explanation}</p>
+                            </div>
+                        ` : ''}
+                    </div>
                 </div>
             `;
         });
