@@ -440,9 +440,20 @@ async function createSlot(e) {
 
             if (!emailResponse.ok) {
                 console.warn('Failed to send mentor request email, but slot was created');
+                closeModal();
+                loadDiscussionSlots();
+                showToast('Warning', `Discussion slot ${isEdit ? 'updated' : 'created'} successfully, but there was an issue sending email to the mentor. Check notifications for details.`);
+                return;
+            } else {
+                const emailResult = await emailResponse.text();
+                console.log('Email response:', emailResult);
             }
         } catch (emailError) {
             console.warn('Error sending mentor email, but slot was created:', emailError);
+            closeModal();
+            loadDiscussionSlots();
+            showToast('Warning', `Discussion slot ${isEdit ? 'updated' : 'created'} successfully, but there was an issue sending email to the mentor. Check notifications for details.`);
+            return;
         }
 
         closeModal();

@@ -88,7 +88,7 @@ export async function sendMentorRequestEmail(
 
   const emailParams: EmailParams = {
     to: mentorEmail,
-    from: 'noreply@interviewprep.example.com', // This should be a verified sender in SendGrid
+    from: 'projectfirthreeupdates@gmail.com', // Using a verified sender email
     subject: 'Group Discussion Mentor Request',
     text: `
       Hello ${mentorName},
@@ -158,7 +158,7 @@ export async function sendMentorResponseNotificationEmail(
   
   const emailParams: EmailParams = {
     to: teacherEmail,
-    from: 'noreply@interviewprep.example.com',
+    from: 'projectfirthreeupdates@gmail.com', // Using a verified sender email
     subject: `Mentor Request ${status === 'accepted' ? 'Accepted' : 'Declined'}: ${slotDetails.topic}`,
     text: `
       Hello ${teacherName},
