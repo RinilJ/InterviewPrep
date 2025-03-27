@@ -53,11 +53,18 @@ let allStudents = [];
 function filterStudents(searchText) {
     const studentsList = document.getElementById('studentsList');
     const filteredStudents = allStudents.filter(student => {
+        if (!searchText) return true; // Return all students if no search text
+        
         const searchLower = searchText.toLowerCase();
         const usernameLower = student.username.toLowerCase();
         const departmentLower = student.department.toLowerCase();
+        const yearLower = student.year ? student.year.toLowerCase() : '';
+        const batchLower = student.batch ? student.batch.toLowerCase() : '';
+        
         return usernameLower.includes(searchLower) ||
-               departmentLower.includes(searchLower);
+               departmentLower.includes(searchLower) ||
+               yearLower.includes(searchLower) ||
+               batchLower.includes(searchLower);
     });
 
     if (filteredStudents.length === 0) {
@@ -82,6 +89,11 @@ function filterStudents(searchText) {
                         <i class="fas fa-clock"></i>
                         Registered: ${formatDate(student.createdAt)}
                     </p>
+                    <div class="student-meta">
+                        <span class="badge badge-dept">${student.department || 'N/A'}</span>
+                        <span class="badge badge-year">Year: ${student.year || 'N/A'}</span>
+                        <span class="badge badge-batch">Batch: ${student.batch || 'N/A'}</span>
+                    </div>
                     <div class="progress-section">
                         <h4>Test Progress</h4>
                         <div class="progress-stats">
@@ -320,6 +332,16 @@ document.querySelectorAll('.tab').forEach(tab => {
             content.classList.toggle('hidden', content.id !== targetId);
         });
     });
+});
+
+// Add event listener for student search
+document.addEventListener('DOMContentLoaded', () => {
+    const searchInput = document.getElementById('studentSearch');
+    if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+            filterStudents(e.target.value.trim());
+        });
+    }
 });
 
 

@@ -93,21 +93,14 @@ export class MemStorage implements IStorage {
         batch: normalizedUser.batch
       });
 
-      // Check if this exact combination already exists
+      // Check if this exact combination of department, year and batch already exists
       const duplicateTeacher = existingTeachers.some(t => 
         t.department === normalizedUser.department &&
         t.year === normalizedUser.year &&
         t.batch === normalizedUser.batch
       );
 
-      // Allow registration if at least one field is different
-      const hasUniqueField = existingTeachers.every(t => 
-        t.department !== normalizedUser.department ||
-        t.year !== normalizedUser.year ||
-        t.batch !== normalizedUser.batch
-      );
-
-      if (!hasUniqueField) {
+      if (duplicateTeacher) {
         throw new Error("A teacher already exists for this exact department, year, and batch combination");
       }
 
