@@ -65,14 +65,14 @@ export async function getPercentageQuestions(): Promise<Question[]> {
     },
     {
       question: "In a survey of 400 people, 300 preferred tea. What percentage preferred coffee?",
-      options: ["25%", "30%", "35%", "20%"],
-      correctAnswer: 0,
+      options: ["20%", "25%", "35%", "30%"],
+      correctAnswer: 1,
       explanation: "Coffee drinkers = 100, Percentage = (100/400) × 100 = 25%"
     },
     {
       question: "A shirt's price is reduced by 40% to $36. What was its original price?",
-      options: ["$60", "$55", "$65", "$70"],
-      correctAnswer: 0,
+      options: ["$55", "$65", "$60", "$70"],
+      correctAnswer: 2,
       explanation: "After 40% discount, 60% = $36, so 100% = $36/0.6 = $60"
     },
     {
