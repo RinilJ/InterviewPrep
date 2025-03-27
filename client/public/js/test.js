@@ -134,12 +134,21 @@ async function submitTest() {
         const responseData = await response.json();
         console.log('Server response:', responseData);
 
+        // Prepare questions with isCorrect property for results display
+        const questionsWithResults = currentTest.questions.map((question, index) => {
+            return {
+                ...question,
+                isCorrect: currentTest.answers[index] === question.correctAnswer,
+                userAnswer: currentTest.answers[index]
+            };
+        });
+        
         // Store results for the results page
         const resultsData = {
             ...responseData,
             startTime: currentTest.startTime,
             endTime: new Date().toISOString(),
-            questions: currentTest.questions,
+            questions: questionsWithResults,
             type: currentTest.type
         };
 
