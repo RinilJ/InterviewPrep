@@ -93,7 +93,7 @@ export class MemStorage implements IStorage {
         batch: normalizedUser.batch
       });
 
-      // Check if this exact combination already exists
+      // A teacher registration is valid if at least one of department, year, or batch is different
       const duplicateTeacher = existingTeachers.some(t => 
         t.department === normalizedUser.department &&
         t.year === normalizedUser.year &&
