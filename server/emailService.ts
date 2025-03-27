@@ -5,10 +5,10 @@ import { MailService } from '@sendgrid/mail';
 // ===============================================================
 
 // Replace with your own SendGrid API key
-export const SENDGRID_API_KEY = "YOUR_SENDGRID_API_KEY_HERE";
+export const SENDGRID_API_KEY = "SG.TEST123456789.DUMMY_KEY_FOR_TEST";
 
 // Replace with your own verified sender email in SendGrid
-export const VERIFIED_SENDER_EMAIL = "projectfirthreeupdates@gmail.com";
+export const VERIFIED_SENDER_EMAIL = "test@example.com";
 
 // Force initialize the SendGrid client with hardcoded API key
 let mailService: MailService | null = null;
@@ -17,15 +17,17 @@ let mailService: MailService | null = null;
 function initializeMailService() {
   try {
     // Use the global constant defined at the top of the file
-    const apiKey = SENDGRID_API_KEY;
+    const apiKey: string = SENDGRID_API_KEY;
     
-    if (!apiKey || apiKey === "YOUR_SENDGRID_API_KEY_HERE") {
+    if (!apiKey || apiKey === "YOUR_SENDGRID_API_KEY_HERE" || apiKey === "SG.TEST123456789.DUMMY_KEY_FOR_TEST") {
       console.warn('SendGrid API key not properly configured');
       console.warn('Please update the SENDGRID_API_KEY constant at the top of this file');
       return null;
     }
 
-    console.log(`Initializing SendGrid with API key starting with ${apiKey.substring(0, 4)}...`);
+    // Log first few characters of API key for debugging
+    const keyStart = apiKey.length > 4 ? `${apiKey.slice(0, 4)}...` : "[masked]";
+    console.log(`Initializing SendGrid with API key starting with ${keyStart}...`);
     
     const service = new MailService();
     service.setApiKey(apiKey);
@@ -78,11 +80,12 @@ export async function sendEmail(params: EmailParams): Promise<boolean> {
     await mailService.send(mailData);
     console.log('Email sent successfully');
     return true;
-  } catch (error) {
-    console.error('SendGrid email error:', error);
+  } catch (err) {
+    console.error('SendGrid email error:', err);
     
     // Log more details about the error for debugging
-    if (error.response) {
+    const error = err as any; // Type assertion for error handling
+    if (error && error.response) {
       console.error('SendGrid API error details:', {
         status: error.response.status,
         body: error.response.body,

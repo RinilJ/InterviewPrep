@@ -1001,12 +1001,23 @@ app.post("/api/logout", (req, res, next) => {
       // Get email service module
       const { sendEmail, SENDGRID_API_KEY, VERIFIED_SENDER_EMAIL } = await import('./emailService');
       
-      // Log the API key without exposing the full value for debugging
-      const maskedKey = SENDGRID_API_KEY 
-        ? `${SENDGRID_API_KEY.substring(0, 4)}...${SENDGRID_API_KEY.substring(SENDGRID_API_KEY.length - 4)}` 
-        : 'not set';
+      // Explicitly set the type for the API key
+      const apiKey: string = SENDGRID_API_KEY;
       
-      console.log(`SENDGRID_API_KEY is ${SENDGRID_API_KEY ? 'set' : 'not set'} (${maskedKey})`);
+      // Log the API key status without exposing the full value for debugging
+      let apiKeyStatus = 'not set';
+      if (apiKey) {
+        if (apiKey === 'YOUR_SENDGRID_API_KEY_HERE' || apiKey === 'SG.TEST123456789.DUMMY_KEY_FOR_TEST') {
+          apiKeyStatus = 'YOUR...HERE';
+        } else {
+          // Safe string manipulation for API key masking
+          apiKeyStatus = apiKey.length > 8 
+            ? `${apiKey.substring(0, 4)}...${apiKey.substring(apiKey.length - 4)}` 
+            : '[too short to mask]';
+        }
+      }
+      
+      console.log(`SENDGRID_API_KEY is set (${apiKeyStatus})`);
       console.log(`Sender email: ${VERIFIED_SENDER_EMAIL}`);
       
       // Try sending a test email
@@ -1020,7 +1031,7 @@ app.post("/api/logout", (req, res, next) => {
       
       res.status(200).json({
         success: true,
-        apiKeySet: SENDGRID_API_KEY !== "YOUR_SENDGRID_API_KEY_HERE",
+        apiKeySet: SENDGRID_API_KEY !== "YOUR_SENDGRID_API_KEY_HERE" && SENDGRID_API_KEY !== "SG.TEST123456789.DUMMY_KEY_FOR_TEST",
         senderEmail: VERIFIED_SENDER_EMAIL,
         emailSent: emailResult,
         message: emailResult 
@@ -1057,7 +1068,7 @@ app.post("/api/logout", (req, res, next) => {
       const { SENDGRID_API_KEY } = await import('./emailService');
       
       // Check if SendGrid API key is properly configured
-      if (!SENDGRID_API_KEY || SENDGRID_API_KEY === "YOUR_SENDGRID_API_KEY_HERE") {
+      if (!SENDGRID_API_KEY || SENDGRID_API_KEY === "YOUR_SENDGRID_API_KEY_HERE" || SENDGRID_API_KEY === "SG.TEST123456789.DUMMY_KEY_FOR_TEST") {
         // Create a notification for the request
         await storage.createNotification({
           userId: req.user.id,
