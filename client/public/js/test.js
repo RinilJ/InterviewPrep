@@ -87,7 +87,25 @@ async function submitTest() {
         let testResults = {};
 
         // For psychometric tests (MBTI, Big Five), don't calculate score
-        if (['mbti', 'big-five', 'eq'].includes(currentTest.type)) {
+        // and require all questions to be answered
+        if (['mbti', 'big-five', 'eq', 'sjt'].includes(currentTest.type)) {
+            // Check if all questions have been answered
+            if (currentTest.answers.includes(null)) {
+                alert("Please answer all questions before submitting the psychometric test. Your psychological profile can only be accurately determined when all questions are answered.");
+                
+                // Find the first unanswered question
+                const firstUnansweredIndex = currentTest.answers.findIndex(answer => answer === null);
+                
+                // Navigate to the first unanswered question
+                if (firstUnansweredIndex !== -1) {
+                    displayQuestion(firstUnansweredIndex);
+                }
+                
+                // Restart the timer
+                startTimer(currentTest.timeLimit || 3600);
+                return; // Stop the submission process
+            }
+            
             testResults = {
                 testId: currentTest.id || `${currentTest.type}-assessment`,
                 type: currentTest.type,
@@ -278,7 +296,26 @@ function startTimer(seconds) {
 
         if (timeLeft === 0) {
             clearInterval(timer);
-            submitTest();
+            
+            // For psychometric tests, check if all questions have been answered
+            // before auto-submitting when timer expires
+            if (['mbti', 'big-five', 'eq', 'sjt'].includes(currentTest.type) && 
+                currentTest.answers.includes(null)) {
+                alert("Time is up! Please answer all remaining questions to complete the psychometric assessment.");
+                
+                // Find the first unanswered question
+                const firstUnansweredIndex = currentTest.answers.findIndex(answer => answer === null);
+                
+                // Navigate to the first unanswered question
+                if (firstUnansweredIndex !== -1) {
+                    displayQuestion(firstUnansweredIndex);
+                }
+                
+                // Give extra time to finish (5 minutes)
+                startTimer(300);
+            } else {
+                submitTest();
+            }
         }
         timeLeft--;
     }, 1000);
