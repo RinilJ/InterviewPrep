@@ -569,13 +569,55 @@ app.post("/api/logout", (req, res, next) => {
     }
 
     try {
+      // Extract mentorId from request body, default to the teacher's ID if not specified
+      const { mentorId: requestedMentorId, ...slotData } = req.body;
+      const mentorId = requestedMentorId || req.user.id;
+
       const slot = await storage.createDiscussionSlot({
-        ...req.body,
-        mentorId: req.user.id,
+        ...slotData,
+        mentorId,
         department: req.user.department,
         year: req.user.year,
-        batch: req.user.batch
+        batch: req.user.batch,
+        status: "pending",
+        createdBy: req.user.id
       });
+
+      // If the mentor is not the creator, send a notification
+      if (mentorId !== req.user.id) {
+        const mentor = await storage.getUser(mentorId);
+        if (mentor) {
+          await storage.createNotification({
+            userId: mentorId,
+            type: "mentor_assignment",
+            message: `You have been assigned as a mentor for a group discussion on "${slot.topic}" scheduled for ${new Date(slot.startTime).toLocaleString()}`,
+            relatedId: slot.id,
+            isRead: false,
+            date: new Date()
+          });
+          
+          // Create a mentor response record in pending state
+          await storage.createMentorResponse({
+            slotId: slot.id,
+            mentorId,
+            status: "pending"
+          });
+        }
+      } else {
+        // If the creator is also the mentor, automatically accept the slot
+        await storage.createMentorResponse({
+          slotId: slot.id,
+          mentorId,
+          status: "accepted"
+        });
+        
+        // Update the slot status to confirmed
+        await storage.updateDiscussionSlot(slot.id, {
+          ...slot,
+          status: "confirmed"
+        });
+      }
+      
       res.status(201).json(slot);
     } catch (error) {
       console.error('Error creating discussion slot:', error);
@@ -706,16 +748,228 @@ app.post("/api/logout", (req, res, next) => {
         return res.status(400).send("You have already booked this slot");
       }
 
+      // Get student details for notification
+      const student = await storage.getUser(req.user.id);
+      if (!student) {
+        return res.status(404).send("Student not found");
+      }
+
       // Create the booking
       const booking = await storage.createSlotBooking({
         slotId,
         userId: req.user.id
       });
 
+      // Create notification for the mentor
+      const notification = await storage.createNotification({
+        userId: slot.mentorId,
+        type: 'booking',
+        message: `${student.username} has booked your discussion slot "${slot.topic}" on ${new Date(slot.startTime).toLocaleString()}`,
+        relatedId: slotId,
+        isRead: false,
+        date: new Date()
+      });
+
       res.status(201).json(booking);
     } catch (error) {
       console.error('Error booking slot:', error);
       res.status(500).send("Failed to book slot");
+    }
+  });
+
+  // Mentor response endpoints
+  app.get("/api/mentor-responses/pending", async (req, res) => {
+    if (!req.isAuthenticated() || req.user.role !== "teacher") {
+      return res.sendStatus(401);
+    }
+
+    try {
+      const mentorId = req.user.id;
+      
+      // Get all slots where this teacher is assigned as mentor
+      const slots = await storage.getDiscussionSlots(
+        req.user.department,
+        req.user.year,
+        req.user.batch
+      );
+      
+      const pendingSlots = [];
+      
+      for (const slot of slots) {
+        if (slot.mentorId === mentorId) {
+          // Get the mentor response for this slot
+          const response = await storage.getMentorResponse(slot.id);
+          
+          // Include slots with pending response status
+          if (response && response.status === "pending") {
+            pendingSlots.push({
+              slot,
+              response
+            });
+          }
+        }
+      }
+      
+      res.json(pendingSlots);
+    } catch (error) {
+      console.error('Error fetching pending mentor responses:', error);
+      res.status(500).send("Failed to fetch pending responses");
+    }
+  });
+
+  // Respond to mentor assignment
+  app.post("/api/mentor-responses/:slotId", async (req, res) => {
+    if (!req.isAuthenticated() || req.user.role !== "teacher") {
+      return res.sendStatus(401);
+    }
+    
+    try {
+      const slotId = parseInt(req.params.slotId);
+      const { status, reason, alternativeMentorId } = req.body;
+      
+      if (!status || !["accepted", "declined", "tentative"].includes(status)) {
+        return res.status(400).send("Invalid status. Must be accepted, declined, or tentative");
+      }
+      
+      // Get the slot and make sure it exists
+      const slot = await storage.getDiscussionSlot(slotId);
+      if (!slot) {
+        return res.status(404).send("Discussion slot not found");
+      }
+      
+      // Make sure this teacher is the assigned mentor
+      if (slot.mentorId !== req.user.id) {
+        return res.status(403).send("You are not the assigned mentor for this slot");
+      }
+      
+      // Get existing response or create a new one
+      let response = await storage.getMentorResponse(slotId);
+      
+      if (response) {
+        // Update existing response
+        response = await storage.updateMentorResponse(response.id, {
+          status,
+          reason: reason || null,
+          alternativeMentorId: alternativeMentorId || null
+        });
+      } else {
+        // Create new response
+        response = await storage.createMentorResponse({
+          slotId,
+          mentorId: req.user.id,
+          status,
+          reason: reason || null,
+          alternativeMentorId: alternativeMentorId || null
+        });
+      }
+      
+      // If mentor declined, notify the teacher who created the slot
+      if (status === "declined" && slot.createdBy && slot.createdBy !== req.user.id) {
+        await storage.createNotification({
+          userId: slot.createdBy,
+          type: "mentor_response",
+          message: `${req.user.username} has declined to mentor the discussion on "${slot.topic}" scheduled for ${new Date(slot.startTime).toLocaleString()}${reason ? `. Reason: ${reason}` : ''}`,
+          relatedId: slotId,
+          isRead: false,
+          date: new Date()
+        });
+      }
+      
+      res.json(response);
+    } catch (error) {
+      console.error('Error responding to mentor assignment:', error);
+      res.status(500).send("Failed to save response");
+    }
+  });
+
+  // Get notifications for the current user
+  app.get("/api/notifications", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.sendStatus(401);
+    }
+    
+    try {
+      const notifications = await storage.getNotifications(req.user.id);
+      res.json(notifications);
+    } catch (error) {
+      console.error('Error fetching notifications:', error);
+      res.status(500).send("Failed to fetch notifications");
+    }
+  });
+  
+  // Mark a notification as read
+  app.put("/api/notifications/:id/read", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.sendStatus(401);
+    }
+    
+    try {
+      const notificationId = parseInt(req.params.id);
+      const updatedNotification = await storage.markNotificationAsRead(notificationId);
+      res.json(updatedNotification);
+    } catch (error) {
+      console.error('Error marking notification as read:', error);
+      res.status(500).send("Failed to update notification");
+    }
+  });
+  
+  // Mentor availability endpoints
+  app.post("/api/mentor-availability", async (req, res) => {
+    if (!req.isAuthenticated() || req.user.role !== "teacher") {
+      return res.sendStatus(401);
+    }
+    
+    try {
+      const { dayOfWeek, startTime, endTime, recurring, specificDate } = req.body;
+      
+      if (dayOfWeek === undefined || !startTime || !endTime) {
+        return res.status(400).send("Missing required fields");
+      }
+      
+      const availability = await storage.setMentorAvailability({
+        mentorId: req.user.id,
+        dayOfWeek,
+        startTime,
+        endTime,
+        recurring: recurring !== false, // Default to true if not specified
+        specificDate: specificDate ? new Date(specificDate) : null
+      });
+      
+      res.status(201).json(availability);
+    } catch (error) {
+      console.error('Error setting mentor availability:', error);
+      res.status(500).send("Failed to set availability");
+    }
+  });
+  
+  // Get mentor availability
+  app.get("/api/mentor-availability", async (req, res) => {
+    if (!req.isAuthenticated() || req.user.role !== "teacher") {
+      return res.sendStatus(401);
+    }
+    
+    try {
+      const availability = await storage.getMentorAvailability(req.user.id);
+      res.json(availability);
+    } catch (error) {
+      console.error('Error fetching mentor availability:', error);
+      res.status(500).send("Failed to fetch availability");
+    }
+  });
+  
+  // Delete mentor availability
+  app.delete("/api/mentor-availability/:id", async (req, res) => {
+    if (!req.isAuthenticated() || req.user.role !== "teacher") {
+      return res.sendStatus(401);
+    }
+    
+    try {
+      const availabilityId = parseInt(req.params.id);
+      await storage.deleteMentorAvailability(availabilityId);
+      res.sendStatus(200);
+    } catch (error) {
+      console.error('Error deleting mentor availability:', error);
+      res.status(500).send("Failed to delete availability");
     }
   });
 

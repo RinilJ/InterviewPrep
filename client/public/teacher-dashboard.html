@@ -61,6 +61,17 @@
                     <button class="tab" data-tab="history">
                         <i class="fas fa-history"></i> Test History
                     </button>
+                    <button class="tab" data-tab="notifications">
+                        <i class="fas fa-bell"></i> Notifications
+                        <span id="notificationBadge" class="badge hidden">0</span>
+                    </button>
+                    <button class="tab" data-tab="mentor-requests">
+                        <i class="fas fa-clipboard-check"></i> Mentor Requests
+                        <span id="mentorRequestBadge" class="badge hidden">0</span>
+                    </button>
+                    <button class="tab" data-tab="availability">
+                        <i class="fas fa-calendar-alt"></i> Availability
+                    </button>
                 </nav>
 
                 <div id="studentsTab" class="tab-content">
@@ -108,6 +119,76 @@
 
                         <div id="studentTestHistory" class="test-history-container">
                             <!-- Test history will be populated here -->
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="notificationsTab" class="tab-content hidden">
+                    <div class="section-header">
+                        <div class="category-header">
+                            <i class="fas fa-bell"></i>
+                            <h2>Notifications</h2>
+                        </div>
+                        <button id="clearAllNotificationsBtn" class="btn-secondary">
+                            <i class="fas fa-trash"></i> Clear All Read
+                        </button>
+                    </div>
+                    <div id="notificationsList" class="notifications-list">
+                        <!-- Notifications will be populated here -->
+                        <div class="empty-state">
+                            <i class="fas fa-bell-slash"></i>
+                            <p>No notifications at this time</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="mentor-requestsTab" class="tab-content hidden">
+                    <div class="section-header">
+                        <div class="category-header">
+                            <i class="fas fa-clipboard-check"></i>
+                            <h2>Mentor Requests</h2>
+                        </div>
+                    </div>
+                    <div id="pendingRequestsList" class="requests-list">
+                        <!-- Pending mentor requests will be populated here -->
+                        <div class="empty-state">
+                            <i class="fas fa-check-circle"></i>
+                            <p>No pending mentor requests</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="availabilityTab" class="tab-content hidden">
+                    <div class="section-header">
+                        <div class="category-header">
+                            <i class="fas fa-calendar-alt"></i>
+                            <h2>Your Availability</h2>
+                        </div>
+                        <button id="addAvailabilityBtn" class="btn-primary">
+                            <i class="fas fa-plus"></i> Add Time Slot
+                        </button>
+                    </div>
+                    <div class="availability-container">
+                        <div class="availability-schedule">
+                            <h3>Recurring Schedule</h3>
+                            <div id="recurringAvailability" class="availability-list">
+                                <!-- Recurring availability slots will be populated here -->
+                                <div class="empty-state">
+                                    <i class="fas fa-calendar-day"></i>
+                                    <p>No recurring availability set</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="availability-schedule">
+                            <h3>One-time Slots</h3>
+                            <div id="onetimeAvailability" class="availability-list">
+                                <!-- One-time availability slots will be populated here -->
+                                <div class="empty-state">
+                                    <i class="fas fa-calendar-day"></i>
+                                    <p>No one-time slots set</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -163,6 +244,143 @@
                         </button>
                         <button type="submit" class="btn-primary">
                             <i class="fas fa-check"></i> Create Slot
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div id="mentorResponseModal" class="modal hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2><i class="fas fa-reply"></i> Respond to Mentor Request</h2>
+                    <button class="close-mentor-modal">&times;</button>
+                </div>
+                <form id="mentorResponseForm" class="organized-form">
+                    <input type="hidden" id="responseSlotId">
+                    <div class="form-section">
+                        <h3>Discussion Details</h3>
+                        <div class="slot-details" id="slotDetailsContainer">
+                            <!-- Slot details will be populated here -->
+                        </div>
+                    </div>
+                    
+                    <div class="form-section">
+                        <h3><i class="fas fa-check-circle"></i> Your Response</h3>
+                        <div class="form-group">
+                            <label>Response</label>
+                            <div class="response-buttons">
+                                <button type="button" class="response-btn active" data-response="accepted">
+                                    <i class="fas fa-check-circle"></i> Accept
+                                </button>
+                                <button type="button" class="response-btn" data-response="declined">
+                                    <i class="fas fa-times-circle"></i> Decline
+                                </button>
+                                <button type="button" class="response-btn" data-response="tentative">
+                                    <i class="fas fa-question-circle"></i> Tentative
+                                </button>
+                            </div>
+                            <input type="hidden" id="responseStatus" value="accepted">
+                        </div>
+                        
+                        <div id="declineReasonContainer" class="form-group hidden">
+                            <label for="declineReason">Reason (optional)</label>
+                            <textarea id="declineReason" placeholder="Please provide a reason for declining this mentor request" rows="3"></textarea>
+                        </div>
+                        
+                        <div id="alternativeMentorContainer" class="form-group hidden">
+                            <label for="alternativeMentor">Suggest Alternative Mentor (optional)</label>
+                            <input type="text" id="alternativeMentor" placeholder="Enter name of alternative mentor">
+                        </div>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="button" class="btn-secondary" onclick="closeMentorResponseModal()">
+                            <i class="fas fa-times"></i> Cancel
+                        </button>
+                        <button type="submit" class="btn-primary">
+                            <i class="fas fa-paper-plane"></i> Submit Response
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div id="createAvailabilityModal" class="modal hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2><i class="fas fa-calendar-plus"></i> Add Availability</h2>
+                    <button class="close-availability-modal">&times;</button>
+                </div>
+                <form id="createAvailabilityForm" class="organized-form">
+                    <div class="form-section">
+                        <h3><i class="fas fa-calendar"></i> Schedule Type</h3>
+                        <div class="form-group">
+                            <div class="radio-group">
+                                <label class="radio-label">
+                                    <input type="radio" name="scheduleType" value="recurring" checked>
+                                    <span>Recurring (weekly)</span>
+                                </label>
+                                <label class="radio-label">
+                                    <input type="radio" name="scheduleType" value="onetime">
+                                    <span>One-time slot</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="recurringScheduleContainer" class="form-section">
+                        <h3><i class="fas fa-calendar-week"></i> Day & Time</h3>
+                        <div class="form-group">
+                            <label for="dayOfWeek">Day of Week</label>
+                            <select id="dayOfWeek" required>
+                                <option value="0">Sunday</option>
+                                <option value="1">Monday</option>
+                                <option value="2">Tuesday</option>
+                                <option value="3">Wednesday</option>
+                                <option value="4">Thursday</option>
+                                <option value="5">Friday</option>
+                                <option value="6">Saturday</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="startTime">Start Time</label>
+                                <input type="time" id="startTime" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="endTime">End Time</label>
+                                <input type="time" id="endTime" required>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="onetimeScheduleContainer" class="form-section hidden">
+                        <h3><i class="fas fa-calendar-day"></i> Date & Time</h3>
+                        <div class="form-group">
+                            <label for="specificDate">Date</label>
+                            <input type="date" id="specificDate">
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="onetimeStartTime">Start Time</label>
+                                <input type="time" id="onetimeStartTime">
+                            </div>
+                            <div class="form-group">
+                                <label for="onetimeEndTime">End Time</label>
+                                <input type="time" id="onetimeEndTime">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="button" class="btn-secondary" onclick="closeAvailabilityModal()">
+                            <i class="fas fa-times"></i> Cancel
+                        </button>
+                        <button type="submit" class="btn-primary">
+                            <i class="fas fa-save"></i> Save Availability
                         </button>
                     </div>
                 </form>
