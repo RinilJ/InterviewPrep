@@ -583,10 +583,11 @@ app.post("/api/logout", (req, res, next) => {
         createdBy: req.user.id
       });
 
-      // If the mentor is not the creator, send a notification
+      // Handle mentor assignments and notifications
       if (mentorId !== req.user.id) {
         const mentor = await storage.getUser(mentorId);
         if (mentor) {
+          // Create notification for the mentor
           await storage.createNotification({
             userId: mentorId,
             type: "mentor_assignment",
@@ -600,7 +601,9 @@ app.post("/api/logout", (req, res, next) => {
           await storage.createMentorResponse({
             slotId: slot.id,
             mentorId,
-            status: "pending"
+            status: "pending",
+            reason: null,
+            alternativeMentorId: null
           });
         }
       } else {
@@ -608,7 +611,9 @@ app.post("/api/logout", (req, res, next) => {
         await storage.createMentorResponse({
           slotId: slot.id,
           mentorId,
-          status: "accepted"
+          status: "accepted",
+          reason: null,
+          alternativeMentorId: null
         });
         
         // Update the slot status to confirmed
@@ -913,6 +918,22 @@ app.post("/api/logout", (req, res, next) => {
     }
   });
   
+  // Delete a notification
+  app.delete("/api/notifications/:id", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.sendStatus(401);
+    }
+    
+    try {
+      const notificationId = parseInt(req.params.id);
+      await storage.deleteNotification(notificationId);
+      res.sendStatus(200);
+    } catch (error) {
+      console.error('Error deleting notification:', error);
+      res.status(500).send("Failed to delete notification");
+    }
+  });
+  
   // Mentor availability endpoints
   app.post("/api/mentor-availability", async (req, res) => {
     if (!req.isAuthenticated() || req.user.role !== "teacher") {
@@ -970,6 +991,271 @@ app.post("/api/logout", (req, res, next) => {
     } catch (error) {
       console.error('Error deleting mentor availability:', error);
       res.status(500).send("Failed to delete availability");
+    }
+  });
+
+  // Email notification API for mentor requests
+  app.post("/api/send-mentor-request", async (req, res) => {
+    try {
+      if (!req.isAuthenticated()) {
+        return res.status(401).send("Not authenticated");
+      }
+      
+      if (req.user.role !== "teacher") {
+        return res.status(403).send("Only teachers can send mentor requests");
+      }
+      
+      const { slotId, mentorName, mentorEmail, topic, startTime, endTime } = req.body;
+      
+      if (!slotId || !mentorEmail) {
+        return res.status(400).send("Missing required fields");
+      }
+      
+      // Check if SendGrid API key is available
+      if (!process.env.SENDGRID_API_KEY) {
+        // Create a notification for the request
+        await storage.createNotification({
+          userId: req.user.id,
+          type: "mentor_request",
+          message: `Mentor request to ${mentorName} (${mentorEmail}) for "${topic || 'Open Discussion'}" could not be emailed. Check SENDGRID_API_KEY setup.`,
+          isRead: false,
+          relatedId: slotId,
+          date: new Date()
+        });
+        
+        return res.status(200).send("Mentor request created but email not sent (SENDGRID_API_KEY not configured)");
+      }
+      
+      // Import email service
+      const { sendMentorRequestEmail, generateMentorResponseLinks } = await import('./emailService');
+      
+      // Generate tokens for accept/reject links (in a real app, these would be securely stored)
+      // For simplicity, we're using a basic approach here
+      const acceptToken = Buffer.from(`accept-${slotId}-${Date.now()}`).toString('base64');
+      const rejectToken = Buffer.from(`reject-${slotId}-${Date.now()}`).toString('base64');
+      
+      // Generate the accept/reject URLs
+      const baseUrl = req.protocol + '://' + req.get('host');
+      const responseLinks = generateMentorResponseLinks(slotId, acceptToken, rejectToken, baseUrl);
+      
+      // Send the email
+      const emailSent = await sendMentorRequestEmail(
+        mentorEmail,
+        mentorName,
+        {
+          id: slotId,
+          topic: topic || 'Open Discussion',
+          startTime: new Date(startTime),
+          endTime: new Date(endTime),
+          department: req.user.department,
+          year: req.user.year,
+          batch: req.user.batch
+        },
+        responseLinks,
+        req.user.username // Teacher name
+      );
+      
+      // Create a notification for the request
+      await storage.createNotification({
+        userId: req.user.id,
+        type: "mentor_request",
+        message: `Mentor request ${emailSent ? 'sent' : 'failed to send'} to ${mentorName} (${mentorEmail}) for "${topic || 'Open Discussion'}"`,
+        isRead: false,
+        relatedId: slotId,
+        date: new Date()
+      });
+      
+      // Create a mentor response entry
+      await storage.createMentorResponse({
+        slotId,
+        mentorId: req.user.id, // In a real system, would link to mentor account if registered
+        status: "pending",
+        responseDate: new Date()
+      });
+      
+      res.status(200).send(`Mentor request ${emailSent ? 'sent successfully' : 'created but email failed to send'}`);
+    } catch (error) {
+      console.error("Send mentor request error:", error);
+      res.status(500).send("Failed to send mentor request");
+    }
+  });
+  
+  // Routes for mentor to accept/reject via email links
+  app.get("/api/mentor-response/:slotId/accept", async (req, res) => {
+    try {
+      const slotId = parseInt(req.params.slotId);
+      const token = req.query.token as string;
+      
+      if (!token) {
+        return res.status(400).send("Invalid or missing token");
+      }
+      
+      // In a real app, validate the token here
+      
+      const slot = await storage.getDiscussionSlot(slotId);
+      if (!slot) {
+        return res.status(404).send("Discussion slot not found");
+      }
+      
+      // Update slot status
+      await storage.updateDiscussionSlot(slotId, {
+        ...slot,
+        status: "confirmed"
+      });
+      
+      // Get mentor response
+      const mentorResponse = await storage.getMentorResponse(slotId);
+      if (mentorResponse) {
+        // Update mentor response
+        await storage.updateMentorResponse(mentorResponse.id, {
+          status: "accepted",
+          responseDate: new Date()
+        });
+      }
+      
+      // Create notification for teacher
+      await storage.createNotification({
+        userId: slot.createdBy,
+        type: "mentor_response",
+        message: `${slot.mentorName || 'Mentor'} has accepted your request for the discussion "${slot.topic || 'Open Discussion'}"`,
+        isRead: false,
+        relatedId: slotId,
+        date: new Date()
+      });
+      
+      // Redirect to a thank you page or render a simple thank you message
+      res.send(`
+        <html>
+          <head>
+            <title>Mentor Request Accepted</title>
+            <style>
+              body { font-family: Arial, sans-serif; margin: 0; padding: 20px; text-align: center; }
+              .container { max-width: 600px; margin: 50px auto; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+              h1 { color: #4CAF50; }
+              p { line-height: 1.6; }
+              .success-icon { font-size: 48px; color: #4CAF50; margin-bottom: 20px; }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <div class="success-icon">✓</div>
+              <h1>Thank You!</h1>
+              <p>You have successfully accepted the mentor request for the discussion on "${slot.topic || 'Open Discussion'}".</p>
+              <p>The discussion is scheduled for ${new Date(slot.startTime).toLocaleString()} - ${new Date(slot.endTime).toLocaleString()}.</p>
+              <p>The teacher who requested your mentorship will be notified of your acceptance.</p>
+            </div>
+          </body>
+        </html>
+      `);
+    } catch (error) {
+      console.error("Error processing mentor acceptance:", error);
+      res.status(500).send("An error occurred while processing your acceptance");
+    }
+  });
+  
+  app.get("/api/mentor-response/:slotId/reject", async (req, res) => {
+    try {
+      const slotId = parseInt(req.params.slotId);
+      const token = req.query.token as string;
+      const reason = req.query.reason as string || "No reason provided";
+      
+      if (!token) {
+        return res.status(400).send("Invalid or missing token");
+      }
+      
+      // In a real app, validate the token here
+      
+      const slot = await storage.getDiscussionSlot(slotId);
+      if (!slot) {
+        return res.status(404).send("Discussion slot not found");
+      }
+      
+      // Update slot status
+      await storage.updateDiscussionSlot(slotId, {
+        ...slot,
+        status: "mentor_declined"
+      });
+      
+      // Get mentor response
+      const mentorResponse = await storage.getMentorResponse(slotId);
+      if (mentorResponse) {
+        // Update mentor response
+        await storage.updateMentorResponse(mentorResponse.id, {
+          status: "declined",
+          reason,
+          responseDate: new Date()
+        });
+      }
+      
+      // Create notification for teacher
+      await storage.createNotification({
+        userId: slot.createdBy,
+        type: "mentor_response",
+        message: `${slot.mentorName || 'Mentor'} has declined your request for the discussion "${slot.topic || 'Open Discussion'}"${reason ? `: ${reason}` : ''}`,
+        isRead: false,
+        relatedId: slotId,
+        date: new Date()
+      });
+      
+      // If a reason wasn't provided, show a form to collect it
+      if (!reason) {
+        return res.send(`
+          <html>
+            <head>
+              <title>Decline Mentor Request</title>
+              <style>
+                body { font-family: Arial, sans-serif; margin: 0; padding: 20px; text-align: center; }
+                .container { max-width: 600px; margin: 50px auto; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+                h1 { color: #f44336; }
+                form { margin: 20px 0; text-align: left; }
+                textarea { width: 100%; padding: 10px; margin: 10px 0; border-radius: 5px; border: 1px solid #ddd; }
+                button { background-color: #f44336; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; }
+                p { line-height: 1.6; }
+              </style>
+            </head>
+            <body>
+              <div class="container">
+                <h1>Decline Mentor Request</h1>
+                <p>You are declining the mentor request for the discussion on "${slot.topic || 'Open Discussion'}".</p>
+                <form action="/api/mentor-response/${slotId}/reject" method="get">
+                  <input type="hidden" name="token" value="${token}">
+                  <label for="reason">Please provide a reason for declining (optional):</label>
+                  <textarea name="reason" id="reason" rows="4"></textarea>
+                  <button type="submit">Submit</button>
+                </form>
+              </div>
+            </body>
+          </html>
+        `);
+      }
+      
+      // Redirect to a thank you page or render a simple thank you message
+      res.send(`
+        <html>
+          <head>
+            <title>Mentor Request Declined</title>
+            <style>
+              body { font-family: Arial, sans-serif; margin: 0; padding: 20px; text-align: center; }
+              .container { max-width: 600px; margin: 50px auto; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+              h1 { color: #f44336; }
+              p { line-height: 1.6; }
+              .decline-icon { font-size: 48px; color: #f44336; margin-bottom: 20px; }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <div class="decline-icon">✗</div>
+              <h1>Request Declined</h1>
+              <p>You have declined the mentor request for the discussion on "${slot.topic || 'Open Discussion'}".</p>
+              <p>The teacher who requested your mentorship will be notified of your decision.</p>
+              ${reason ? `<p><strong>Reason:</strong> ${reason}</p>` : ''}
+            </div>
+          </body>
+        </html>
+      `);
+    } catch (error) {
+      console.error("Error processing mentor rejection:", error);
+      res.status(500).send("An error occurred while processing your rejection");
     }
   });
 

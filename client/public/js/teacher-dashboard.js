@@ -402,7 +402,10 @@ async function createSlot(e) {
             topic: form.slotTopic.value || 'Open Discussion',
             startTime,
             endTime,
-            maxParticipants: parseInt(form.maxParticipants.value)
+            maxParticipants: parseInt(form.maxParticipants.value),
+            mentorName: form.mentorName.value,
+            mentorEmail: form.mentorEmail.value,
+            status: 'pending' // Initial status is pending until mentor responds
         };
 
         const url = isEdit ? `/api/discussion-slots/${form.dataset.slotId}` : '/api/discussion-slots';
@@ -418,9 +421,33 @@ async function createSlot(e) {
             throw new Error(await response.text());
         }
 
+        const slot = await response.json();
+        
+        // Send mentor request notification email
+        try {
+            const emailResponse = await fetch('/api/send-mentor-request', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    slotId: slot.id,
+                    mentorName: slotData.mentorName,
+                    mentorEmail: slotData.mentorEmail,
+                    topic: slotData.topic,
+                    startTime: slotData.startTime,
+                    endTime: slotData.endTime
+                })
+            });
+
+            if (!emailResponse.ok) {
+                console.warn('Failed to send mentor request email, but slot was created');
+            }
+        } catch (emailError) {
+            console.warn('Error sending mentor email, but slot was created:', emailError);
+        }
+
         closeModal();
         loadDiscussionSlots();
-        showToast('Success', `Discussion slot ${isEdit ? 'updated' : 'created'} successfully`);
+        showToast('Success', `Discussion slot ${isEdit ? 'updated' : 'created'} successfully. Mentor has been notified.`);
     } catch (error) {
         console.error('Slot operation error:', error);
         showToast('Error', `Failed to ${isEdit ? 'update' : 'create'} discussion slot`);
@@ -542,15 +569,572 @@ async function setupStudentHistory() {
 }
 
 // Initialize the dashboard
+// Mentor request functions
+async function loadMentorRequests() {
+    try {
+        const response = await fetch('/api/mentor-responses/pending');
+        if (!response.ok) {
+            throw new Error('Failed to fetch mentor requests');
+        }
+        const pendingRequests = await response.json();
+        
+        const requestsList = document.getElementById('pendingRequestsList');
+        const badge = document.getElementById('mentorRequestBadge');
+        
+        if (pendingRequests.length === 0) {
+            requestsList.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-check-circle"></i>
+                    <p>No pending mentor requests</p>
+                </div>`;
+            badge.classList.add('hidden');
+        } else {
+            // Show badge with count
+            badge.textContent = pendingRequests.length;
+            badge.classList.remove('hidden');
+            
+            // Create request cards
+            requestsList.innerHTML = pendingRequests.map(item => {
+                const { slot, response } = item;
+                const slotDate = new Date(slot.startTime);
+                const now = new Date();
+                const isPast = slotDate < now;
+                
+                return `
+                    <div class="request-card ${isPast ? 'past' : ''}">
+                        <div class="request-info">
+                            <h3>
+                                <i class="fas fa-comments"></i> 
+                                ${slot.topic || 'Open Discussion'}
+                            </h3>
+                            <div class="request-details">
+                                <p>
+                                    <i class="far fa-clock"></i> 
+                                    ${formatDate(slot.startTime)} - ${new Date(slot.endTime).toLocaleTimeString()}
+                                </p>
+                                <p>
+                                    <i class="fas fa-users"></i> 
+                                    Maximum Participants: ${slot.maxParticipants}
+                                </p>
+                                <p>
+                                    <i class="fas fa-user-plus"></i> 
+                                    Created by: ${slot.createdBy === response.mentorId ? 'You' : 'Another teacher'}
+                                </p>
+                                <div class="request-status pending">
+                                    <i class="fas fa-hourglass-half"></i> 
+                                    Awaiting your response
+                                </div>
+                            </div>
+                        </div>
+                        ${!isPast ? `
+                            <div class="request-actions">
+                                <button class="btn-primary" onclick="respondToMentorRequest(${slot.id})">
+                                    <i class="fas fa-reply"></i> Respond
+                                </button>
+                            </div>
+                        ` : `
+                            <div class="request-actions">
+                                <span class="badge expired">Expired</span>
+                            </div>
+                        `}
+                    </div>
+                `;
+            }).join('');
+        }
+    } catch (error) {
+        console.error('Error loading mentor requests:', error);
+        document.getElementById('pendingRequestsList').innerHTML = `
+            <div class="error-state">
+                <i class="fas fa-exclamation-circle"></i>
+                <p>Failed to load mentor requests</p>
+                <button class="btn-secondary" onclick="loadMentorRequests()">
+                    <i class="fas fa-sync"></i> Try Again
+                </button>
+            </div>`;
+    }
+}
+
+async function respondToMentorRequest(slotId) {
+    try {
+        // Fetch slot details
+        const response = await fetch(`/api/discussion-slots/${slotId}`);
+        if (!response.ok) {
+            throw new Error('Failed to fetch slot details');
+        }
+        const slot = await response.json();
+        
+        // Populate slot details in modal
+        const slotDetailsContainer = document.getElementById('slotDetailsContainer');
+        slotDetailsContainer.innerHTML = `
+            <div class="detail-item">
+                <span class="label">Topic:</span>
+                <span class="value">${slot.topic || 'Open Discussion'}</span>
+            </div>
+            <div class="detail-item">
+                <span class="label">Date:</span>
+                <span class="value">${new Date(slot.startTime).toLocaleDateString()}</span>
+            </div>
+            <div class="detail-item">
+                <span class="label">Time:</span>
+                <span class="value">${new Date(slot.startTime).toLocaleTimeString()} - ${new Date(slot.endTime).toLocaleTimeString()}</span>
+            </div>
+            <div class="detail-item">
+                <span class="label">Max Participants:</span>
+                <span class="value">${slot.maxParticipants}</span>
+            </div>
+        `;
+        
+        // Set slot ID in hidden field
+        document.getElementById('responseSlotId').value = slotId;
+        
+        // Reset form
+        document.getElementById('responseStatus').value = 'accepted';
+        document.getElementById('declineReason').value = '';
+        document.getElementById('alternativeMentor').value = '';
+        document.getElementById('declineReasonContainer').classList.add('hidden');
+        document.getElementById('alternativeMentorContainer').classList.add('hidden');
+        
+        // Reset response buttons
+        document.querySelectorAll('.response-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        document.querySelector('.response-btn[data-response="accepted"]').classList.add('active');
+        
+        // Show modal
+        document.getElementById('mentorResponseModal').classList.remove('hidden');
+    } catch (error) {
+        console.error('Error preparing mentor response:', error);
+        showToast('Error', 'Failed to load slot details');
+    }
+}
+
+function closeMentorResponseModal() {
+    document.getElementById('mentorResponseModal').classList.add('hidden');
+}
+
+async function submitMentorResponse(e) {
+    e.preventDefault();
+    const form = e.target;
+    const submitButton = form.querySelector('button[type="submit"]');
+    
+    try {
+        submitButton.disabled = true;
+        submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
+        
+        const slotId = document.getElementById('responseSlotId').value;
+        const status = document.getElementById('responseStatus').value;
+        const reason = status === 'declined' ? document.getElementById('declineReason').value : null;
+        
+        // Submit response
+        const response = await fetch(`/api/mentor-responses/${slotId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                status,
+                reason,
+                alternativeMentorId: null // Future: Could implement teacher selection
+            })
+        });
+        
+        if (!response.ok) {
+            throw new Error(await response.text());
+        }
+        
+        closeMentorResponseModal();
+        showToast('Success', `You have ${status} the mentor request`);
+        loadMentorRequests(); // Refresh list
+        loadNotifications(); // Refresh notifications too
+    } catch (error) {
+        console.error('Error submitting mentor response:', error);
+        showToast('Error', 'Failed to submit your response');
+    } finally {
+        submitButton.disabled = false;
+        submitButton.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Response';
+    }
+}
+
+// Mentor availability functions
+async function loadMentorAvailability() {
+    try {
+        const response = await fetch('/api/mentor-availability');
+        if (!response.ok) {
+            throw new Error('Failed to fetch availability');
+        }
+        const availabilitySlots = await response.json();
+        
+        // Separate recurring and one-time availability
+        const recurringSlots = availabilitySlots.filter(slot => slot.recurring);
+        const onetimeSlots = availabilitySlots.filter(slot => !slot.recurring);
+        
+        // Update recurring availability list
+        const recurringList = document.getElementById('recurringAvailability');
+        if (recurringSlots.length === 0) {
+            recurringList.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-calendar-day"></i>
+                    <p>No recurring availability set</p>
+                </div>`;
+        } else {
+            recurringList.innerHTML = recurringSlots.map(slot => {
+                const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+                return `
+                    <div class="availability-item">
+                        <div class="availability-details">
+                            <div class="day-badge">${days[slot.dayOfWeek].substring(0, 3)}</div>
+                            <div class="time-range">
+                                <i class="far fa-clock"></i>
+                                ${slot.startTime} - ${slot.endTime}
+                            </div>
+                        </div>
+                        <button class="btn-icon delete-btn" onclick="deleteAvailability(${slot.id})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        // Update one-time availability list
+        const onetimeList = document.getElementById('onetimeAvailability');
+        if (onetimeSlots.length === 0) {
+            onetimeList.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-calendar-day"></i>
+                    <p>No one-time slots set</p>
+                </div>`;
+        } else {
+            onetimeList.innerHTML = onetimeSlots.map(slot => {
+                const date = new Date(slot.specificDate);
+                const isPast = date < new Date();
+                return `
+                    <div class="availability-item ${isPast ? 'past' : ''}">
+                        <div class="availability-details">
+                            <div class="date-badge">
+                                <div class="month">${date.toLocaleString('default', { month: 'short' })}</div>
+                                <div class="day">${date.getDate()}</div>
+                            </div>
+                            <div class="time-range">
+                                <i class="far fa-clock"></i>
+                                ${slot.startTime} - ${slot.endTime}
+                            </div>
+                            ${isPast ? '<span class="badge past">Past</span>' : ''}
+                        </div>
+                        ${!isPast ? `
+                            <button class="btn-icon delete-btn" onclick="deleteAvailability(${slot.id})">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        ` : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+    } catch (error) {
+        console.error('Error loading availability:', error);
+        document.getElementById('recurringAvailability').innerHTML = `
+            <div class="error-state">
+                <i class="fas fa-exclamation-circle"></i>
+                <p>Failed to load availability</p>
+                <button class="btn-secondary" onclick="loadMentorAvailability()">
+                    <i class="fas fa-sync"></i> Try Again
+                </button>
+            </div>`;
+        document.getElementById('onetimeAvailability').innerHTML = '';
+    }
+}
+
+function openAvailabilityModal() {
+    document.getElementById('createAvailabilityModal').classList.remove('hidden');
+    // Default to recurring
+    document.querySelector('input[name="scheduleType"][value="recurring"]').checked = true;
+    toggleScheduleType('recurring');
+}
+
+function closeAvailabilityModal() {
+    document.getElementById('createAvailabilityModal').classList.add('hidden');
+    document.getElementById('createAvailabilityForm').reset();
+}
+
+function toggleScheduleType(type) {
+    const recurringContainer = document.getElementById('recurringScheduleContainer');
+    const onetimeContainer = document.getElementById('onetimeScheduleContainer');
+    
+    if (type === 'recurring') {
+        recurringContainer.classList.remove('hidden');
+        onetimeContainer.classList.add('hidden');
+    } else {
+        recurringContainer.classList.add('hidden');
+        onetimeContainer.classList.remove('hidden');
+    }
+}
+
+async function createAvailability(e) {
+    e.preventDefault();
+    const form = e.target;
+    const submitButton = form.querySelector('button[type="submit"]');
+    
+    try {
+        submitButton.disabled = true;
+        submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+        
+        const scheduleType = form.querySelector('input[name="scheduleType"]:checked').value;
+        let availabilityData;
+        
+        if (scheduleType === 'recurring') {
+            availabilityData = {
+                dayOfWeek: parseInt(form.dayOfWeek.value),
+                startTime: form.startTime.value,
+                endTime: form.endTime.value,
+                recurring: true,
+                specificDate: null
+            };
+        } else {
+            const specificDate = new Date(form.specificDate.value);
+            availabilityData = {
+                dayOfWeek: specificDate.getDay(),
+                startTime: form.onetimeStartTime.value,
+                endTime: form.onetimeEndTime.value,
+                recurring: false,
+                specificDate: specificDate.toISOString()
+            };
+        }
+        
+        const response = await fetch('/api/mentor-availability', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(availabilityData)
+        });
+        
+        if (!response.ok) {
+            throw new Error(await response.text());
+        }
+        
+        closeAvailabilityModal();
+        showToast('Success', 'Availability saved successfully');
+        loadMentorAvailability();
+    } catch (error) {
+        console.error('Error saving availability:', error);
+        showToast('Error', 'Failed to save availability');
+    } finally {
+        submitButton.disabled = false;
+        submitButton.innerHTML = '<i class="fas fa-save"></i> Save Availability';
+    }
+}
+
+async function deleteAvailability(id) {
+    if (!confirm('Are you sure you want to delete this availability?')) {
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/api/mentor-availability/${id}`, {
+            method: 'DELETE'
+        });
+        
+        if (!response.ok) {
+            throw new Error('Failed to delete availability');
+        }
+        
+        showToast('Success', 'Availability deleted successfully');
+        loadMentorAvailability();
+    } catch (error) {
+        console.error('Error deleting availability:', error);
+        showToast('Error', 'Failed to delete availability');
+    }
+}
+
+// Notifications functions
+async function loadNotifications() {
+    try {
+        const response = await fetch('/api/notifications');
+        if (!response.ok) {
+            throw new Error('Failed to fetch notifications');
+        }
+        const notifications = await response.json();
+        
+        const notificationsList = document.getElementById('notificationsList');
+        const badge = document.getElementById('notificationBadge');
+        
+        // Count unread notifications
+        const unreadCount = notifications.filter(n => !n.isRead).length;
+        
+        if (unreadCount > 0) {
+            badge.textContent = unreadCount;
+            badge.classList.remove('hidden');
+        } else {
+            badge.classList.add('hidden');
+        }
+        
+        if (notifications.length === 0) {
+            notificationsList.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-bell-slash"></i>
+                    <p>No notifications at this time</p>
+                </div>`;
+        } else {
+            notificationsList.innerHTML = notifications.map(notification => {
+                const date = new Date(notification.date);
+                let iconClass = 'fas fa-bell';
+                
+                // Choose icon based on notification type
+                switch (notification.type) {
+                    case 'booking':
+                        iconClass = 'fas fa-user-plus';
+                        break;
+                    case 'cancellation':
+                        iconClass = 'fas fa-calendar-times';
+                        break;
+                    case 'update':
+                        iconClass = 'fas fa-sync';
+                        break;
+                    case 'mentor_assignment':
+                        iconClass = 'fas fa-user-tie';
+                        break;
+                    case 'mentor_response':
+                        iconClass = 'fas fa-reply';
+                        break;
+                    case 'substitution':
+                        iconClass = 'fas fa-exchange-alt';
+                        break;
+                }
+                
+                return `
+                    <div class="notification-item ${notification.isRead ? 'read' : 'unread'}">
+                        <div class="notification-icon">
+                            <i class="${iconClass}"></i>
+                        </div>
+                        <div class="notification-content">
+                            <p>${notification.message}</p>
+                            <div class="notification-meta">
+                                <span class="notification-time">${formatDate(notification.date)}</span>
+                                ${!notification.isRead ? `
+                                    <button class="btn-link mark-read" onclick="markNotificationAsRead(${notification.id})">
+                                        Mark as read
+                                    </button>
+                                ` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+    } catch (error) {
+        console.error('Error loading notifications:', error);
+        document.getElementById('notificationsList').innerHTML = `
+            <div class="error-state">
+                <i class="fas fa-exclamation-circle"></i>
+                <p>Failed to load notifications</p>
+                <button class="btn-secondary" onclick="loadNotifications()">
+                    <i class="fas fa-sync"></i> Try Again
+                </button>
+            </div>`;
+    }
+}
+
+async function markNotificationAsRead(id) {
+    try {
+        const response = await fetch(`/api/notifications/${id}/read`, {
+            method: 'PUT'
+        });
+        
+        if (!response.ok) {
+            throw new Error('Failed to mark notification as read');
+        }
+        
+        // Re-load notifications
+        loadNotifications();
+    } catch (error) {
+        console.error('Error marking notification as read:', error);
+        showToast('Error', 'Failed to update notification');
+    }
+}
+
+async function clearAllReadNotifications() {
+    try {
+        const response = await fetch('/api/notifications');
+        if (!response.ok) {
+            throw new Error('Failed to fetch notifications');
+        }
+        const notifications = await response.json();
+        
+        // Filter for read notifications
+        const readNotifications = notifications.filter(n => n.isRead);
+        
+        if (readNotifications.length === 0) {
+            showToast('Info', 'No read notifications to clear');
+            return;
+        }
+        
+        const confirmClear = confirm(`Are you sure you want to delete ${readNotifications.length} read notification(s)?`);
+        if (!confirmClear) return;
+        
+        // Delete each read notification
+        const deletePromises = readNotifications.map(notification => 
+            fetch(`/api/notifications/${notification.id}`, { method: 'DELETE' })
+        );
+        
+        await Promise.all(deletePromises);
+        
+        showToast('Success', `Cleared ${readNotifications.length} read notification(s)`);
+        loadNotifications();
+    } catch (error) {
+        console.error('Error clearing notifications:', error);
+        showToast('Error', 'Failed to clear notifications');
+    }
+}
+
+// Add event listeners for response buttons
+function setupResponseButtons() {
+    document.querySelectorAll('.response-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            // Remove active class from all buttons
+            document.querySelectorAll('.response-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Add active class to clicked button
+            this.classList.add('active');
+            
+            // Update hidden input
+            const responseStatus = this.dataset.response;
+            document.getElementById('responseStatus').value = responseStatus;
+            
+            // Show/hide reason field based on status
+            if (responseStatus === 'declined') {
+                document.getElementById('declineReasonContainer').classList.remove('hidden');
+                document.getElementById('alternativeMentorContainer').classList.remove('hidden');
+            } else {
+                document.getElementById('declineReasonContainer').classList.add('hidden');
+                document.getElementById('alternativeMentorContainer').classList.add('hidden');
+            }
+        });
+    });
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
     await initializeDashboard();
     await setupStudentHistory();
+    await loadMentorRequests();
+    await loadNotifications();
+    await loadMentorAvailability();
+    setupResponseButtons();
+    
+    // Schedule periodic refresh of notifications and requests
+    setInterval(loadMentorRequests, 60000); // Every minute
+    setInterval(loadNotifications, 60000);
+    
     const searchInput = document.getElementById('studentSearch');
     if (searchInput) {
         searchInput.addEventListener('input', (e) => {
             filterStudents(e.target.value.trim());
         });
     }
+    
+    // Setup event listeners for schedule type toggle
+    document.querySelectorAll('input[name="scheduleType"]').forEach(input => {
+        input.addEventListener('change', function() {
+            toggleScheduleType(this.value);
+        });
+    });
 });
 
 // Event listeners
@@ -560,6 +1144,12 @@ document.querySelectorAll('.btn-filter').forEach(button => {
 document.getElementById('createSlotBtn').addEventListener('click', openModal);
 document.querySelector('.close-modal').addEventListener('click', closeModal);
 document.getElementById('createSlotForm').addEventListener('submit', createSlot);
+document.getElementById('addAvailabilityBtn').addEventListener('click', openAvailabilityModal);
+document.querySelector('.close-availability-modal').addEventListener('click', closeAvailabilityModal);
+document.getElementById('createAvailabilityForm').addEventListener('submit', createAvailability);
+document.querySelector('.close-mentor-modal').addEventListener('click', closeMentorResponseModal);
+document.getElementById('mentorResponseForm').addEventListener('submit', submitMentorResponse);
+document.getElementById('clearAllNotificationsBtn').addEventListener('click', clearAllReadNotifications);
 document.getElementById('logoutBtn').addEventListener('click', async () => {
     try {
         await fetch('/api/logout', { method: 'POST' });
