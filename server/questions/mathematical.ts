@@ -11,26 +11,26 @@ export async function getPercentageQuestions(): Promise<Question[]> {
     },
     {
       question: "A shirt priced at $80 is sold at a 15% discount. What is the final price?",
-      options: ["$68", "$72", "$65", "$70"],
-      correctAnswer: 0,
+      options: ["$65", "$68", "$72", "$70"],
+      correctAnswer: 1,
       explanation: "15% of $80 = $12 (discount), so final price = $80 - $12 = $68"
     },
     {
       question: "If a number is increased by 20%, what is the multiplication factor?",
-      options: ["1.2", "0.2", "2.0", "1.8"],
-      correctAnswer: 0,
+      options: ["0.2", "2.0", "1.2", "1.8"],
+      correctAnswer: 2,
       explanation: "When increasing by 20%, multiply by (100% + 20%) = 120% = 1.2"
     },
     {
       question: "In a class of 50 students, 30 are girls. What percentage are boys?",
-      options: ["40%", "35%", "45%", "50%"],
-      correctAnswer: 0,
+      options: ["35%", "45%", "50%", "40%"],
+      correctAnswer: 3,
       explanation: "Boys = 20, Percentage = (20/50) × 100 = 40%"
     },
     {
       question: "A TV's price increased from $400 to $500. What is the percentage increase?",
-      options: ["25%", "20%", "15%", "30%"],
-      correctAnswer: 0,
+      options: ["15%", "20%", "25%", "30%"],
+      correctAnswer: 2,
       explanation: "Increase = $100, Percentage increase = (100/400) × 100 = 25%"
     },
     {

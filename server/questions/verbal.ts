@@ -101,26 +101,26 @@ async function getBloodRelationQuestions(): Promise<Question[]> {
     },
     {
       question: "If P is Q's son and R is P's sister, how is R related to Q?",
-      options: ["Daughter", "Sister", "Mother", "Aunt"],
-      correctAnswer: 0,
+      options: ["Sister", "Daughter", "Mother", "Aunt"],
+      correctAnswer: 1,
       explanation: "Since P is Q's son and R is P's sister, R must be Q's daughter."
     },
     {
       question: "A's father is B's son. C is B's father. How is A related to C?",
-      options: ["Great grandson", "Grandson", "Son", "Brother"],
-      correctAnswer: 0,
-      explanation: "B's son is A's father, and C is B's father, making C A's great grandfather."
+      options: ["Son", "Brother", "Great grandson", "Grandson"],
+      correctAnswer: 2,
+      explanation: "B's son is A's father, and C is B's father, making C A's great grandfather and A C's great grandson."
     },
     {
       question: "X is Y's brother. Z is Y's father. How is X related to Z?",
-      options: ["Son", "Brother", "Father", "Nephew"],
-      correctAnswer: 0,
+      options: ["Brother", "Nephew", "Father", "Son"],
+      correctAnswer: 3,
       explanation: "If X is Y's brother and Z is Y's father, then X must be Z's son."
     },
     {
       question: "If M is N's wife, O is M's son, P is O's sister, how is P related to N?",
-      options: ["Daughter", "Sister", "Niece", "Wife"],
-      correctAnswer: 0,
+      options: ["Sister", "Mother", "Daughter", "Wife"],
+      correctAnswer: 2,
       explanation: "N's wife (M) has two children: O and P, making P N's daughter."
     },
     {
@@ -359,14 +359,14 @@ async function getAnalogyQuestions(): Promise<Question[]> {
     },
     {
       question: "Bird is to Sky as Fish is to:",
-      options: ["Water", "Ocean", "Sea", "River"],
-      correctAnswer: 0,
+      options: ["Ocean", "Water", "Sea", "River"],
+      correctAnswer: 1,
       explanation: "As Birds live in Sky, Fish live in Water"
     },
     {
       question: "Doctor is to Patient as Teacher is to:",
-      options: ["Student", "Class", "School", "Book"],
-      correctAnswer: 0,
+      options: ["Class", "School", "Student", "Book"],
+      correctAnswer: 2,
       explanation: "As Doctor treats Patient, Teacher teaches Student"
     },
     {
