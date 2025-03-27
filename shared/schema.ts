@@ -7,7 +7,6 @@ export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   username: text("username").notNull().unique(),
   password: text("password").notNull(),
-  email: text("email"),
   role: text("role", { enum: ["student", "teacher"] }).notNull(),
   department: text("department", { enum: ["CS", "IT", "MCA"] }).notNull(),
   year: text("year", { enum: ["1", "2", "3", "4"] }).notNull(),
@@ -62,13 +61,12 @@ export const discussionSlots = pgTable("discussion_slots", {
   startTime: timestamp("start_time").notNull(),
   endTime: timestamp("end_time").notNull(),
   mentorId: integer("mentor_id").references(() => users.id),
-  mentorName: text("mentor_name"),
   maxParticipants: integer("max_participants").notNull().default(6),
   topic: text("topic").notNull(),
   department: text("department", { enum: ["CS", "IT", "MCA"] }).notNull(),
   year: text("year", { enum: ["1", "2", "3", "4"] }).notNull(),
   batch: text("batch", { enum: ["A", "B", "C"] }).notNull(),
-  status: text("status", { enum: ["pending", "confirmed", "cancelled", "rescheduled", "mentor_declined"] }).default("pending"),
+  status: text("status", { enum: ["pending", "confirmed", "cancelled", "rescheduled"] }).default("pending"),
   createdBy: integer("created_by").references(() => users.id),
 });
 
@@ -82,7 +80,7 @@ export const slotBookings = pgTable("slot_bookings", {
 export const notifications = pgTable("notifications", {
   id: serial("id").primaryKey(),
   userId: integer("user_id").references(() => users.id).notNull(),
-  type: text("type", { enum: ["booking", "cancellation", "update", "mentor_assignment", "mentor_response", "substitution", "mentor_request"] }).notNull(),
+  type: text("type", { enum: ["booking", "cancellation", "update", "mentor_assignment", "mentor_response", "substitution"] }).notNull(),
   message: text("message").notNull(),
   relatedId: integer("related_id"), // Can be slot ID or other related entity
   isRead: boolean("is_read").notNull().default(false),
@@ -118,7 +116,7 @@ export const insertTestResultSchema = createInsertSchema(testResults).omit({
 export const insertDiscussionSlotSchema = createInsertSchema(discussionSlots).omit({ id: true });
 export const insertSlotBookingSchema = createInsertSchema(slotBookings).omit({ id: true, bookedAt: true });
 export const insertNotificationSchema = createInsertSchema(notifications).omit({ id: true });
-export const insertMentorResponseSchema = createInsertSchema(mentorResponses).omit({ id: true });
+export const insertMentorResponseSchema = createInsertSchema(mentorResponses).omit({ id: true, responseDate: true });
 export const insertMentorAvailabilitySchema = createInsertSchema(mentorAvailability).omit({ id: true });
 
 export type User = typeof users.$inferSelect;

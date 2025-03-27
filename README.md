@@ -4,69 +4,66 @@ An advanced AI-driven interview preparation platform that combines sophisticated
 
 ## Features
 
-- **Aptitude Testing:** Verbal, Non-Verbal, and Mathematical aptitude assessment
-- **Technical Testing:** DSA, OOP, and Debugging challenges in Java and Python
-- **Psychometric Testing:** MBTI and Big Five personality assessments
-- **Group Discussion:** Schedule and manage group discussions with mentor integration
-- **Progress Tracking:** Comprehensive test result tracking and analysis
-- **Email Integration:** SendGrid-based notifications for group discussion scheduling
+- **Role-based Access**: Teachers and students have different views and capabilities
+- **Aptitude Tests**: Verbal, non-verbal, and mathematical reasoning sections
+- **Technical Assessments**: DSA, OOP, and debugging challenges for Java and Python
+- **Psychometric Tests**: Big Five Personality, MBTI, and other psychological assessments
+- **Group Discussion Management**: Create, schedule, and participate in group discussions
+- **Mentor Integration**: Invite external mentors to group discussions via email
+- **Progress Tracking**: Comprehensive analytics and insights for individuals and groups
 
-## Setting Up SendGrid Email Functionality
+## Environment Setup
 
-This application uses SendGrid for sending emails. Follow these steps to configure SendGrid:
+This application requires the following environment variables:
 
-### Option 1: Using the Command-line Update Script (Recommended)
+- `DATABASE_URL` - Connection string for PostgreSQL database
+- `SENDGRID_API_KEY` - API key for email functionality via SendGrid
+- `OPENAI_API_KEY` - API key for generating technical questions
 
-1. Run the command-line update script with your credentials:
-   ```
-   node update-sendgrid-cli.js "YOUR_SENDGRID_API_KEY" "your-verified@email.com"
-   ```
+## Setting Up SendGrid Email
 
-2. The script will automatically update the configuration file with your:
-   - SendGrid API key
-   - Verified sender email
+The application uses SendGrid for sending emails, particularly for the group discussion mentor request feature. For emails to work properly:
 
-3. Restart the server for changes to take effect.
+1. Create a SendGrid account at [sendgrid.com](https://sendgrid.com/)
+2. Obtain an API key and set it as `SENDGRID_API_KEY` in your environment
+3. **Important**: Verify the sender email address in your SendGrid account
+   - The default sender email in the application is set to "projectfirthreeupdates@gmail.com"
+   - Either verify this email in your SendGrid account, or
+   - Change the sender email in `server/emailService.ts` to your own verified email
 
-### Option 2: Using the Interactive Update Script
+### Sender Verification Issue
 
-1. Run the interactive update script:
-   ```
-   node update-sendgrid.js
-   ```
+If you see "Email sent successfully" messages but no emails are actually received, the most likely cause is that your sender email isn't verified in SendGrid. This is a security measure by SendGrid to prevent email spoofing.
 
-2. Follow the prompts to enter your:
-   - SendGrid API key
-   - Verified sender email
+To fix this:
+1. Go to SendGrid dashboard > Settings > Sender Authentication
+2. Verify your sender email or domain
+3. Update the `from` field in the email parameters in `server/emailService.ts` to match your verified sender
 
-3. Restart the server for changes to take effect.
+Even without verified email, the application will still function correctly - group discussion slots will be created and updated, but email notifications will not be sent.
 
-### Option 3: Manual Configuration
+## Getting Started
 
-1. Open `server/emailService.ts`
-2. Update the constants at the top of the file:
-   ```typescript
-   export const SENDGRID_API_KEY = "YOUR_SENDGRID_API_KEY_HERE";
-   export const VERIFIED_SENDER_EMAIL = "your-verified@email.com";
-   ```
-3. Restart the server for changes to take effect.
+1. Clone the repository
+2. Install dependencies with `npm install`
+3. Set up the required environment variables
+4. Start the application with `npm run dev`
+5. Access the application at http://localhost:5000
 
-### Verifying SendGrid Integration
+## User Types and Registration
 
-1. Access the test endpoint: http://localhost:5000/api/test-sendgrid
-2. Check the server logs and response for status information.
+- **Teachers**: Register with department, year, and batch assignments
+- **Students**: Register with matching department, year, and batch to connect with their teacher
 
-## Important Notes
+## Group Discussion System
 
-- You must use a verified sender email in SendGrid.
-- The sender email must be verified in your SendGrid account to avoid delivery failures.
-- If email sending fails but API key appears correct, check the sender email verification status in your SendGrid dashboard.
+1. Teachers create group discussion slots
+2. Teachers can invite external mentors via email
+3. Students can view and book slots
+4. Both teachers and mentors receive notifications about bookings
 
-## Running the Application
+## Test Tracking
 
-1. Start the application:
-   ```
-   npm run dev
-   ```
-
-2. Access the application at: http://localhost:5000
+- Aptitude and technical tests affect the student's average score
+- Psychometric tests provide insights without affecting scores
+- Students must answer all questions in psychometric tests to see results
