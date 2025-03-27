@@ -1,13 +1,29 @@
 import { MailService } from '@sendgrid/mail';
 
-// Check if SendGrid API key is available
-const hasSendGridApiKey = !!process.env.SENDGRID_API_KEY;
+// Force initialize the SendGrid client to check the API key
 let mailService: MailService | null = null;
 
-// Initialize SendGrid client if API key is available
-if (hasSendGridApiKey && process.env.SENDGRID_API_KEY) {
-  mailService = new MailService();
-  mailService.setApiKey(process.env.SENDGRID_API_KEY);
+// Initialize SendGrid client
+function initializeMailService() {
+  try {
+    // This is a more robust check for the API key
+    const apiKey = process.env.SENDGRID_API_KEY;
+    
+    if (!apiKey) {
+      console.warn('SendGrid API key not found in environment variables');
+      return null;
+    }
+
+    console.log(`Initializing SendGrid with API key starting with ${apiKey.substring(0, 4)}...`);
+    
+    const service = new MailService();
+    service.setApiKey(apiKey);
+    
+    return service;
+  } catch (error) {
+    console.error('Error initializing SendGrid client:', error);
+    return null;
+  }
 }
 
 interface EmailParams {
@@ -24,7 +40,12 @@ interface EmailParams {
  * @returns Boolean indicating success or failure
  */
 export async function sendEmail(params: EmailParams): Promise<boolean> {
-  // If SendGrid is not configured, log a message and return
+  // Lazy initialization of the mail service
+  if (!mailService) {
+    mailService = initializeMailService();
+  }
+  
+  // If SendGrid is still not configured, log a message and return
   if (!mailService) {
     console.log('SendGrid not configured, would have sent:', params);
     return false;
@@ -40,10 +61,24 @@ export async function sendEmail(params: EmailParams): Promise<boolean> {
     if (params.text) mailData.text = params.text;
     if (params.html) mailData.html = params.html;
     
+    console.log(`Attempting to send email to: ${params.to}`);
+    console.log(`Email from: ${params.from}`);
+    
     await mailService.send(mailData);
+    console.log('Email sent successfully');
     return true;
   } catch (error) {
     console.error('SendGrid email error:', error);
+    
+    // Log more details about the error for debugging
+    if (error.response) {
+      console.error('SendGrid API error details:', {
+        status: error.response.status,
+        body: error.response.body,
+        errors: error.response.body?.errors
+      });
+    }
+    
     return false;
   }
 }
@@ -86,9 +121,12 @@ export async function sendMentorRequestEmail(
   const startTimeStr = new Date(slotDetails.startTime).toLocaleString();
   const endTimeStr = new Date(slotDetails.endTime).toLocaleString();
 
+  // NOTE: The sender email must be verified in your SendGrid account
+  // If the app shows "email sent successfully" but no email is received,
+  // go to SendGrid and verify this email or change to your verified email
   const emailParams: EmailParams = {
     to: mentorEmail,
-    from: 'projectfirthreeupdates@gmail.com', // Using a verified sender email
+    from: 'projectfirthreeupdates@gmail.com', // This must be a verified sender in your SendGrid account
     subject: 'Group Discussion Mentor Request',
     text: `
       Hello ${mentorName},
@@ -156,9 +194,10 @@ export async function sendMentorResponseNotificationEmail(
   const statusText = status === 'accepted' ? 'accepted' : 'declined';
   const statusColor = status === 'accepted' ? '#4CAF50' : '#f44336';
   
+  // NOTE: The sender email must be verified in your SendGrid account
   const emailParams: EmailParams = {
     to: teacherEmail,
-    from: 'projectfirthreeupdates@gmail.com', // Using a verified sender email
+    from: 'projectfirthreeupdates@gmail.com', // This must be a verified sender in your SendGrid account
     subject: `Mentor Request ${status === 'accepted' ? 'Accepted' : 'Declined'}: ${slotDetails.topic}`,
     text: `
       Hello ${teacherName},
