@@ -423,7 +423,12 @@ async function createSlot(e) {
 
         const slot = await response.json();
         
-        // Send mentor request notification email
+        // Always show success for the slot creation first
+        closeModal();
+        loadDiscussionSlots();
+        showToast('Success', `Discussion slot ${isEdit ? 'updated' : 'created'} successfully!`);
+        
+        // Then try to send the email notification as a background task
         try {
             const emailResponse = await fetch('/api/send-mentor-request', {
                 method: 'POST',
@@ -438,33 +443,23 @@ async function createSlot(e) {
                 })
             });
 
-            if (!emailResponse.ok) {
-                console.warn('Failed to send mentor request email, but slot was created');
-                closeModal();
-                loadDiscussionSlots();
-                // Still show success but with a warning about the email
-                showToast('Success', `Discussion slot ${isEdit ? 'updated' : 'created'} successfully. Note: There was an issue sending email to the mentor. Check notifications for details.`);
-                return;
-            } else {
+            if (emailResponse.ok) {
                 const emailResult = await emailResponse.text();
                 console.log('Email response:', emailResult);
-                // Show success for both the slot creation and email sending
-                closeModal();
-                loadDiscussionSlots();
-                showToast('Success', `Discussion slot ${isEdit ? 'updated' : 'created'} successfully. Mentor has been notified.`);
-                return; // Exit the function here to prevent showing the toast message twice
+                // Optionally show a secondary success message about email
+                // showToast('Success', `Mentor notification email sent successfully.`);
+            } else {
+                console.warn('Failed to send mentor request email, but slot was created');
+                // Don't show error toast since the slot was created successfully
+                // Just log the warning to console
             }
         } catch (emailError) {
             console.warn('Error sending mentor email, but slot was created:', emailError);
-            closeModal();
-            loadDiscussionSlots();
-            // Still show success but with a warning about the email
-            showToast('Success', `Discussion slot ${isEdit ? 'updated' : 'created'} successfully. Note: There was an issue sending email to the mentor. Check notifications for details.`);
-            return;
+            // Don't show error toast since the slot was created successfully
+            // Just log the warning to console
         }
 
-        // This section should never execute because all paths above have return statements
-        // But we'll keep it as a safeguard
+        // Rest of the createSlot logic continues below in the catch/finally blocks
     } catch (error) {
         console.error('Slot operation error:', error);
         // If we reach this catch block, the slot creation/update must have failed
