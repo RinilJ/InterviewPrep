@@ -314,7 +314,7 @@ document.querySelectorAll('.tab').forEach(tab => {
         document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
         tab.classList.add('active');
 
-        const targetId = `${tab.dataset.tab}Tab`;
+        const targetId = tab.dataset.tab;
         document.querySelectorAll('.tab-content').forEach(content => {
             content.classList.toggle('hidden', content.id !== targetId);
         });
