@@ -175,22 +175,16 @@ async function loadDiscussionSlots(filter = 'all') {
 
         // Render header section with filters
         const headerHtml = `
-            <div class="section-header">
-                <div class="category-header">
-                    <i class="fas fa-comments"></i>
-                    <h2>Discussion Management</h2>
-                </div>
-                <div class="discussion-filters">
-                    <button class="btn-filter ${filter === 'all' ? 'active' : ''}" data-filter="all">
-                        <i class="fas fa-list"></i> All Slots
-                    </button>
-                    <button class="btn-filter ${filter === 'upcoming' ? 'active' : ''}" data-filter="upcoming">
-                        <i class="fas fa-calendar-alt"></i> Upcoming
-                    </button>
-                    <button class="btn-filter ${filter === 'past' ? 'active' : ''}" data-filter="past">
-                        <i class="fas fa-history"></i> Past
-                    </button>
-                </div>
+            <div class="discussion-filters">
+                <button class="btn-filter ${filter === 'all' ? 'active' : ''}" data-filter="all">
+                    <i class="fas fa-list"></i> All Slots
+                </button>
+                <button class="btn-filter ${filter === 'upcoming' ? 'active' : ''}" data-filter="upcoming">
+                    <i class="fas fa-calendar-alt"></i> Upcoming
+                </button>
+                <button class="btn-filter ${filter === 'past' ? 'active' : ''}" data-filter="past">
+                    <i class="fas fa-history"></i> Past
+                </button>
             </div>`;
 
         if (filteredSlots.length === 0) {
@@ -1151,10 +1145,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 });
 
-// Event listeners
-document.querySelectorAll('.btn-filter').forEach(button => {
-    button.addEventListener('click', () => loadDiscussionSlots(button.dataset.filter));
-});
+// Remove static event listeners for filter buttons as they're now added dynamically
 document.getElementById('createSlotBtn').addEventListener('click', openModal);
 document.querySelector('.close-modal').addEventListener('click', closeModal);
 document.getElementById('createSlotForm').addEventListener('submit', createSlot);

@@ -296,6 +296,22 @@ async function loadDiscussionSlots(filter = 'all') {
             return res.json();
         });
 
+        // First, update the filter buttons
+        const filtersContainer = document.getElementById('discussionSlotFilters');
+        filtersContainer.innerHTML = `
+            <div class="discussion-filters">
+                <button class="btn-filter ${filter === 'all' ? 'active' : ''}" data-filter="all">
+                    <i class="fas fa-list"></i> All Slots
+                </button>
+                <button class="btn-filter ${filter === 'upcoming' ? 'active' : ''}" data-filter="upcoming">
+                    <i class="fas fa-calendar-alt"></i> Upcoming
+                </button>
+                <button class="btn-filter ${filter === 'past' ? 'active' : ''}" data-filter="past">
+                    <i class="fas fa-history"></i> Past
+                </button>
+            </div>
+        `;
+
         const now = new Date();
         const filteredSlots = slots.filter(slot => {
             const slotDate = new Date(slot.startTime);
@@ -310,27 +326,41 @@ async function loadDiscussionSlots(filter = 'all') {
         });
 
         const discussionsTab = document.getElementById('discussionsTab');
+        // Insert the category header and filters first
+        const categoryHeader = `
+            <div class="category-header">
+                <i class="fas fa-users"></i>
+                <h2>Upcoming Group Discussions</h2>
+            </div>
+        `;
+        document.getElementById('discussionsTab').innerHTML = categoryHeader;
+        
+        // Update filters container
+        filtersContainer.innerHTML = `
+            <div class="discussion-filters">
+                <button class="btn-filter ${filter === 'all' ? 'active' : ''}" data-filter="all">
+                    <i class="fas fa-list"></i> All Slots
+                </button>
+                <button class="btn-filter ${filter === 'upcoming' ? 'active' : ''}" data-filter="upcoming">
+                    <i class="fas fa-calendar-alt"></i> Upcoming
+                </button>
+                <button class="btn-filter ${filter === 'past' ? 'active' : ''}" data-filter="past">
+                    <i class="fas fa-history"></i> Past
+                </button>
+            </div>
+        `;
+            
         if (filteredSlots.length === 0) {
-            discussionsTab.innerHTML = `
+            document.getElementById('discussionSlots').innerHTML = `
                 <div class="empty-state">
                     <i class="fas fa-calendar-times"></i>
                     <p>No discussion slots available for your batch at the moment</p>
                     <p class="subtitle">Check back later for new slots</p>
                 </div>`;
         } else {
-            discussionsTab.innerHTML = `
-                <div class="section-header">
-                    <div class="category-header">
-                        <i class="fas fa-comments"></i>
-                        <h2>Available Discussion Slots</h2>
-                    </div>
-                    <div class="discussion-filters">
-                        <button class="btn-filter active" data-filter="all">All Slots</button>
-                        <button class="btn-filter" data-filter="upcoming">Upcoming</button>
-                        <button class="btn-filter" data-filter="past">Past</button>
-                    </div>
-                </div>
-                <div id="discussionsList" class="discussion-grid">
+            // Just populate the slots container, not the entire tab
+            document.getElementById('discussionSlots').innerHTML = `
+                <div class="discussion-grid">
                     ${filteredSlots.map(slot => `
                         <div class="discussion-card">
                             <div class="discussion-info">
