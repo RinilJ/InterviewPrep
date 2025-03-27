@@ -193,10 +193,7 @@ async function loadDiscussionSlots(filter = 'all') {
                 <div class="empty-state">
                     <i class="fas fa-calendar-times"></i>
                     <p>No discussion slots found</p>
-                    <p class="subtitle">Create a new slot to get started</p>
-                    <button class="btn-primary" onclick="openModal()">
-                        <i class="fas fa-plus"></i> Create New Slot
-                    </button>
+                    <p class="subtitle">Create a new slot using the button above</p>
                 </div>`;
         } else {
             discussionManagement.innerHTML = `
