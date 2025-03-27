@@ -333,10 +333,10 @@ async function editSlot(slotId) {
 
         // Show edit modal with current values
         const form = document.getElementById('createSlotForm');
-        form.slotTopic.value = slot.topic;
-        form.slotDateTime.value = new Date(slot.startTime).toISOString().slice(0, 16);
-        form.maxParticipants.value = slot.maxParticipants;
-        form.slotDuration.value = (new Date(slot.endTime) - new Date(slot.startTime)) / 60000; // Calculate duration in minutes
+        document.getElementById('slotTopic').value = slot.topic;
+        document.getElementById('slotDateTime').value = new Date(slot.startTime).toISOString().slice(0, 16);
+        document.getElementById('maxParticipants').value = slot.maxParticipants;
+        document.getElementById('slotDuration').value = (new Date(slot.endTime) - new Date(slot.startTime)) / 60000; // Calculate duration in minutes
 
 
         // Update form for edit mode
@@ -386,16 +386,16 @@ async function createSlot(e) {
         submitButton.disabled = true;
         submitButton.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${isEdit ? 'Updating...' : 'Creating...'}`;
 
-        const startTime = new Date(form.slotDateTime.value);
-        const endTime = new Date(startTime.getTime() + parseInt(form.slotDuration.value) * 60000);
+        const startTime = new Date(document.getElementById('slotDateTime').value);
+        const endTime = new Date(startTime.getTime() + parseInt(document.getElementById('slotDuration').value) * 60000);
 
         const slotData = {
-            topic: form.slotTopic.value || 'Open Discussion',
+            topic: document.getElementById('slotTopic').value || 'Open Discussion',
             startTime,
             endTime,
-            maxParticipants: parseInt(form.maxParticipants.value),
-            mentorName: form.mentorName.value,
-            mentorEmail: form.mentorEmail.value,
+            maxParticipants: parseInt(document.getElementById('maxParticipants').value),
+            mentorName: document.getElementById('mentorName').value,
+            mentorEmail: document.getElementById('mentorEmail').value,
             status: 'pending' // Initial status is pending until mentor responds
         };
 
