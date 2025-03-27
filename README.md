@@ -60,7 +60,7 @@ A comprehensive platform designed to help students prepare for interviews throug
 
 ### Architecture
 - **Frontend**: HTML, CSS, JavaScript with modular components
-- **Backend**: Node.js with Express
+- **Backend**: Node.js with Express and TypeScript
 - **Database**: PostgreSQL with Drizzle ORM
 - **Authentication**: Passport.js with session-based authentication
 - **Email Service**: SendGrid for mentor invitations and notifications
