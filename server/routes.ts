@@ -111,17 +111,17 @@ export function registerRoutes(app: Express): Server {
         verbal: Object.entries(questionBank.verbal).map(([id, topicData]) => ({
           id,
           title: topicData.title,
-          range: "Dynamic questions"
+          range: "10 questions"
         })),
         nonVerbal: Object.entries(questionBank.nonVerbal || {}).map(([id, topicData]) => ({
           id,
           title: topicData.title,
-          range: "Dynamic questions"
+          range: "10 questions"
         })),
         mathematical: Object.entries(questionBank.mathematical || {}).map(([id, topicData]) => ({
           id,
           title: topicData.title,
-          range: "Dynamic questions"
+          range: "10 questions"
         }))
       };
 
