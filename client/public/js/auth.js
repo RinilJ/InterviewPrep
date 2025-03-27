@@ -4,7 +4,7 @@ registerForm.addEventListener('submit', async (e) => {
     e.preventDefault();
 
     if (registerForm.password.value !== registerForm.confirmPassword.value) {
-        alert("Passwords don't match");
+        showToast('Error', "Passwords don't match");
         return;
     }
 
@@ -28,15 +28,18 @@ registerForm.addEventListener('submit', async (e) => {
         if (response.ok) {
             const user = await response.json();
             console.log('Registration successful:', user); // Debug log
-            // Redirect based on role
-            window.location.href = user.role === 'teacher' ? '/teacher-dashboard.html' : '/dashboard.html';
+            showToast('Success', 'Registration successful! Redirecting...');
+            // Redirect after a short delay to allow toast to be visible
+            setTimeout(() => {
+                window.location.href = user.role === 'teacher' ? '/teacher-dashboard.html' : '/dashboard.html';
+            }, 1500);
         } else {
             const error = await response.text();
-            alert(error || 'Registration failed');
+            showToast('Error', error || 'Registration failed');
         }
     } catch (error) {
         console.error('Registration error:', error);
-        alert('An error occurred during registration');
+        showToast('Error', 'An error occurred during registration');
     }
 });
 
@@ -60,15 +63,18 @@ loginForm.addEventListener('submit', async (e) => {
         if (response.ok) {
             const user = await response.json();
             console.log('Login successful:', user); // Debug log
-            // Redirect based on role
-            window.location.href = user.role === 'teacher' ? '/teacher-dashboard.html' : '/dashboard.html';
+            showToast('Success', 'Login successful! Redirecting...');
+            // Redirect after a short delay to allow toast to be visible
+            setTimeout(() => {
+                window.location.href = user.role === 'teacher' ? '/teacher-dashboard.html' : '/dashboard.html';
+            }, 1500);
         } else {
             const error = await response.text();
-            alert(error || 'Login failed');
+            showToast('Error', error || 'Login failed');
         }
     } catch (error) {
         console.error('Login error:', error);
-        alert('An error occurred during login');
+        showToast('Error', 'An error occurred during login');
     }
 });
 
@@ -89,14 +95,14 @@ forgotPasswordForm.addEventListener('submit', async (e) => {
         });
 
         if (response.ok) {
-            alert('Password reset instructions sent to your email');
+            showToast('Success', 'Password reset instructions sent to your email');
             document.querySelector('[data-tab="login"]').click();
         } else {
             const error = await response.text();
-            alert(error || 'Failed to reset password');
+            showToast('Error', error || 'Failed to reset password');
         }
     } catch (error) {
-        alert('An error occurred during password reset');
+        showToast('Error', 'An error occurred during password reset');
         console.error('Password reset error:', error);
     }
 });
@@ -136,3 +142,29 @@ window.addEventListener('load', () => {
         document.querySelector('[data-tab="register"]').click();
     }
 });
+
+// Toast notification system
+function showToast(title, message) {
+    const toast = document.createElement('div');
+    toast.className = `toast ${title.toLowerCase()}`;
+    toast.innerHTML = `
+        <div class="toast-header">
+            <i class="fas fa-${title === 'Success' ? 'check-circle' : title === 'Error' ? 'exclamation-circle' : 'info-circle'}"></i>
+            <strong>${title}</strong>
+        </div>
+        <div class="toast-body">${message}</div>
+    `;
+    document.body.appendChild(toast);
+
+    // Add showing class after a small delay to trigger transition
+    setTimeout(() => {
+        toast.classList.add('show');
+    }, 10);
+
+    // Remove after 3 seconds
+    setTimeout(() => {
+        toast.classList.remove('show');
+        toast.classList.add('fade-out');
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
+}
