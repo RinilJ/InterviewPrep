@@ -193,7 +193,7 @@
         <div id="createSlotModal" class="modal hidden">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h2><i class="fas fa-plus-circle"></i> Create Discussion Slot</h2>
+                    <h2 id="modalTitle"><i class="fas fa-plus-circle"></i> Create Discussion Slot</h2>
                     <button class="close-modal">&times;</button>
                 </div>
                 <form id="createSlotForm" class="organized-form">
@@ -242,7 +242,7 @@
                         <button type="button" class="btn-secondary" onclick="closeModal()">
                             <i class="fas fa-times"></i> Cancel
                         </button>
-                        <button type="submit" class="btn-primary">
+                        <button type="submit" id="submitBtn" class="btn-primary">
                             <i class="fas fa-check"></i> Create Slot
                         </button>
                     </div>

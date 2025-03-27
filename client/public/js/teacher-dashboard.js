@@ -408,9 +408,13 @@ async function createSlot(e) {
             endTime,
             maxParticipants: parseInt(maxParticipants.value),
             mentorName: mentorName.value,
-            mentorEmail: mentorEmail.value,
-            status: 'pending' // Initial status is pending until mentor responds
+            mentorEmail: mentorEmail.value
         };
+        
+        // Only add status for new slots, not for edits
+        if (!isEdit) {
+            slotData.status = 'pending'; // Initial status is pending until mentor responds
+        }
 
         const url = isEdit ? `/api/discussion-slots/${form.dataset.slotId}` : '/api/discussion-slots';
         const method = isEdit ? 'PUT' : 'POST';
@@ -427,11 +431,17 @@ async function createSlot(e) {
 
         const slot = await response.json();
         
-        // Always show success for the slot creation first
+        // Always show success for the slot creation/update first
         closeModal();
         loadDiscussionSlots();
         
-        // Then try to send the email notification as a background task
+        // For edit operations, show success message and skip email notification
+        if (isEdit) {
+            showToast('Success', 'Discussion slot updated successfully!');
+            return;
+        }
+        
+        // For new slots, try to send the email notification as a background task
         try {
             const emailResponse = await fetch('/api/send-mentor-request', {
                 method: 'POST',
