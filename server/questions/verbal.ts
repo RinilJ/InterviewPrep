@@ -443,14 +443,14 @@ async function getSynonymQuestions(): Promise<Question[]> {
   return [
     {
       question: "Select the word most similar in meaning to 'Benevolent':",
-      options: ["Kind", "Cruel", "Strict", "Harsh"],
-      correctAnswer: 0,
+      options: ["Harsh", "Kind", "Cruel", "Strict"],
+      correctAnswer: 1,
       explanation: "Benevolent means kind or generous in nature"
     },
     {
       question: "Choose the synonym for 'Eloquent':",
-      options: ["Articulate", "Silent", "Quiet", "Reserved"],
-      correctAnswer: 0,
+      options: ["Silent", "Reserved", "Articulate", "Quiet"],
+      correctAnswer: 2,
       explanation: "Eloquent means fluent or persuasive in speaking"
     },
     {

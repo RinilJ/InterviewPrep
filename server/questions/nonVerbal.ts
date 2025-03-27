@@ -319,14 +319,14 @@ export async function getPatternCompletionQuestions(): Promise<Question[]> {
   return [
     {
       question: "Complete the pattern: ◇ ◆ ◇◆ ◇◆◇ ?",
-      options: ["◆◇◆", "◇◆◇", "◆◇◇", "◇◇◆"],
-      correctAnswer: 0,
+      options: ["◇◆◇", "◆◇◇", "◆◇◆", "◇◇◆"],
+      correctAnswer: 2,
       explanation: "Pattern alternates and grows by one symbol each time"
     },
     {
       question: "Find the pattern: ○●○ → ●○● → ○●○ → ?",
-      options: ["●○●", "○○●", "●●○", "○○○"],
-      correctAnswer: 0,
+      options: ["○○●", "●○●", "●●○", "○○○"],
+      correctAnswer: 1,
       explanation: "Pattern alternates between ○●○ and ●○●"
     },
     {
