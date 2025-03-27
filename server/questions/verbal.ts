@@ -370,6 +370,36 @@ async function getAnalogyQuestions(): Promise<Question[]> {
       explanation: "As Doctor treats Patient, Teacher teaches Student"
     },
     {
+      question: "Composer is to Symphony as Author is to:",
+      options: ["Novel", "Poem", "Play", "Essay"],
+      correctAnswer: 0,
+      explanation: "As a Composer creates a Symphony, an Author writes a Novel"
+    },
+    {
+      question: "Mouse is to Click as Keyboard is to:",
+      options: ["Type", "Button", "Computer", "Screen"],
+      correctAnswer: 0,
+      explanation: "As a Mouse is used to Click, a Keyboard is used to Type"
+    },
+    {
+      question: "Soil is to Plant as Water is to:",
+      options: ["Fish", "River", "Ocean", "Swim"],
+      correctAnswer: 0,
+      explanation: "As Plants grow in Soil, Fish live in Water"
+    },
+    {
+      question: "Square is to Cube as Circle is to:",
+      options: ["Sphere", "Cylinder", "Oval", "Ball"],
+      correctAnswer: 0,
+      explanation: "As a Square is a 2D version of a Cube, a Circle is a 2D version of a Sphere"
+    },
+    {
+      question: "Bee is to Hive as Ant is to:",
+      options: ["Colony", "Hill", "Nest", "Anthill"],
+      correctAnswer: 1,
+      explanation: "As Bees live in a Hive, Ants live in a Hill"
+    },
+    {
       question: "Clock is to Time as Thermometer is to:",
       options: ["Temperature", "Heat", "Weather", "Mercury"],
       correctAnswer: 0,
@@ -435,6 +465,42 @@ async function getAnalogyQuestions(): Promise<Question[]> {
       correctAnswer: 0,
       explanation: "As Bee produces Honey, Cow produces Milk"
     },
+    {
+      question: "Moon is to Night as Sun is to:",
+      options: ["Day", "Light", "Bright", "Sky"],
+      correctAnswer: 0,
+      explanation: "As Moon appears at Night, Sun appears during Day"
+    },
+    {
+      question: "Keyboard is to Computer as Remote is to:",
+      options: ["Television", "Battery", "Button", "Control"],
+      correctAnswer: 0,
+      explanation: "As Keyboard controls Computer, Remote controls Television"
+    },
+    {
+      question: "Hand is to Glove as Foot is to:",
+      options: ["Sock", "Shoe", "Walking", "Toe"],
+      correctAnswer: 1,
+      explanation: "As Hand goes into Glove, Foot goes into Shoe"
+    },
+    {
+      question: "Camera is to Photograph as Microphone is to:",
+      options: ["Recording", "Sound", "Music", "Voice"],
+      correctAnswer: 0,
+      explanation: "As Camera captures Photograph, Microphone captures Recording"
+    },
+    {
+      question: "Eye is to See as Ear is to:",
+      options: ["Hear", "Sound", "Listen", "Music"],
+      correctAnswer: 0,
+      explanation: "As Eye is used to See, Ear is used to Hear"
+    },
+    {
+      question: "Leaf is to Tree as Page is to:",
+      options: ["Book", "Paper", "Write", "Read"],
+      correctAnswer: 0,
+      explanation: "As Leaf is part of Tree, Page is part of Book"
+    }
   ];
 }
 

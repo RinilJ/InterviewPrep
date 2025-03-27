@@ -295,6 +295,70 @@ export async function getRavensQuestions(): Promise<PsychometricQuestion[]> {
 `
     },
     {
+      question: "Identify the missing pattern in this matrix:",
+      options: [
+        "A grid with diagonal line from top-left to bottom-right",
+        "A grid with diagonal line from top-right to bottom-left",
+        "A grid with horizontal line through the middle",
+        "A grid with vertical line through the middle"
+      ],
+      correctAnswer: 1,
+      explanation: "The pattern follows alternating diagonal lines in a 3x3 matrix",
+      category: 'ravens',
+      code: `
+// Visual representation of a 3x3 matrix with the bottom-right cell missing
+// The pattern shows alternating diagonal lines
+`
+    },
+    {
+      question: "Which figure completes the progressive sequence?",
+      options: [
+        "A triangle with one dot",
+        "A triangle with two dots",
+        "A triangle with three dots",
+        "A triangle with four dots"
+      ],
+      correctAnswer: 2,
+      explanation: "The pattern shows a progression of dots increasing by one in each step",
+      category: 'ravens',
+      code: `
+// Visual representation of triangles with increasing number of dots
+// [ △⚫ ]  [ △⚫⚫ ]  [ ? ]
+`
+    },
+    {
+      question: "Select the figure that continues the logical sequence:",
+      options: [
+        "A square with a circle in the top-right corner",
+        "A square with a circle in the bottom-left corner",
+        "A square with a circle in the bottom-right corner",
+        "A square with a circle in the top-left corner"
+      ],
+      correctAnswer: 3,
+      explanation: "The circle moves clockwise around the corners of the square in each step",
+      category: 'ravens',
+      code: `
+// Visual representation of squares with a circle moving around the corners
+// [ ▢⚫_ ]  [ _⚫▢ ]  [ ▢_⚫ ]  [ ? ]
+`
+    },
+    {
+      question: "Which figure completes the pattern?",
+      options: [
+        "A hexagon with two triangles inside",
+        "A hexagon with three triangles inside",
+        "A hexagon with one triangle inside",
+        "A hexagon with four triangles inside"
+      ],
+      correctAnswer: 0,
+      explanation: "The pattern shows a progression where the number of internal shapes follows a specific sequence",
+      category: 'ravens',
+      code: `
+// Visual representation of hexagons with varying numbers of internal triangles
+// Following a pattern of: 3, 4, 1, 5, ?
+`
+    },
+    {
       question: "Which shape continues the series?",
       options: [
         "A rotating square with increasing elements",

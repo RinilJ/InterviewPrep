@@ -1,6 +1,71 @@
 // Mathematical Questions Module
 import { Question } from '../types';
 
+export async function getProfitLossQuestions(): Promise<Question[]> {
+  return [
+    {
+      question: "A shopkeeper sold an article for $720 at a profit of 20%. Find the cost price of the article.",
+      options: ["$600", "$650", "$550", "$700"],
+      correctAnswer: 0,
+      explanation: "Let CP = x, then x + 20% of x = 720, 1.2x = 720, x = 600"
+    },
+    {
+      question: "By selling an article for $540, a man gains 20%. What would be his percentage loss if he sells it for $360?",
+      options: ["20%", "25%", "15%", "10%"],
+      correctAnswer: 0,
+      explanation: "CP = 540/1.2 = 450, Loss = 450 - 360 = 90, Loss% = (90/450) × 100 = 20%"
+    },
+    {
+      question: "A dealer buys an article for $400 and sells it at a profit of 30%. What is the selling price?",
+      options: ["$520", "$500", "$550", "$480"],
+      correctAnswer: 0,
+      explanation: "SP = 400 + 30% of 400 = 400 + 120 = 520"
+    },
+    {
+      question: "An article is sold for $1680 at a gain of 20%. If it is sold for $1470, the gain or loss percent is:",
+      options: ["5% gain", "10% gain", "5% loss", "10% loss"],
+      correctAnswer: 0,
+      explanation: "CP = 1680/1.2 = 1400, Profit = 1470 - 1400 = 70, Profit% = (70/1400) × 100 = 5%"
+    },
+    {
+      question: "A shopkeeper sells his goods at a premium of 40% above his cost price and offers a discount of 30% on the marked price. His profit or loss percentage is:",
+      options: ["2% loss", "2% profit", "5% loss", "5% profit"],
+      correctAnswer: 0,
+      explanation: "Marked price = 140%, After 30% discount, SP = 98%, so loss = 2%"
+    },
+    {
+      question: "By selling 11 items, a merchant gains the selling price of 1 item. Find his gain percentage.",
+      options: ["10%", "5%", "15%", "20%"],
+      correctAnswer: 0,
+      explanation: "Let SP of 1 item be x, then 11x - 10x = x, so profit = x in 10x, which is 10%"
+    },
+    {
+      question: "Raja bought a watch for $1200 and sold it to Rani at a profit of 25%. Rani sold it to Krishna at a loss of 20%. How much did Krishna pay for the watch?",
+      options: ["$1200", "$1000", "$1500", "$1300"],
+      correctAnswer: 0,
+      explanation: "Raja's SP = 1200 × 1.25 = 1500, Rani's SP = 1500 × 0.8 = 1200"
+    },
+    {
+      question: "If the cost price of 15 articles is equal to the selling price of 12 articles, find the profit percent.",
+      options: ["25%", "20%", "30%", "15%"],
+      correctAnswer: 0,
+      explanation: "Let CP of 1 article be x, then 15x = 12 × SP, 15x = 12 × CP × (1 + P/100), 15 = 12(1 + P/100), P = 25%"
+    },
+    {
+      question: "A dealer purchased a TV for $8500. He marks the price at $11050 and gives his customer a discount of 15%. What is his profit percentage?",
+      options: ["10%", "15%", "20%", "25%"],
+      correctAnswer: 0,
+      explanation: "Final SP = 11050 × 0.85 = 9392.5, Profit = 9392.5 - 8500 = 892.5, Profit% = (892.5/8500) × 100 = 10%"
+    },
+    {
+      question: "A merchant mixes two varieties of rice costing $50/kg and $45/kg in the ratio 3:2. At what price should he sell the mixture to earn a profit of 25%?",
+      options: ["$60/kg", "$65/kg", "$55/kg", "$70/kg"],
+      correctAnswer: 0,
+      explanation: "Average CP = (3×50 + 2×45)/5 = 48, For 25% profit, SP = 48 × 1.25 = 60"
+    }
+  ];
+}
+
 export async function getPercentageQuestions(): Promise<Question[]> {
   return [
     {
