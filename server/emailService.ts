@@ -1,16 +1,27 @@
 import { MailService } from '@sendgrid/mail';
 
-// Force initialize the SendGrid client to check the API key
+// ===============================================================
+// IMPORTANT: Configure these values for SendGrid to work properly
+// ===============================================================
+
+// Replace with your own SendGrid API key
+export const SENDGRID_API_KEY = "YOUR_SENDGRID_API_KEY_HERE";
+
+// Replace with your own verified sender email in SendGrid
+export const VERIFIED_SENDER_EMAIL = "projectfirthreeupdates@gmail.com";
+
+// Force initialize the SendGrid client with hardcoded API key
 let mailService: MailService | null = null;
 
 // Initialize SendGrid client
 function initializeMailService() {
   try {
-    // This is a more robust check for the API key
-    const apiKey = process.env.SENDGRID_API_KEY;
+    // Use the global constant defined at the top of the file
+    const apiKey = SENDGRID_API_KEY;
     
-    if (!apiKey) {
-      console.warn('SendGrid API key not found in environment variables');
+    if (!apiKey || apiKey === "YOUR_SENDGRID_API_KEY_HERE") {
+      console.warn('SendGrid API key not properly configured');
+      console.warn('Please update the SENDGRID_API_KEY constant at the top of this file');
       return null;
     }
 
@@ -121,12 +132,11 @@ export async function sendMentorRequestEmail(
   const startTimeStr = new Date(slotDetails.startTime).toLocaleString();
   const endTimeStr = new Date(slotDetails.endTime).toLocaleString();
 
-  // NOTE: The sender email must be verified in your SendGrid account
-  // If the app shows "email sent successfully" but no email is received,
-  // go to SendGrid and verify this email or change to your verified email
+  // Use the global sender email defined at the top of the file
+  
   const emailParams: EmailParams = {
     to: mentorEmail,
-    from: 'projectfirthreeupdates@gmail.com', // This must be a verified sender in your SendGrid account
+    from: VERIFIED_SENDER_EMAIL, // This must be a verified sender in your SendGrid account
     subject: 'Group Discussion Mentor Request',
     text: `
       Hello ${mentorName},
@@ -194,10 +204,11 @@ export async function sendMentorResponseNotificationEmail(
   const statusText = status === 'accepted' ? 'accepted' : 'declined';
   const statusColor = status === 'accepted' ? '#4CAF50' : '#f44336';
   
-  // NOTE: The sender email must be verified in your SendGrid account
+  // Use the global sender email defined at the top of the file
+  
   const emailParams: EmailParams = {
     to: teacherEmail,
-    from: 'projectfirthreeupdates@gmail.com', // This must be a verified sender in your SendGrid account
+    from: VERIFIED_SENDER_EMAIL, // This must be a verified sender in your SendGrid account
     subject: `Mentor Request ${status === 'accepted' ? 'Accepted' : 'Declined'}: ${slotDetails.topic}`,
     text: `
       Hello ${teacherName},

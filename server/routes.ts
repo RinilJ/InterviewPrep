@@ -998,18 +998,21 @@ app.post("/api/logout", (req, res, next) => {
   // Debug route to test SendGrid setup
   app.get("/api/test-sendgrid", async (req, res) => {
     try {
-      // Log the API key without exposing the full value for debugging
-      const apiKey = process.env.SENDGRID_API_KEY || '';
-      const maskedKey = apiKey ? `${apiKey.substring(0, 4)}...${apiKey.substring(apiKey.length - 4)}` : 'not set';
-      console.log(`SENDGRID_API_KEY is ${apiKey ? 'set' : 'not set'} (${maskedKey})`);
+      // Get email service module
+      const { sendEmail, SENDGRID_API_KEY, VERIFIED_SENDER_EMAIL } = await import('./emailService');
       
-      // Import email service directly
-      const { sendEmail } = await import('./emailService');
+      // Log the API key without exposing the full value for debugging
+      const maskedKey = SENDGRID_API_KEY 
+        ? `${SENDGRID_API_KEY.substring(0, 4)}...${SENDGRID_API_KEY.substring(SENDGRID_API_KEY.length - 4)}` 
+        : 'not set';
+      
+      console.log(`SENDGRID_API_KEY is ${SENDGRID_API_KEY ? 'set' : 'not set'} (${maskedKey})`);
+      console.log(`Sender email: ${VERIFIED_SENDER_EMAIL}`);
       
       // Try sending a test email
       const emailResult = await sendEmail({
         to: "test@example.com", // This won't actually be sent in test mode
-        from: "projectfirthreeupdates@gmail.com", // Must be a verified sender
+        from: VERIFIED_SENDER_EMAIL, // Must be a verified sender
         subject: "SendGrid Test",
         text: "This is a test email to verify SendGrid integration.",
         html: "<p>This is a test email to verify SendGrid integration.</p>"
@@ -1017,7 +1020,8 @@ app.post("/api/logout", (req, res, next) => {
       
       res.status(200).json({
         success: true,
-        apiKeySet: !!process.env.SENDGRID_API_KEY,
+        apiKeySet: SENDGRID_API_KEY !== "YOUR_SENDGRID_API_KEY_HERE",
+        senderEmail: VERIFIED_SENDER_EMAIL,
         emailSent: emailResult,
         message: emailResult 
           ? "SendGrid test successful! Emails should be working."
@@ -1049,19 +1053,22 @@ app.post("/api/logout", (req, res, next) => {
         return res.status(400).send("Missing required fields");
       }
       
-      // Check if SendGrid API key is available
-      if (!process.env.SENDGRID_API_KEY) {
+      // Import email service to check if the key is configured
+      const { SENDGRID_API_KEY } = await import('./emailService');
+      
+      // Check if SendGrid API key is properly configured
+      if (!SENDGRID_API_KEY || SENDGRID_API_KEY === "YOUR_SENDGRID_API_KEY_HERE") {
         // Create a notification for the request
         await storage.createNotification({
           userId: req.user.id,
           type: "mentor_request",
-          message: `Mentor request to ${mentorName} (${mentorEmail}) for "${topic || 'Open Discussion'}" could not be emailed. Check SENDGRID_API_KEY setup.`,
+          message: `Mentor request to ${mentorName} (${mentorEmail}) for "${topic || 'Open Discussion'}" could not be emailed. Check emailService.ts and update SENDGRID_API_KEY.`,
           isRead: false,
           relatedId: slotId,
           date: new Date()
         });
         
-        return res.status(200).send("Mentor request created but email not sent (SENDGRID_API_KEY not configured)");
+        return res.status(200).send("Mentor request created but email not sent (SENDGRID_API_KEY not properly configured in emailService.ts)");
       }
       
       // Import email service
