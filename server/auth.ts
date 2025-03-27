@@ -81,6 +81,9 @@ export function setupAuth(app: Express) {
       username: parsed.username,
       password: await hashPassword(parsed.password),
       role: parsed.role,
+      department: parsed.department,
+      year: parsed.year,
+      batch: parsed.batch
     });
 
     req.login(user, (err) => {
