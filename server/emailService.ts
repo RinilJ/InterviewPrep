@@ -5,10 +5,10 @@ import { MailService } from '@sendgrid/mail';
 // ===============================================================
 
 // Replace with your own SendGrid API key
-export const SENDGRID_API_KEY = "SG.TEST123456789.DUMMY_KEY_FOR_TEST";
+export const SENDGRID_API_KEY: string = "SG.TEST123456789.DUMMY_KEY_FOR_TEST";
 
 // Replace with your own verified sender email in SendGrid
-export const VERIFIED_SENDER_EMAIL = "test@example.com";
+export const VERIFIED_SENDER_EMAIL: string = "test@example.com";
 
 // Force initialize the SendGrid client with hardcoded API key
 let mailService: MailService | null = null;

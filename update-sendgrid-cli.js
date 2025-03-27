@@ -40,7 +40,7 @@ try {
   console.log('-----------------------------------------------------');
   console.log('SendGrid configuration updated successfully!');
   console.log('-----------------------------------------------------');
-  console.log(`API key: ${apiKey === "YOUR_SENDGRID_API_KEY_HERE" ? "not set" : "updated"}`);
+  console.log(`API key: ${apiKey === "YOUR_SENDGRID_API_KEY_HERE" || apiKey === "SG.TEST123456789.DUMMY_KEY_FOR_TEST" ? "not set" : "updated"}`);
   console.log(`Sender email: ${senderEmail}`);
   console.log('\nIMPORTANT: Make sure your sender email is verified in SendGrid!');
   console.log('Restart the server for changes to take effect.');

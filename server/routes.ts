@@ -1031,7 +1031,7 @@ app.post("/api/logout", (req, res, next) => {
       
       res.status(200).json({
         success: true,
-        apiKeySet: SENDGRID_API_KEY !== "YOUR_SENDGRID_API_KEY_HERE" && SENDGRID_API_KEY !== "SG.TEST123456789.DUMMY_KEY_FOR_TEST",
+        apiKeySet: apiKey !== "YOUR_SENDGRID_API_KEY_HERE" && apiKey !== "SG.TEST123456789.DUMMY_KEY_FOR_TEST",
         senderEmail: VERIFIED_SENDER_EMAIL,
         emailSent: emailResult,
         message: emailResult 
@@ -1067,8 +1067,11 @@ app.post("/api/logout", (req, res, next) => {
       // Import email service to check if the key is configured
       const { SENDGRID_API_KEY } = await import('./emailService');
       
+      // Explicitly set the type for the API key
+      const apiKey: string = SENDGRID_API_KEY;
+      
       // Check if SendGrid API key is properly configured
-      if (!SENDGRID_API_KEY || SENDGRID_API_KEY === "YOUR_SENDGRID_API_KEY_HERE" || SENDGRID_API_KEY === "SG.TEST123456789.DUMMY_KEY_FOR_TEST") {
+      if (!apiKey || apiKey === "YOUR_SENDGRID_API_KEY_HERE" || apiKey === "SG.TEST123456789.DUMMY_KEY_FOR_TEST") {
         // Create a notification for the request
         await storage.createNotification({
           userId: req.user.id,

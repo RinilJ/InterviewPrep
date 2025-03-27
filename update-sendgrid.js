@@ -36,7 +36,7 @@ fs.readFile(emailServicePath, 'utf8', (err, data) => {
   console.log('in the emailService.ts file.\n');
 
   // Prompt for API key
-  rl.question(`Enter your SendGrid API key [current: ${currentApiKey === "YOUR_SENDGRID_API_KEY_HERE" ? "not set" : "hidden for security"}]: `, (apiKey) => {
+  rl.question(`Enter your SendGrid API key [current: ${currentApiKey === "YOUR_SENDGRID_API_KEY_HERE" || currentApiKey === "SG.TEST123456789.DUMMY_KEY_FOR_TEST" ? "not set" : "hidden for security"}]: `, (apiKey) => {
     // Use the current value if nothing is entered
     apiKey = apiKey.trim() || currentApiKey;
 
@@ -66,7 +66,7 @@ fs.readFile(emailServicePath, 'utf8', (err, data) => {
         console.log('\n-----------------------------------------------------');
         console.log('SendGrid configuration updated successfully!');
         console.log('-----------------------------------------------------');
-        console.log(`API key: ${apiKey === "YOUR_SENDGRID_API_KEY_HERE" ? "not set" : "updated"}`);
+        console.log(`API key: ${apiKey === "YOUR_SENDGRID_API_KEY_HERE" || apiKey === "SG.TEST123456789.DUMMY_KEY_FOR_TEST" ? "not set" : "updated"}`);
         console.log(`Sender email: ${senderEmail}`);
         console.log('\nIMPORTANT: Make sure your sender email is verified in SendGrid!');
         console.log('Restart the server for changes to take effect.');

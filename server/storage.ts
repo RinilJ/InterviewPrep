@@ -8,6 +8,7 @@ export interface IStorage {
   // Auth
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
+  getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: Omit<User, "id" | "createdAt">): Promise<User>;
 
   // Teacher-Student Relationship
@@ -86,6 +87,12 @@ export class MemStorage implements IStorage {
   async getUserByUsername(username: string): Promise<User | undefined> {
     return Array.from(this.users.values()).find(
       (user) => user.username === username,
+    );
+  }
+  
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    return Array.from(this.users.values()).find(
+      (user) => user.email === email,
     );
   }
 
@@ -351,7 +358,7 @@ export class MemStorage implements IStorage {
   }
   
   // Mentor Response methods
-  async createMentorResponse(response: Omit<MentorResponse, "id" | "responseDate">): Promise<MentorResponse> {
+  async createMentorResponse(response: Omit<MentorResponse, "id">): Promise<MentorResponse> {
     const id = this.currentId++;
     const newResponse = { ...response, id, responseDate: new Date() };
     this.mentorResponses.set(id, newResponse);
