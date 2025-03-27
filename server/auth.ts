@@ -70,26 +70,35 @@ export function setupAuth(app: Express) {
   });
 
   app.post("/api/register", async (req, res, next) => {
-    const parsed = extendedInsertUserSchema.parse(req.body);
-    
-    const existingUser = await storage.getUserByUsername(parsed.username);
-    if (existingUser) {
-      return res.status(400).send("Username already exists");
+    try {
+      const parsed = extendedInsertUserSchema.parse(req.body);
+      
+      const existingUser = await storage.getUserByUsername(parsed.username);
+      if (existingUser) {
+        return res.status(400).send("Username already exists");
+      }
+
+      const user = await storage.createUser({
+        username: parsed.username,
+        password: await hashPassword(parsed.password),
+        role: parsed.role,
+        department: parsed.department,
+        year: parsed.year,
+        batch: parsed.batch
+      });
+
+      req.login(user, (err) => {
+        if (err) return next(err);
+        res.status(201).json(user);
+      });
+    } catch (error) {
+      if (error instanceof Error) {
+        // Return a proper error message to the client
+        return res.status(400).send(error.message);
+      }
+      // For any other unexpected errors
+      next(error);
     }
-
-    const user = await storage.createUser({
-      username: parsed.username,
-      password: await hashPassword(parsed.password),
-      role: parsed.role,
-      department: parsed.department,
-      year: parsed.year,
-      batch: parsed.batch
-    });
-
-    req.login(user, (err) => {
-      if (err) return next(err);
-      res.status(201).json(user);
-    });
   });
 
   app.post("/api/login", passport.authenticate("local"), (req, res) => {
