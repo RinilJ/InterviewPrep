@@ -41,6 +41,14 @@ async function initializeDashboard() {
 
     // Set up periodic refresh every 30 seconds
     refreshInterval = setInterval(refreshDashboard, 30000);
+    
+    // Set up student search functionality
+    const searchInput = document.getElementById('studentSearch');
+    if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+            filterStudents(e.target.value);
+        });
+    }
 
     // Load discussion slots
     await loadDiscussionSlots();
