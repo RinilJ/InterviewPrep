@@ -325,15 +325,10 @@ async function loadDiscussionSlots(filter = 'all') {
             }
         });
 
+        // Get the discussions tab
         const discussionsTab = document.getElementById('discussionsTab');
-        // Insert the category header and filters first
-        const categoryHeader = `
-            <div class="category-header">
-                <i class="fas fa-users"></i>
-                <h2>Upcoming Group Discussions</h2>
-            </div>
-        `;
-        document.getElementById('discussionsTab').innerHTML = categoryHeader;
+        // The category header is already in the HTML, so we don't need to add it again.
+        // We'll just update the filters and slots
         
         // Update filters container
         filtersContainer.innerHTML = `
@@ -391,14 +386,19 @@ async function loadDiscussionSlots(filter = 'all') {
         }
     } catch (error) {
         console.error('Error loading discussion slots:', error);
-        document.getElementById('discussionsTab').innerHTML = `
+        document.getElementById('discussionSlots').innerHTML = `
             <div class="error-state">
                 <i class="fas fa-exclamation-circle"></i>
                 <p>Failed to load discussion slots</p>
-                <button class="btn-secondary" onclick="loadDiscussionSlots()">
+                <button class="btn-secondary" id="tryAgainBtn">
                     <i class="fas fa-sync"></i> Try Again
                 </button>
             </div>`;
+        
+        // Add event listener to the try again button
+        document.getElementById('tryAgainBtn')?.addEventListener('click', () => {
+            loadDiscussionSlots();
+        });
     }
 }
 
