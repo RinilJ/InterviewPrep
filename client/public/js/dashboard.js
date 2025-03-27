@@ -427,7 +427,7 @@ async function bookSlot(slotId) {
         });
 
         if (response.ok) {
-            showToast('Success', 'Booking created successfully! An invitation has been sent to the mentor\'s email.');
+            showToast('Success', 'Slot booked successfully!');
             loadDiscussionSlots(); // Refresh the slots list
         } else {
             const error = await response.text();
