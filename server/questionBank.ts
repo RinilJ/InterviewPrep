@@ -191,10 +191,22 @@ export async function getUniqueQuestionsForUser(
     // Select random questions and shuffle options
     const questionsToUse = availableQuestions.length < count ? allQuestions : availableQuestions;
     const shuffled = shuffleArray(questionsToUse);
-    const selected = shuffled.slice(0, count).map(q => ({
-      ...q,
-      options: shuffleArray(q.options)
-    }));
+    const selected = shuffled.slice(0, count).map(q => {
+      // Store the correct answer value before shuffling
+      const correctAnswerValue = q.options[q.correctAnswer];
+      
+      // Shuffle the options
+      const shuffledOptions = shuffleArray([...q.options]);
+      
+      // Find the new index of the correct answer
+      const newCorrectAnswerIndex = shuffledOptions.findIndex(option => option === correctAnswerValue);
+      
+      return {
+        ...q,
+        options: shuffledOptions,
+        correctAnswer: newCorrectAnswerIndex
+      };
+    });
 
     // Mark selected questions as used
     selected.forEach(q => sessionUsedQuestions.add(q.question));
