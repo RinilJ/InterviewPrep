@@ -97,7 +97,10 @@ export class MemStorage implements IStorage {
       const duplicateTeacher = existingTeachers.some(t => 
         t.department === normalizedUser.department &&
         t.year === normalizedUser.year &&
-        t.batch === normalizedUser.batch
+        t.batch === normalizedUser.batch &&
+        t.department !== '' &&  // Ignore empty department entries
+        t.year !== '' &&       // Ignore empty year entries
+        t.batch !== ''         // Ignore empty batch entries
       );
 
       if (duplicateTeacher) {
