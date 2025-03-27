@@ -442,26 +442,34 @@ async function createSlot(e) {
                 console.warn('Failed to send mentor request email, but slot was created');
                 closeModal();
                 loadDiscussionSlots();
-                showToast('Warning', `Discussion slot ${isEdit ? 'updated' : 'created'} successfully, but there was an issue sending email to the mentor. Check notifications for details.`);
+                // Still show success but with a warning about the email
+                showToast('Success', `Discussion slot ${isEdit ? 'updated' : 'created'} successfully. Note: There was an issue sending email to the mentor. Check notifications for details.`);
                 return;
             } else {
                 const emailResult = await emailResponse.text();
                 console.log('Email response:', emailResult);
+                // Show success for both the slot creation and email sending
+                closeModal();
+                loadDiscussionSlots();
+                showToast('Success', `Discussion slot ${isEdit ? 'updated' : 'created'} successfully. Mentor has been notified.`);
+                return; // Exit the function here to prevent showing the toast message twice
             }
         } catch (emailError) {
             console.warn('Error sending mentor email, but slot was created:', emailError);
             closeModal();
             loadDiscussionSlots();
-            showToast('Warning', `Discussion slot ${isEdit ? 'updated' : 'created'} successfully, but there was an issue sending email to the mentor. Check notifications for details.`);
+            // Still show success but with a warning about the email
+            showToast('Success', `Discussion slot ${isEdit ? 'updated' : 'created'} successfully. Note: There was an issue sending email to the mentor. Check notifications for details.`);
             return;
         }
 
-        closeModal();
-        loadDiscussionSlots();
-        showToast('Success', `Discussion slot ${isEdit ? 'updated' : 'created'} successfully. Mentor has been notified.`);
+        // This section should never execute because all paths above have return statements
+        // But we'll keep it as a safeguard
     } catch (error) {
         console.error('Slot operation error:', error);
-        showToast('Error', `Failed to ${isEdit ? 'update' : 'create'} discussion slot`);
+        // If we reach this catch block, the slot creation/update must have failed
+        // We shouldn't reload the discussion slots here since nothing was created/updated
+        showToast('Error', `Failed to ${isEdit ? 'update' : 'create'} discussion slot: ${error.message}`);
     } finally {
         submitButton.disabled = false;
         submitButton.innerHTML = isEdit ? 'Update Slot' : 'Create Slot';
