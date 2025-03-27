@@ -386,16 +386,29 @@ async function createSlot(e) {
         submitButton.disabled = true;
         submitButton.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${isEdit ? 'Updating...' : 'Creating...'}`;
 
-        const startTime = new Date(form.slotDateTime.value);
-        const endTime = new Date(startTime.getTime() + parseInt(form.slotDuration.value) * 60000);
+        // Safely get form elements by their IDs
+        const slotTopic = document.getElementById('slotTopic');
+        const slotDateTime = document.getElementById('slotDateTime');
+        const slotDuration = document.getElementById('slotDuration');
+        const maxParticipants = document.getElementById('maxParticipants');
+        const mentorName = document.getElementById('mentorName');
+        const mentorEmail = document.getElementById('mentorEmail');
+
+        // Validate form elements exist
+        if (!slotDateTime || !slotDuration || !maxParticipants || !mentorName || !mentorEmail) {
+            throw new Error('Form elements missing. Please refresh the page and try again.');
+        }
+
+        const startTime = new Date(slotDateTime.value);
+        const endTime = new Date(startTime.getTime() + parseInt(slotDuration.value) * 60000);
 
         const slotData = {
-            topic: form.slotTopic.value || 'Open Discussion',
+            topic: slotTopic ? (slotTopic.value || 'Open Discussion') : 'Open Discussion',
             startTime,
             endTime,
-            maxParticipants: parseInt(form.maxParticipants.value),
-            mentorName: form.mentorName.value,
-            mentorEmail: form.mentorEmail.value,
+            maxParticipants: parseInt(maxParticipants.value),
+            mentorName: mentorName.value,
+            mentorEmail: mentorEmail.value,
             status: 'pending' // Initial status is pending until mentor responds
         };
 
@@ -417,7 +430,6 @@ async function createSlot(e) {
         // Always show success for the slot creation first
         closeModal();
         loadDiscussionSlots();
-        showToast('Success', `Discussion slot ${isEdit ? 'updated' : 'created'} successfully!`);
         
         // Then try to send the email notification as a background task
         try {
@@ -435,22 +447,20 @@ async function createSlot(e) {
             });
 
             if (emailResponse.ok) {
+                // Show success message with email notification info
+                showToast('Success', `Discussion slot created successfully! An invitation email has been sent to ${slotData.mentorName}.`);
                 const emailResult = await emailResponse.text();
                 console.log('Email response:', emailResult);
-                // Optionally show a secondary success message about email
-                // showToast('Success', `Mentor notification email sent successfully.`);
             } else {
+                // Show success but mention email failure
+                showToast('Success', `Discussion slot created successfully! However, there was an issue sending the invitation email.`);
                 console.warn('Failed to send mentor request email, but slot was created');
-                // Don't show error toast since the slot was created successfully
-                // Just log the warning to console
             }
         } catch (emailError) {
+            // Show success but mention email failure
+            showToast('Success', `Discussion slot created successfully! However, there was an issue sending the invitation email.`);
             console.warn('Error sending mentor email, but slot was created:', emailError);
-            // Don't show error toast since the slot was created successfully
-            // Just log the warning to console
         }
-
-        // Rest of the createSlot logic continues below in the catch/finally blocks
     } catch (error) {
         console.error('Slot operation error:', error);
         // If we reach this catch block, the slot creation/update must have failed

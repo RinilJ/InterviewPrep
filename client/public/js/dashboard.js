@@ -405,7 +405,16 @@ async function loadDiscussionSlots(filter = 'all') {
 // Book discussion slot
 async function bookSlot(slotId) {
     try {
-        const button = event.target;
+        // Get the clicked button - if we clicked on the icon inside the button, get the parent button
+        const clickedElement = event.target;
+        const button = clickedElement.tagName === 'BUTTON' ? clickedElement : clickedElement.closest('button');
+        
+        if (!button) {
+            console.error('Could not find button element');
+            return;
+        }
+        
+        // Show booking in progress
         button.disabled = true;
         button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Booking...';
 
@@ -418,7 +427,7 @@ async function bookSlot(slotId) {
         });
 
         if (response.ok) {
-            showToast('Success', 'You have successfully booked this discussion slot!');
+            showToast('Success', 'Booking created successfully! An invitation has been sent to the mentor\'s email.');
             loadDiscussionSlots(); // Refresh the slots list
         } else {
             const error = await response.text();
@@ -428,9 +437,12 @@ async function bookSlot(slotId) {
         console.error('Booking error:', error);
         showToast('Error', 'Failed to book slot. Please try again later.');
     } finally {
-        const button = event.target;
-        button.disabled = false;
-        button.innerHTML = '<i class="fas fa-check"></i> Book Slot';
+        // Find the button again in case the DOM has been updated
+        const buttons = document.querySelectorAll(`button[onclick="bookSlot(${slotId})"]`);
+        buttons.forEach(button => {
+            button.disabled = false;
+            button.innerHTML = '<i class="fas fa-check"></i> Book Slot';
+        });
     }
 }
 
