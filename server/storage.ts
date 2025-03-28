@@ -1,8 +1,22 @@
 import session from "express-session";
 import createMemoryStore from "memorystore";
 import { User, Test, TestResult, DiscussionSlot, SlotBooking, Notification, MentorResponse, MentorAvailability } from "@shared/schema";
+import { drizzle } from "drizzle-orm/node-postgres";
+import pkg from 'pg';
+const { Pool } = pkg;
+import connectPg from "connect-pg-simple";
+import * as schema from "@shared/schema";
 
+const PostgresSessionStore = connectPg(session);
 const MemoryStore = createMemoryStore(session);
+
+// Create a PostgreSQL connection pool
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+});
+
+// Instantiate Drizzle with the pool and schema
+const db = drizzle(pool, { schema });
 
 export interface IStorage {
   // Auth
@@ -476,4 +490,365 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+export class DatabaseStorage implements IStorage {
+  sessionStore: session.Store;
+
+  constructor() {
+    this.sessionStore = new PostgresSessionStore({
+      pool,
+      createTableIfMissing: true
+    });
+  }
+
+  // Auth methods
+  async getUser(id: number): Promise<User | undefined> {
+    const results = await db.select().from(schema.users).where(sql`id = ${id}`);
+    return results[0];
+  }
+
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    const results = await db.select().from(schema.users).where(sql`username = ${username}`);
+    return results[0];
+  }
+
+  async createUser(user: Omit<User, "id" | "createdAt">): Promise<User> {
+    // Normalize user data
+    const normalizedUser = {
+      ...user,
+      department: String(user.department || "").trim().toUpperCase(),
+      year: String(user.year || "").trim(),
+      batch: String(user.batch || "").trim().toUpperCase()
+    };
+
+    // For teachers, check if a teacher already exists for this exact combination
+    if (user.role === 'teacher') {
+      const existingTeachers = await db.select()
+        .from(schema.users)
+        .where(sql`role = 'teacher' AND department = ${normalizedUser.department} AND year = ${normalizedUser.year} AND batch = ${normalizedUser.batch}`);
+
+      if (existingTeachers.length > 0) {
+        throw new Error("A teacher already exists for this exact department, year, and batch combination");
+      }
+    }
+    // For students, find and assign their teacher
+    else if (user.role === 'student') {
+      const assignedTeachers = await db.select()
+        .from(schema.users)
+        .where(sql`role = 'teacher' AND department = ${normalizedUser.department} AND year = ${normalizedUser.year} AND batch = ${normalizedUser.batch}`);
+
+      if (assignedTeachers.length === 0) {
+        throw new Error("No teacher found for your batch. Please ensure a teacher is registered first.");
+      }
+
+      normalizedUser.teacherId = assignedTeachers[0].id;
+    }
+
+    const insertedUsers = await db.insert(schema.users).values(normalizedUser).returning();
+    return insertedUsers[0];
+  }
+
+  // Teacher-Student Relationship methods
+  async findTeacher(department: string, year: string, batch: string): Promise<User | undefined> {
+    // Normalize input
+    const cleanDepartment = String(department).trim().toUpperCase();
+    const cleanYear = String(year).trim();
+    const cleanBatch = String(batch).trim().toUpperCase();
+
+    const teachers = await db.select()
+      .from(schema.users)
+      .where(sql`role = 'teacher' AND department = ${cleanDepartment} AND year = ${cleanYear} AND batch = ${cleanBatch}`);
+
+    return teachers[0];
+  }
+
+  async getTeacherStudents(teacherId: number, department: string, year: string, batch: string): Promise<User[]> {
+    // Normalize input
+    const cleanDepartment = String(department).trim().toUpperCase();
+    const cleanYear = String(year).trim();
+    const cleanBatch = String(batch).trim().toUpperCase();
+
+    return await db.select()
+      .from(schema.users)
+      .where(sql`role = 'student' AND teacher_id = ${teacherId} AND department = ${cleanDepartment} AND year = ${cleanYear} AND batch = ${cleanBatch}`);
+  }
+
+  // Tests methods
+  async getTests(): Promise<Test[]> {
+    return await db.select().from(schema.tests);
+  }
+
+  async createTest(test: Omit<Test, "id">): Promise<Test> {
+    const insertedTests = await db.insert(schema.tests).values(test).returning();
+    return insertedTests[0];
+  }
+
+  // Test Results methods
+  async createTestResult(result: Omit<TestResult, "id" | "completedAt">): Promise<TestResult> {
+    const insertedResults = await db.insert(schema.testResults).values(result).returning();
+    return insertedResults[0];
+  }
+
+  async getTestResults(userId: number): Promise<TestResult[]> {
+    return await db.select()
+      .from(schema.testResults)
+      .where(sql`user_id = ${userId}`);
+  }
+
+  // Discussion Slots methods
+  async createDiscussionSlot(slot: Omit<DiscussionSlot, "id">): Promise<DiscussionSlot> {
+    const insertedSlots = await db.insert(schema.discussionSlots).values(slot).returning();
+    return insertedSlots[0];
+  }
+
+  async getDiscussionSlots(department: string, year: string, batch: string): Promise<DiscussionSlot[]> {
+    const slots = await db.select()
+      .from(schema.discussionSlots)
+      .where(sql`department = ${department} AND year = ${year} AND batch = ${batch}`);
+
+    // Add booking count for each slot
+    const slotsWithBookings = await Promise.all(slots.map(async (slot) => {
+      const bookings = await this.getSlotBookings(slot.id);
+      return {
+        ...slot,
+        bookedCount: bookings.length
+      };
+    }));
+
+    return slotsWithBookings;
+  }
+
+  async getDiscussionSlot(id: number): Promise<DiscussionSlot | undefined> {
+    const slots = await db.select().from(schema.discussionSlots).where(sql`id = ${id}`);
+    
+    if (slots.length === 0) return undefined;
+    
+    const bookings = await this.getSlotBookings(id);
+    return {
+      ...slots[0],
+      bookedCount: bookings.length
+    };
+  }
+
+  async updateDiscussionSlot(id: number, slot: Omit<DiscussionSlot, "id">): Promise<DiscussionSlot> {
+    const updatedSlots = await db.update(schema.discussionSlots)
+      .set(slot)
+      .where(sql`id = ${id}`)
+      .returning();
+
+    if (updatedSlots.length === 0) {
+      throw new Error("Discussion slot not found");
+    }
+
+    // Add booking count to the response
+    const bookings = await this.getSlotBookings(id);
+    return {
+      ...updatedSlots[0],
+      bookedCount: bookings.length
+    };
+  }
+
+  async deleteDiscussionSlot(id: number): Promise<void> {
+    // First delete all bookings for this slot
+    await db.delete(schema.slotBookings).where(sql`slot_id = ${id}`);
+    
+    // Then delete the slot
+    const result = await db.delete(schema.discussionSlots).where(sql`id = ${id}`).returning();
+    
+    if (result.length === 0) {
+      throw new Error("Discussion slot not found");
+    }
+  }
+
+  // Slot Bookings methods
+  async getSlotBookings(slotId: number): Promise<SlotBooking[]> {
+    return await db.select()
+      .from(schema.slotBookings)
+      .where(sql`slot_id = ${slotId}`);
+  }
+
+  async createSlotBooking(booking: Omit<SlotBooking, "id" | "bookedAt">): Promise<SlotBooking> {
+    const insertedBookings = await db.insert(schema.slotBookings).values(booking).returning();
+    return insertedBookings[0];
+  }
+
+  // Notifications methods
+  async createNotification(notification: Omit<Notification, "id">): Promise<Notification> {
+    const insertedNotifications = await db.insert(schema.notifications).values(notification).returning();
+    return insertedNotifications[0];
+  }
+
+  async getNotifications(userId: number): Promise<Notification[]> {
+    return await db.select()
+      .from(schema.notifications)
+      .where(sql`user_id = ${userId}`)
+      .orderBy(sql`date desc`);
+  }
+
+  async markNotificationAsRead(id: number): Promise<Notification> {
+    const updatedNotifications = await db.update(schema.notifications)
+      .set({ isRead: true })
+      .where(sql`id = ${id}`)
+      .returning();
+
+    if (updatedNotifications.length === 0) {
+      throw new Error("Notification not found");
+    }
+
+    return updatedNotifications[0];
+  }
+
+  async deleteNotification(id: number): Promise<void> {
+    const result = await db.delete(schema.notifications).where(sql`id = ${id}`).returning();
+    
+    if (result.length === 0) {
+      throw new Error("Notification not found");
+    }
+  }
+
+  // Mentor Response methods
+  async createMentorResponse(response: Omit<MentorResponse, "id" | "responseDate">): Promise<MentorResponse> {
+    const insertedResponses = await db.insert(schema.mentorResponses).values({
+      ...response,
+      responseDate: new Date()
+    }).returning();
+    
+    const newResponse = insertedResponses[0];
+    
+    // Update slot status based on mentor response
+    if (response.slotId) {
+      const slots = await db.select().from(schema.discussionSlots).where(sql`id = ${response.slotId}`);
+      
+      if (slots.length > 0) {
+        let updatedStatus: "pending" | "confirmed" | "cancelled" | "rescheduled" = "pending";
+        
+        if (response.status === "accepted") {
+          updatedStatus = "confirmed";
+        } else if (response.status === "declined" && !response.alternativeMentorId) {
+          updatedStatus = "cancelled";
+        } else if (response.status === "declined" && response.alternativeMentorId) {
+          updatedStatus = "rescheduled";
+        }
+        
+        await db.update(schema.discussionSlots)
+          .set({ status: updatedStatus })
+          .where(sql`id = ${response.slotId}`);
+        
+        // If mentor declined, notify students who booked the slot
+        if (response.status === "declined") {
+          this.notifyStudentsOfChange(response.slotId, updatedStatus, response.reason || undefined);
+        }
+      }
+    }
+    
+    return newResponse;
+  }
+
+  async getMentorResponse(slotId: number): Promise<MentorResponse | undefined> {
+    const responses = await db.select()
+      .from(schema.mentorResponses)
+      .where(sql`slot_id = ${slotId}`);
+    
+    return responses[0];
+  }
+
+  async updateMentorResponse(id: number, response: Partial<MentorResponse>): Promise<MentorResponse> {
+    const updatedResponses = await db.update(schema.mentorResponses)
+      .set({
+        ...response,
+        responseDate: new Date()
+      })
+      .where(sql`id = ${id}`)
+      .returning();
+    
+    if (updatedResponses.length === 0) {
+      throw new Error("Mentor response not found");
+    }
+    
+    const updatedResponse = updatedResponses[0];
+    
+    // Update slot status based on updated response
+    if (updatedResponse.slotId && response.status) {
+      const slots = await db.select().from(schema.discussionSlots).where(sql`id = ${updatedResponse.slotId}`);
+      
+      if (slots.length > 0) {
+        let updatedStatus: "pending" | "confirmed" | "cancelled" | "rescheduled" = "pending";
+        
+        if (updatedResponse.status === "accepted") {
+          updatedStatus = "confirmed";
+        } else if (updatedResponse.status === "declined" && !updatedResponse.alternativeMentorId) {
+          updatedStatus = "cancelled";
+        } else if (updatedResponse.status === "declined" && updatedResponse.alternativeMentorId) {
+          updatedStatus = "rescheduled";
+        }
+        
+        await db.update(schema.discussionSlots)
+          .set({ status: updatedStatus })
+          .where(sql`id = ${updatedResponse.slotId}`);
+        
+        // If mentor changed response to declined, notify students who booked the slot
+        if (response.status === "declined") {
+          this.notifyStudentsOfChange(updatedResponse.slotId, updatedStatus, updatedResponse.reason || undefined);
+        }
+      }
+    }
+    
+    return updatedResponse;
+  }
+
+  // Mentor Availability methods
+  async setMentorAvailability(availability: Omit<MentorAvailability, "id">): Promise<MentorAvailability> {
+    const insertedAvailabilities = await db.insert(schema.mentorAvailability).values(availability).returning();
+    return insertedAvailabilities[0];
+  }
+
+  async getMentorAvailability(mentorId: number): Promise<MentorAvailability[]> {
+    return await db.select()
+      .from(schema.mentorAvailability)
+      .where(sql`mentor_id = ${mentorId}`);
+  }
+
+  async deleteMentorAvailability(id: number): Promise<void> {
+    const result = await db.delete(schema.mentorAvailability).where(sql`id = ${id}`).returning();
+    
+    if (result.length === 0) {
+      throw new Error("Mentor availability not found");
+    }
+  }
+
+  // Helper method to notify students when a slot status changes
+  private async notifyStudentsOfChange(slotId: number, newStatus: string, reason?: string): Promise<void> {
+    const bookings = await this.getSlotBookings(slotId);
+    const slots = await db.select().from(schema.discussionSlots).where(sql`id = ${slotId}`);
+    
+    if (slots.length === 0) return;
+    
+    const slot = slots[0];
+    
+    // Create notifications for all students who booked this slot
+    for (const booking of bookings) {
+      let message = '';
+      
+      if (newStatus === 'cancelled') {
+        message = `Your group discussion "${slot.topic}" scheduled for ${new Date(slot.startTime).toLocaleString()} has been cancelled.`;
+        if (reason) message += ` Reason: ${reason}`;
+      } else if (newStatus === 'rescheduled') {
+        message = `Your group discussion "${slot.topic}" scheduled for ${new Date(slot.startTime).toLocaleString()} has been rescheduled with a different mentor.`;
+        if (reason) message += ` Reason: ${reason}`;
+      }
+      
+      await this.createNotification({
+        userId: booking.userId,
+        type: newStatus === 'cancelled' ? 'cancellation' : 'update',
+        message,
+        relatedId: slotId,
+        isRead: false,
+        date: new Date()
+      });
+    }
+  }
+}
+
+// Choose the appropriate storage implementation based on environment
+export const storage = process.env.DATABASE_URL 
+  ? new DatabaseStorage() 
+  : new MemStorage();

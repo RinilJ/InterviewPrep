@@ -21,7 +21,7 @@ A comprehensive platform designed to help students prepare for interviews throug
 
 ### Prerequisites
 - Node.js (v14 or higher)
-- PostgreSQL database (or use the built-in in-memory storage for development)
+- PostgreSQL database (already configured in the Replit environment)
 - SendGrid API key (for email notifications)
 - OpenAI API key (for dynamic question generation)
 

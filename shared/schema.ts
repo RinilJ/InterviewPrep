@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, timestamp, json, unique } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp, json } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { sql } from "drizzle-orm";
@@ -11,14 +11,14 @@ export const users = pgTable("users", {
   department: text("department", { enum: ["CS", "IT", "MCA"] }).notNull(),
   year: text("year", { enum: ["1", "2", "3", "4"] }).notNull(),
   batch: text("batch", { enum: ["A", "B", "C"] }).notNull(),
-  teacherId: integer("teacher_id").references(() => users.id),
+  teacherId: integer("teacher_id"), // Will be set up as a foreign key after table definition
   createdAt: timestamp("created_at").defaultNow(),
-}, (table) => ({
-  teacherConstraint: unique().on(table.department, table.year, table.batch)
-    .where(sql`${table.role} = 'teacher'`)
-}));
+});
 
 // Update insert schema with strict validation
+// Add foreign key relationship after table declaration
+sql`ALTER TABLE ${users} ADD CONSTRAINT fk_teacher FOREIGN KEY (teacher_id) REFERENCES ${users} (id)`;
+
 export const insertUserSchema = createInsertSchema(users)
   .omit({ 
     id: true, 
