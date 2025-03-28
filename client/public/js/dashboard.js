@@ -222,12 +222,15 @@ async function initializeDashboard() {
         // Load test results for statistics
         const results = await fetch('/api/test-results').then(res => res.json());
 
-        // Update statistics
-        const averageScore = results.length
-            ? Math.round(results.reduce((acc, r) => acc + r.score, 0) / results.length)
+        // Filter out psychometric tests (score = -1) for accurate statistics
+        const scoredTests = results.filter(test => test.score >= 0);
+        
+        // Update statistics - only use tests with valid scores for average
+        const averageScore = scoredTests.length
+            ? Math.round(scoredTests.reduce((acc, r) => acc + r.score, 0) / scoredTests.length)
             : 0;
         document.getElementById('averageScore').textContent = `${averageScore}%`;
-        document.getElementById('testsCompleted').textContent = results.length;
+        document.getElementById('testsCompleted').textContent = scoredTests.length;
 
         // Load and display test history
         const historyContainer = document.getElementById('testHistory');
