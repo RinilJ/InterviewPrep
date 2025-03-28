@@ -8,9 +8,9 @@ export const users = pgTable("users", {
   username: text("username").notNull().unique(),
   password: text("password").notNull(),
   role: text("role", { enum: ["student", "teacher"] }).notNull(),
-  department: text("department", { enum: ["CS", "IT", "MCA"] }).notNull(),
-  year: text("year", { enum: ["1", "2", "3", "4"] }).notNull(),
-  batch: text("batch", { enum: ["A", "B", "C"] }).notNull(),
+  department: text("department").notNull(),
+  year: text("year").notNull(),
+  batch: text("batch").notNull(),
   teacherId: integer("teacher_id"), // Will be set up as a foreign key after table definition
   createdAt: timestamp("created_at").defaultNow(),
 });
@@ -26,9 +26,9 @@ export const insertUserSchema = createInsertSchema(users)
     teacherId: true 
   })
   .extend({
-    department: z.enum(["CS", "IT", "MCA"]),
-    year: z.enum(["1", "2", "3", "4"]),
-    batch: z.enum(["A", "B", "C"])
+    department: z.string().min(1),
+    year: z.string().min(1),
+    batch: z.string().min(1)
   });
 
 export const tests = pgTable("tests", {
@@ -63,9 +63,9 @@ export const discussionSlots = pgTable("discussion_slots", {
   mentorId: integer("mentor_id").references(() => users.id),
   maxParticipants: integer("max_participants").notNull().default(6),
   topic: text("topic").notNull(),
-  department: text("department", { enum: ["CS", "IT", "MCA"] }).notNull(),
-  year: text("year", { enum: ["1", "2", "3", "4"] }).notNull(),
-  batch: text("batch", { enum: ["A", "B", "C"] }).notNull(),
+  department: text("department").notNull(),
+  year: text("year").notNull(),
+  batch: text("batch").notNull(),
   status: text("status", { enum: ["pending", "confirmed", "cancelled", "rescheduled"] }).default("pending"),
   createdBy: integer("created_by").references(() => users.id),
 });
@@ -82,7 +82,7 @@ export const notifications = pgTable("notifications", {
   userId: integer("user_id").references(() => users.id).notNull(),
   type: text("type", { enum: ["booking", "cancellation", "update", "mentor_assignment", "mentor_response", "substitution"] }).notNull(),
   message: text("message").notNull(),
-  relatedId: integer("related_id"), // Can be slot ID or other related entity
+  relatedId: integer("related_id").notNull(), // Can be slot ID or other related entity
   isRead: boolean("is_read").notNull().default(false),
   date: timestamp("date").defaultNow().notNull(),
 });
@@ -124,7 +124,7 @@ export type InsertUser = z.infer<typeof insertUserSchema>;
 export type Test = typeof tests.$inferSelect;
 export type TestResult = typeof testResults.$inferSelect;
 export type InsertTestResult = z.infer<typeof insertTestResultSchema>;
-export type DiscussionSlot = typeof discussionSlots.$inferSelect;
+export type DiscussionSlot = typeof discussionSlots.$inferSelect & { bookedCount?: number };
 export type SlotBooking = typeof slotBookings.$inferSelect;
 export type Notification = typeof notifications.$inferSelect;
 export type InsertNotification = z.infer<typeof insertNotificationSchema>;

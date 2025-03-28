@@ -2,6 +2,7 @@ import session from "express-session";
 import createMemoryStore from "memorystore";
 import { User, Test, TestResult, DiscussionSlot, SlotBooking, Notification, MentorResponse, MentorAvailability } from "@shared/schema";
 import { drizzle } from "drizzle-orm/node-postgres";
+import { sql } from "drizzle-orm";
 import pkg from 'pg';
 const { Pool } = pkg;
 import connectPg from "connect-pg-simple";
@@ -460,7 +461,7 @@ export class MemStorage implements IStorage {
   }
   
   // Helper method to notify students when a slot status changes
-  private async notifyStudentsOfChange(slotId: number, newStatus: string, reason?: string): Promise<void> {
+  private async notifyStudentsOfChange(slotId: number, newStatus: string, reason?: string | null): Promise<void> {
     const bookings = await this.getSlotBookings(slotId);
     const slot = await this.getDiscussionSlot(slotId);
     
@@ -735,7 +736,7 @@ export class DatabaseStorage implements IStorage {
         
         // If mentor declined, notify students who booked the slot
         if (response.status === "declined") {
-          this.notifyStudentsOfChange(response.slotId, updatedStatus, response.reason || undefined);
+          this.notifyStudentsOfChange(response.slotId, updatedStatus, response.reason);
         }
       }
     }
@@ -787,7 +788,7 @@ export class DatabaseStorage implements IStorage {
         
         // If mentor changed response to declined, notify students who booked the slot
         if (response.status === "declined") {
-          this.notifyStudentsOfChange(updatedResponse.slotId, updatedStatus, updatedResponse.reason || undefined);
+          this.notifyStudentsOfChange(updatedResponse.slotId, updatedStatus, updatedResponse.reason);
         }
       }
     }
@@ -816,7 +817,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Helper method to notify students when a slot status changes
-  private async notifyStudentsOfChange(slotId: number, newStatus: string, reason?: string): Promise<void> {
+  private async notifyStudentsOfChange(slotId: number, newStatus: string, reason?: string | null): Promise<void> {
     const bookings = await this.getSlotBookings(slotId);
     const slots = await db.select().from(schema.discussionSlots).where(sql`id = ${slotId}`);
     
