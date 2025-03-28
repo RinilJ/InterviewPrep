@@ -1022,14 +1022,20 @@ app.post("/api/logout", (req, res, next) => {
         req.user.id // exclude current teacher
       );
       
+      // Filter to ensure we only have users with 'teacher' role
+      const onlyTeachers = teachersQuery.filter(user => user.role === 'teacher');
+      
+      console.log(`Found ${onlyTeachers.length} teachers in department ${req.user.department}`);
+      
       // Get availability for each teacher
       const teachersWithAvailability = await Promise.all(
-        teachersQuery.map(async (teacher) => {
+        onlyTeachers.map(async (teacher) => {
           const availability = await storage.getMentorAvailability(teacher.id);
           return {
             id: teacher.id,
             name: teacher.username,
             department: teacher.department,
+            role: teacher.role, // Include role for debugging
             availability: availability
           };
         })

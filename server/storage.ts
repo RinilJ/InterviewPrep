@@ -2,7 +2,7 @@ import session from "express-session";
 import createMemoryStore from "memorystore";
 import { User, Test, TestResult, DiscussionSlot, SlotBooking, Notification, MentorResponse, MentorAvailability } from "@shared/schema";
 import { drizzle } from "drizzle-orm/node-postgres";
-import { sql } from "drizzle-orm";
+import { sql, and, eq, ne } from "drizzle-orm";
 import pkg from 'pg';
 const { Pool } = pkg;
 import connectPg from "connect-pg-simple";
@@ -593,17 +593,22 @@ export class DatabaseStorage implements IStorage {
     // Normalize input
     const cleanDepartment = String(department).trim().toUpperCase();
     
-    // Build the query
-    let query = db.select()
-      .from(schema.users)
-      .where(sql`role = 'teacher' AND department = ${cleanDepartment}`);
+    // Build the query with proper drizzle where conditions
+    const conditions = [
+      eq(schema.users.role, 'teacher'),
+      eq(schema.users.department, cleanDepartment)
+    ];
     
-    // Exclude the current teacher if requested
+    // Add exclusion condition if needed
     if (excludeTeacherId !== undefined) {
-      query = query.where(sql`id != ${excludeTeacherId}`);
+      conditions.push(ne(schema.users.id, excludeTeacherId));
     }
     
-    const teachers = await query;
+    // Execute the query with all conditions
+    const teachers = await db.select()
+      .from(schema.users)
+      .where(and(...conditions));
+    
     console.log(`Found ${teachers.length} teachers in department ${cleanDepartment}`);
     return teachers;
   }
