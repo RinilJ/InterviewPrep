@@ -471,6 +471,65 @@ app.post("/api/logout", (req, res, next) => {
           res.status(500).send("Failed to fetch teacher statistics");
       }
   });
+  
+  // Endpoint to get all teachers who could potentially be mentors
+  app.get("/api/teachers/available", async (req, res) => {
+      if (!req.isAuthenticated() || req.user.role !== "teacher") {
+          return res.sendStatus(401);
+      }
+
+      try {
+          // Ensure all required methods are available
+          if (typeof storage.getAllUsers !== 'function') {
+              return res.status(500).json({ error: "Required storage method getAllUsers is not implemented" });
+          }
+          
+          if (typeof storage.getMentorAvailability !== 'function') {
+              return res.status(500).json({ error: "Required storage method getMentorAvailability is not implemented" });
+          }
+          
+          if (typeof storage.getDiscussionSlotsByMentor !== 'function') {
+              return res.status(500).json({ error: "Required storage method getDiscussionSlotsByMentor is not implemented" });
+          }
+          
+          // Find all teachers in the same department/year/batch
+          const allUsers = await storage.getAllUsers();
+          const availableTeachers = allUsers.filter(user => 
+              user.role === "teacher" && 
+              user.id !== req.user.id && // Exclude the current teacher
+              user.department === req.user.department &&
+              user.year === req.user.year &&
+              user.batch === req.user.batch
+          );
+
+          // Get availability information for each teacher
+          const teachersWithAvailability = await Promise.all(
+              availableTeachers.map(async (teacher) => {
+                  const availability = await storage.getMentorAvailability(teacher.id);
+                  // Get upcoming slots where this teacher is a mentor
+                  let slots = [];
+                  try {
+                      slots = await storage.getDiscussionSlotsByMentor(teacher.id);
+                  } catch (error) {
+                      console.error(`Error getting slots for teacher ${teacher.id}:`, error);
+                  }
+                  
+                  return {
+                      id: teacher.id,
+                      username: teacher.username,
+                      department: teacher.department,
+                      availability: availability || [],
+                      upcomingSlots: (slots || []).filter(slot => new Date(slot.startTime) > new Date())
+                  };
+              })
+          );
+
+          res.json(teachersWithAvailability);
+      } catch (error) {
+          console.error('Error fetching available teachers:', error);
+          res.status(500).send("Failed to fetch available teachers");
+      }
+  });
 
   // Add this new endpoint after other teacher endpoints
   app.get("/api/teacher/student/:id/test-history", async (req, res) => {
@@ -521,20 +580,27 @@ app.post("/api/logout", (req, res, next) => {
   });
 
   app.post("/api/forgot-password", async (req, res) => {
-    const { email } = req.body;
-    const user = await storage.getUserByEmail(email);
+    // Since the email field is not fully implemented yet, we'll use a simplified approach
+    const { username } = req.body;
+    
+    try {
+      const user = await storage.getUserByUsername(username);
 
-    if (!user) {
-      return res.status(404).send("No account found with this email");
+      if (!user) {
+        return res.status(404).send("No account found with this username");
+      }
+
+      // In a real application, you would:
+      // 1. Generate a password reset token
+      // 2. Save it to the database with an expiration
+      // 3. Send an email with a reset link
+      // For demo purposes, we'll just send a success response
+
+      res.status(200).send("Password reset instructions sent");
+    } catch (error) {
+      console.error('Error in forgot password flow:', error);
+      res.status(500).send("An error occurred processing your request");
     }
-
-    // In a real application, you would:
-    // 1. Generate a password reset token
-    // 2. Save it to the database with an expiration
-    // 3. Send an email with a reset link
-    // For demo purposes, we'll just send a success response
-
-    res.status(200).send("Password reset instructions sent");
   });
 
   // Add route for psychometric tests
