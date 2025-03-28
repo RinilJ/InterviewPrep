@@ -23,9 +23,7 @@ export interface IStorage {
   // Auth
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
-  getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: Omit<User, "id" | "createdAt">): Promise<User>;
-  getAllUsers(): Promise<User[]>;
 
   // Teacher-Student Relationship
   findTeacher(department: string, year: string, batch: string): Promise<User | undefined>;
@@ -43,7 +41,6 @@ export interface IStorage {
   createDiscussionSlot(slot: Omit<DiscussionSlot, "id">): Promise<DiscussionSlot>;
   getDiscussionSlots(department: string, year: string, batch: string): Promise<DiscussionSlot[]>;
   getDiscussionSlot(id: number): Promise<DiscussionSlot | undefined>;
-  getDiscussionSlotsByMentor(mentorId: number): Promise<DiscussionSlot[]>;
   updateDiscussionSlot(id: number, slot: Omit<DiscussionSlot, "id">): Promise<DiscussionSlot>;
   deleteDiscussionSlot(id: number): Promise<void>;
 
@@ -105,18 +102,6 @@ export class MemStorage implements IStorage {
     return Array.from(this.users.values()).find(
       (user) => user.username === username,
     );
-  }
-  
-  async getUserByEmail(email: string): Promise<User | undefined> {
-    // Since the email field might not exist on all user records, 
-    // we need to handle this more carefully
-    return Array.from(this.users.values()).find(
-      (user) => 'email' in user && user.email === email,
-    );
-  }
-  
-  async getAllUsers(): Promise<User[]> {
-    return Array.from(this.users.values());
   }
 
   async createUser(user: Omit<User, "id" | "createdAt">): Promise<User> {
@@ -293,23 +278,6 @@ export class MemStorage implements IStorage {
       ...slot,
       bookedCount: bookings.length
     };
-  }
-  
-  async getDiscussionSlotsByMentor(mentorId: number): Promise<DiscussionSlot[]> {
-    const slots = Array.from(this.discussionSlots.values()).filter(
-      (slot) => slot.mentorId === mentorId
-    );
-
-    // Add booking count for each slot
-    const slotsWithBookings = await Promise.all(slots.map(async (slot) => {
-      const bookings = await this.getSlotBookings(slot.id);
-      return {
-        ...slot,
-        bookedCount: bookings.length
-      };
-    }));
-
-    return slotsWithBookings;
   }
 
   async getSlotBookings(slotId: number): Promise<SlotBooking[]> {
@@ -543,21 +511,6 @@ export class DatabaseStorage implements IStorage {
     const results = await db.select().from(schema.users).where(sql`username = ${username}`);
     return results[0];
   }
-  
-  async getUserByEmail(email: string): Promise<User | undefined> {
-    try {
-      const results = await db.select().from(schema.users).where(sql`email = ${email}`);
-      return results[0];
-    } catch (error) {
-      console.error("Error getting user by email:", error);
-      // Return undefined if the email column doesn't exist or any other error occurs
-      return undefined;
-    }
-  }
-  
-  async getAllUsers(): Promise<User[]> {
-    return await db.select().from(schema.users);
-  }
 
   async createUser(user: Omit<User, "id" | "createdAt">): Promise<User> {
     // Normalize user data
@@ -675,23 +628,6 @@ export class DatabaseStorage implements IStorage {
       ...slots[0],
       bookedCount: bookings.length
     };
-  }
-  
-  async getDiscussionSlotsByMentor(mentorId: number): Promise<DiscussionSlot[]> {
-    const slots = await db.select()
-      .from(schema.discussionSlots)
-      .where(sql`mentor_id = ${mentorId}`);
-
-    // Add booking count for each slot
-    const slotsWithBookings = await Promise.all(slots.map(async (slot) => {
-      const bookings = await this.getSlotBookings(slot.id);
-      return {
-        ...slot,
-        bookedCount: bookings.length
-      };
-    }));
-
-    return slotsWithBookings;
   }
 
   async updateDiscussionSlot(id: number, slot: Omit<DiscussionSlot, "id">): Promise<DiscussionSlot> {
