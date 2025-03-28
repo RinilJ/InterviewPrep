@@ -1009,6 +1009,39 @@ app.post("/api/logout", (req, res, next) => {
     }
   });
   
+  // Get other teachers' availability
+  app.get("/api/teachers/availability", async (req, res) => {
+    if (!req.isAuthenticated() || req.user.role !== "teacher") {
+      return res.sendStatus(401);
+    }
+    
+    try {
+      // Find all teachers in the same department as the current teacher
+      const teachersQuery = await storage.getTeachersInDepartment(
+        req.user.department,
+        req.user.id // exclude current teacher
+      );
+      
+      // Get availability for each teacher
+      const teachersWithAvailability = await Promise.all(
+        teachersQuery.map(async (teacher) => {
+          const availability = await storage.getMentorAvailability(teacher.id);
+          return {
+            id: teacher.id,
+            name: teacher.username,
+            department: teacher.department,
+            availability: availability
+          };
+        })
+      );
+      
+      res.json(teachersWithAvailability);
+    } catch (error) {
+      console.error('Error fetching teachers availability:', error);
+      res.status(500).send("Failed to fetch teachers availability");
+    }
+  });
+  
   // Delete mentor availability
   app.delete("/api/mentor-availability/:id", async (req, res) => {
     if (!req.isAuthenticated() || req.user.role !== "teacher") {

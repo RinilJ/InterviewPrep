@@ -28,6 +28,7 @@ export interface IStorage {
   // Teacher-Student Relationship
   findTeacher(department: string, year: string, batch: string): Promise<User | undefined>;
   getTeacherStudents(teacherId: number, department: string, year: string, batch: string): Promise<User[]>;
+  getTeachersInDepartment(department: string, excludeTeacherId?: number): Promise<User[]>;
 
   // Tests
   createTest(test: Omit<Test, "id">): Promise<Test>;
@@ -216,6 +217,21 @@ export class MemStorage implements IStorage {
     });
 
     return students;
+  }
+  
+  async getTeachersInDepartment(department: string, excludeTeacherId?: number): Promise<User[]> {
+    // Normalize input
+    const cleanDepartment = String(department).trim().toUpperCase();
+    
+    // Find teachers in the same department but not the current teacher
+    const teachers = Array.from(this.users.values()).filter(user =>
+      user.role === 'teacher' &&
+      user.department === cleanDepartment &&
+      (excludeTeacherId === undefined || user.id !== excludeTeacherId)
+    );
+    
+    console.log(`Found ${teachers.length} teachers in department ${cleanDepartment}`);
+    return teachers;
   }
 
   async getTests(): Promise<Test[]> {
@@ -571,6 +587,25 @@ export class DatabaseStorage implements IStorage {
     return await db.select()
       .from(schema.users)
       .where(sql`role = 'student' AND teacher_id = ${teacherId} AND department = ${cleanDepartment} AND year = ${cleanYear} AND batch = ${cleanBatch}`);
+  }
+  
+  async getTeachersInDepartment(department: string, excludeTeacherId?: number): Promise<User[]> {
+    // Normalize input
+    const cleanDepartment = String(department).trim().toUpperCase();
+    
+    // Build the query
+    let query = db.select()
+      .from(schema.users)
+      .where(sql`role = 'teacher' AND department = ${cleanDepartment}`);
+    
+    // Exclude the current teacher if requested
+    if (excludeTeacherId !== undefined) {
+      query = query.where(sql`id != ${excludeTeacherId}`);
+    }
+    
+    const teachers = await query;
+    console.log(`Found ${teachers.length} teachers in department ${cleanDepartment}`);
+    return teachers;
   }
 
   // Tests methods

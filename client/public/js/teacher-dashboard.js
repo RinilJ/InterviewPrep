@@ -1135,6 +1135,255 @@ function setupResponseButtons() {
     });
 }
 
+// Mentor availability functions
+async function loadAvailability() {
+    try {
+        const response = await fetch('/api/mentor-availability');
+        if (!response.ok) {
+            throw new Error('Failed to fetch availability');
+        }
+        const availabilitySlots = await response.json();
+        
+        // Separate recurring and one-time availability
+        const recurringSlots = availabilitySlots.filter(slot => slot.recurring);
+        const onetimeSlots = availabilitySlots.filter(slot => !slot.recurring);
+        
+        // Update recurring availability list
+        const recurringContainer = document.getElementById('recurringAvailability');
+        if (recurringSlots.length === 0) {
+            recurringContainer.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-calendar-day"></i>
+                    <p>No recurring availability set</p>
+                </div>
+            `;
+        } else {
+            recurringContainer.innerHTML = recurringSlots.map(slot => `
+                <div class="availability-item">
+                    <div class="availability-details">
+                        <div class="day-badge">
+                            ${getDayName(slot.dayOfWeek)}
+                        </div>
+                        <div class="time-range">
+                            <i class="far fa-clock"></i>
+                            ${formatTime(slot.startTime)} - ${formatTime(slot.endTime)}
+                        </div>
+                    </div>
+                    <button class="btn-icon delete-btn" onclick="deleteAvailability(${slot.id})">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            `).join('');
+        }
+        
+        // Update one-time availability list
+        const onetimeContainer = document.getElementById('onetimeAvailability');
+        if (onetimeSlots.length === 0) {
+            onetimeContainer.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-calendar-day"></i>
+                    <p>No one-time slots set</p>
+                </div>
+            `;
+        } else {
+            onetimeContainer.innerHTML = onetimeSlots.map(slot => {
+                const isPast = new Date(slot.date + 'T' + slot.endTime) < new Date();
+                return `
+                    <div class="availability-item ${isPast ? 'past' : ''}">
+                        <div class="availability-details">
+                            <div class="date-badge">
+                                <span class="month">${formatDateMonth(slot.date)}</span>
+                                <span class="day">${formatDateDay(slot.date)}</span>
+                            </div>
+                            <div class="time-range">
+                                <i class="far fa-clock"></i>
+                                ${formatTime(slot.startTime)} - ${formatTime(slot.endTime)}
+                            </div>
+                        </div>
+                        <button class="btn-icon delete-btn" onclick="deleteAvailability(${slot.id})" ${isPast ? 'disabled' : ''}>
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+            }).join('');
+        }
+    } catch (error) {
+        console.error('Error loading availability:', error);
+        document.getElementById('recurringAvailability').innerHTML = `
+            <div class="error-state">
+                <i class="fas fa-exclamation-triangle"></i>
+                <p>Failed to load availability</p>
+            </div>
+        `;
+        document.getElementById('onetimeAvailability').innerHTML = `
+            <div class="error-state">
+                <i class="fas fa-exclamation-triangle"></i>
+                <p>Failed to load availability</p>
+            </div>
+        `;
+    }
+}
+
+// Load other teachers' availability
+async function loadTeachersAvailability() {
+    try {
+        const container = document.getElementById('teacherAvailabilityList');
+        container.innerHTML = `
+            <div class="loading-spinner">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p>Loading teachers' availability...</p>
+            </div>
+        `;
+        
+        const response = await fetch('/api/teachers/availability');
+        if (!response.ok) {
+            throw new Error('Failed to fetch other teachers\' availability');
+        }
+        
+        const teachers = await response.json();
+        
+        if (teachers.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-users"></i>
+                    <p>No other teachers in your department</p>
+                </div>
+            `;
+            return;
+        }
+        
+        const teacherCards = teachers.map(teacher => {
+            // Get teacher's initials for avatar
+            const initials = teacher.name.split(' ')
+                .map(part => part.charAt(0))
+                .join('')
+                .toUpperCase();
+            
+            // Process availability slots to ensure they have the expected format
+            const processedAvailability = teacher.availability.map(slot => {
+                // For non-recurring slots, extract date from specificDate
+                if (!slot.recurring && slot.specificDate) {
+                    const date = new Date(slot.specificDate);
+                    return {
+                        ...slot,
+                        date: date.toISOString().split('T')[0]  // Format as YYYY-MM-DD
+                    };
+                }
+                return slot;
+            });
+            
+            // Sort availability - recurring first, then one-time slots by date
+            const recurringSlots = processedAvailability.filter(slot => slot.recurring)
+                .sort((a, b) => a.dayOfWeek - b.dayOfWeek);
+                
+            const onetimeSlots = processedAvailability.filter(slot => !slot.recurring && slot.date)
+                .sort((a, b) => new Date(a.date) - new Date(b.date));
+            
+            // Only show future one-time slots
+            const futureOnetimeSlots = onetimeSlots.filter(slot => {
+                const slotEndTime = new Date(`${slot.date}T${slot.endTime}`);
+                return slotEndTime > new Date();
+            });
+            
+            // Combine slots for display
+            const availabilityHtml = [...recurringSlots, ...futureOnetimeSlots].map(slot => {
+                if (slot.recurring) {
+                    return `
+                        <div class="teacher-availability-slot">
+                            <div class="slot-day-time">
+                                <span class="day-badge">${getDayName(slot.dayOfWeek)}</span>
+                                <span>${formatTime(slot.startTime)} - ${formatTime(slot.endTime)}</span>
+                            </div>
+                            <span class="slot-type">Weekly</span>
+                        </div>
+                    `;
+                } else {
+                    return `
+                        <div class="teacher-availability-slot">
+                            <div class="slot-day-time">
+                                <span class="day-badge">${formatDateShort(slot.date)}</span>
+                                <span>${formatTime(slot.startTime)} - ${formatTime(slot.endTime)}</span>
+                            </div>
+                            <span class="slot-type">One-time</span>
+                        </div>
+                    `;
+                }
+            }).join('');
+            
+            // If no availability, show a message
+            const slotContent = availabilityHtml || `
+                <div class="empty-state" style="padding: 1rem 0">
+                    <i class="fas fa-calendar-times"></i>
+                    <p>No available slots</p>
+                </div>
+            `;
+            
+            return `
+                <div class="teacher-card">
+                    <div class="teacher-header">
+                        <div class="teacher-avatar">${initials}</div>
+                        <div class="teacher-info">
+                            <h3>${teacher.name}</h3>
+                            <p>${teacher.department}</p>
+                        </div>
+                    </div>
+                    <div class="teacher-availability-slots">
+                        ${slotContent}
+                    </div>
+                </div>
+            `;
+        }).join('');
+        
+        container.innerHTML = teacherCards;
+        
+    } catch (error) {
+        console.error('Error loading other teachers\' availability:', error);
+        document.getElementById('teacherAvailabilityList').innerHTML = `
+            <div class="error-state">
+                <i class="fas fa-exclamation-triangle"></i>
+                <p>Failed to load other teachers' availability</p>
+            </div>
+        `;
+    }
+}
+
+// Format date as "May 12" (short format for badges)
+function formatDateShort(dateString) {
+    const date = new Date(dateString);
+    const month = date.toLocaleString('default', { month: 'short' });
+    const day = date.getDate();
+    return `${month} ${day}`;
+}
+
+// Format date functions for availability display
+function formatDateMonth(dateString) {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { month: 'short' });
+}
+
+function formatDateDay(dateString) {
+    const date = new Date(dateString);
+    return date.getDate();
+}
+
+// Helper function to get day name from day of week (0-6)
+function getDayName(dayOfWeek) {
+    const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    return days[dayOfWeek];
+}
+
+// Format time from 24h format to 12h format with AM/PM
+function formatTime(timeString) {
+    // If timeString is already in the correct format, return it
+    if (!timeString || !timeString.includes(':')) return timeString;
+    
+    const [hours, minutes] = timeString.split(':');
+    const hour = parseInt(hours, 10);
+    const suffix = hour >= 12 ? 'PM' : 'AM';
+    const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
+    return `${displayHour}:${minutes} ${suffix}`;
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
     await initializeDashboard();
     await setupStudentHistory();
@@ -1160,6 +1409,33 @@ document.addEventListener('DOMContentLoaded', async () => {
             toggleScheduleType(this.value);
         });
     });
+    
+    // Setup availability tabs
+    document.querySelectorAll('.availability-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            document.querySelectorAll('.availability-tab').forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            
+            const targetId = tab.dataset.avTab;
+            document.querySelectorAll('.availability-tab-content').forEach(content => {
+                content.classList.toggle('hidden', content.id !== targetId);
+            });
+            
+            // Load data for the selected tab if necessary
+            if (targetId === 'teacherAvailability') {
+                loadTeachersAvailability();
+            }
+        });
+    });
+    
+    // Add event listener for the refresh button
+    const refreshBtn = document.getElementById('refreshTeacherAvailabilityBtn');
+    if (refreshBtn) {
+        refreshBtn.addEventListener('click', loadTeachersAvailability);
+    }
+    
+    // Load availability of other teachers when a user clicks on that tab
+    // Initial loading will happen when the user clicks the tab
 });
 
 // Remove static event listeners for filter buttons as they're now added dynamically
