@@ -393,7 +393,38 @@ app.post("/api/logout", (req, res, next) => {
         student.batch === req.user.batch
       );
 
-      res.json(filteredStudents);
+      // Add test progress data for each student
+      const studentsWithProgress = await Promise.all(
+        filteredStudents.map(async (student) => {
+          try {
+            const testResults = await storage.getTestResults(student.id);
+            
+            // Calculate tests completed
+            const testsCompleted = testResults.length;
+            
+            // Calculate average score (exclude psychometric tests with score -1)
+            const scoredTests = testResults.filter(test => test.score >= 0);
+            const averageScore = scoredTests.length > 0
+              ? Math.round(scoredTests.reduce((sum, test) => sum + test.score, 0) / scoredTests.length)
+              : 0;
+            
+            return {
+              ...student,
+              testsCompleted,
+              averageScore
+            };
+          } catch (error) {
+            console.error(`Error getting test results for student ${student.id}:`, error);
+            return {
+              ...student,
+              testsCompleted: 0,
+              averageScore: 0
+            };
+          }
+        })
+      );
+
+      res.json(studentsWithProgress);
     } catch (error) {
       console.error('Error fetching teacher students:', error);
       res.status(500).send("Failed to fetch students");
