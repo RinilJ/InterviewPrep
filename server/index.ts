@@ -71,5 +71,6 @@ app.use((req, res, next) => {
     const PORT = 5000;
     server.listen(PORT, "0.0.0.0", () => {
         log(`serving on port ${PORT}`);
+        console.log(`🚀 Server is running at: http://localhost:${PORT}`);
     });
 })();
